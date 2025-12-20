@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Golf Performance Tracker - Bastian MAS, Préparateur Physique Spécialisé Golf">
+    <title>Golf Performance Tracker - Bastian MAS</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a4d2e">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <img src="logo_bastian.png" alt="Logo" class="logo">
+                <span>Bastian MAS</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#presentation">Présentation</a></li>
+                <li><a href="#methode">Ma Méthode</a></li>
+                <li><a href="#tracker">Tracker</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <button class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Section Présentation -->
+    <section id="presentation" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>Bastian MAS</h1>
+                    <h2>Préparateur Physique Spécialisé Golf</h2>
+                    <p class="hero-subtitle">TPI Certified - Golf Performance Expert</p>
+                    <div class="certifications">
+                        <img src="tpi_certifie.png" alt="TPI Certified" class="cert-badge">
+                    </div>
+                    <p class="expertise-intro">
+                        Fort de plus de 15 ans d'expérience en préparation physique et certifié TPI (Titleist Performance Institute), 
+                        je me spécialise dans l'optimisation des performances des golfeurs, du junior au professionnel de haut niveau.
+                    </p>
+                    <div class="cta-buttons">
+                        <a href="#tracker" class="btn btn-primary">Accéder au Tracker</a>
+                        <a href="#contact" class="btn btn-secondary">Me Contacter</a>
+                    </div>
+                </div>
+                <div class="hero-images">
+                    <img src="cf3ec629-76b7-404f-b47e-a28362d71be1.jpg" alt="Bastian MAS" class="profile-img">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Expertise -->
+    <section id="expertise" class="expertise-section">
+        <div class="container">
+            <h2 class="section-title">Mon Expertise</h2>
+            <div class="expertise-grid">
+                <div class="expertise-card">
+                    <div class="expertise-icon">🏌️</div>
+                    <h3>Golf Haut Niveau</h3>
+                    <p>Préparateur physique à l'École de Golf de Mont Griffon et au C.R.E Ligue Paris-IDF, FFGolf interligue U12</p>
+                </div>
+                <div class="expertise-card">
+                    <div class="expertise-icon">🎓</div>
+                    <h3>Formation & Expertise</h3>
+                    <p>Master 2 Performance Motricité, TPI Level 1 Certified, 15+ ans d'expérience en EPS et préparation physique</p>
+                </div>
+                <div class="expertise-card">
+                    <div class="expertise-icon">⚡</div>
+                    <h3>Speedgolf</h3>
+                    <p>Athlète de niveau mondial en Speedgolf, alliant performance physique et technique golfique</p>
+                </div>
+                <div class="expertise-card">
+                    <div class="expertise-icon">📊</div>
+                    <h3>Tests TPI</h3>
+                    <p>Évaluation complète selon les protocoles TPI pour optimiser votre swing et prévenir les blessures</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Ma Méthode -->
+    <section id="methode" class="methode-section">
+        <div class="container">
+            <h2 class="section-title">Ma Méthode en 4 Étapes</h2>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Évaluation Complète</h3>
+                        <p>Tests TPI + Batterie de tests physiques (Force, Mobilité, Core, Explosivité, Endurance)</p>
+                        <ul>
+                            <li>22 tests de screening TPI</li>
+                            <li>Tests de force et asymétries</li>
+                            <li>Évaluation de la mobilité articulaire</li>
+                            <li>Mesure des capacités athlétiques</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Analyse & Diagnostic</h3>
+                        <p>Identification des points forts, faiblesses et asymétries limitant la performance</p>
+                        <ul>
+                            <li>Rapport détaillé de performance</li>
+                            <li>Visualisation graphique (radar chart)</li>
+                            <li>Détection des déséquilibres</li>
+                            <li>Priorisation des axes de travail</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Programme Personnalisé</h3>
+                        <p>Conception d'un plan d'entraînement adapté à vos objectifs et contraintes</p>
+                        <ul>
+                            <li>Exercices correctifs ciblés</li>
+                            <li>Progression individualisée</li>
+                            <li>Intégration au calendrier golfique</li>
+                            <li>Suivi et ajustements réguliers</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Suivi & Optimisation</h3>
+                        <p>Réévaluations régulières pour mesurer les progrès et adapter le programme</p>
+                        <ul>
+                            <li>Tests de contrôle mensuels</li>
+                            <li>Tracking des performances</li>
+                            <li>Communication avec votre pro de golf</li>
+                            <li>Optimisation continue</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Tracker -->
+    <section id="tracker" class="tracker-section">
+        <div class="container">
+            <div class="tracker-header">
+                <h2 class="section-title">Golf Performance Tracker</h2>
+                <p class="tracker-subtitle">Suivez et analysez vos performances physiques pour le golf</p>
+            </div>
+
+            <!-- Navigation du Tracker -->
+            <div class="tracker-nav">
+                <button class="tracker-tab active" data-tab="profile">Profil</button>
+                <button class="tracker-tab" data-tab="tests">Saisie Tests</button>
+                <button class="tracker-tab" data-tab="dashboard">Dashboard</button>
+                <button class="tracker-tab" data-tab="history">Historique</button>
+                <button class="tracker-tab" data-tab="data">Données</button>
+            </div>
+
+            <!-- Onglet Profil -->
+            <div id="profile-tab" class="tab-content active">
+                <div class="profile-form">
+                    <h3>Profil Joueur</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="playerName">Nom du joueur</label>
+                            <input type="text" id="playerName" placeholder="Nom et prénom">
+                        </div>
+                        <div class="form-group">
+                            <label for="playerGender">Sexe</label>
+                            <select id="playerGender">
+                                <option value="M">Homme</option>
+                                <option value="F">Femme</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="playerAge">Tranche d'âge</label>
+                            <select id="playerAge">
+                                <option value="<12">&lt;12 ans</option>
+                                <option value="12-14">12-14 ans</option>
+                                <option value="14-16">14-16 ans</option>
+                                <option value="17+">17+ ans</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="playerWeight">Poids (kg)</label>
+                            <input type="number" id="playerWeight" placeholder="65" step="0.1">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="saveProfile">Enregistrer le profil</button>
+                </div>
+            </div>
+
+            <!-- Onglet Saisie Tests -->
+            <div id="tests-tab" class="tab-content">
+                <div class="tests-container">
+                    <h3>Saisie des Tests</h3>
+                    <p class="test-date-info">Date du test: <span id="currentTestDate"></span></p>
+                    
+                    <!-- Accordéon des catégories de tests -->
+                    <div class="test-categories">
+                        <!-- Force -->
+                        <div class="test-category">
+                            <button class="category-header">
+                                <span>🟢 FORCE & ASYMÉTRIE</span>
+                                <span class="toggle-icon">▼</span>
+                            </button>
+                            <div class="category-content">
+                                <div class="test-group">
+                                    <h4>Tests de Force (Ratio poids de corps)</h4>
+                                    <div class="test-item">
+                                        <label>Squat (1RM en kg) <button class="help-btn" data-test="squat">?</button></label>
+                                        <input type="number" id="test-squat" step="0.5">
+                                    </div>
+                                    <div class="test-item">
+                                        <label>Deadlift (1RM en kg) <button class="help-btn" data-test="deadlift">?</button></label>
+                                        <input type="number" id="test-deadlift" step="0.5">
+                                    </div>
+                                    <div class="test-item">
+                                        <label>Développé Couché (1RM en kg) <button class="help-btn" data-test="benchpress">?</button></label>
+                                        <input type="number" id="test-benchpress" step="0.5">
+                                    </div>
+                                    <div class="test-item">
+                                        <label>Tirage Vertical (1RM en kg) <button class="help-btn" data-test="pullup">?</button></label>
+                                        <input type="number" id="test-pullup" step="0.5">
+                                    </div>
+                                </div>
+                                <div class="test-group">
+                                    <h4>Tests d'Asymétrie</h4>
+                                    <div class="bilateral-test">
+                                        <label>Leg Extension (kg)</label>
+                                        <div class="bilateral-inputs">
+                                            <input type="number" id="test-legext-left" placeholder="Gauche" step="0.5">
+                                            <input type="number" id="test-legext-right" placeholder="Droite" step="0.5">
+                                        </div>
+                                    </div>
+                                    <div class="bilateral-test">
+                                        <label>Presse (kg)</label>
+                                        <div class="bilateral-inputs">
+                                            <input type="number" id="test-press-left" placeholder="Gauche" step="0.5">
+                                            <input type="number" id="test-press-right" placeholder="Droite" step="0.5">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vitesse -->
+                        <div class="test-category">
+                            <button class="category-header">
+                                <span>🟡 VITESSE</span>
+                                <span class="toggle-icon">▼</span>
+                            </button>
+                            <div class="category-content">
+                                <div class="test-item">
+                                    <label>Navette 5x10m (secondes) <button class="help-btn" data-test="shuttle">?</button></label>
+                                    <input type="number" id="test-shuttle" step="0.01">
+                                </div>
+                                <div class="test-item">
+                                    <label>Driver Speed (mph) <button class="help-btn" data-test="driverspeed">?</button></label>
+                                    <input type="number" id="test-driverspeed" step="0.1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Endurance -->
+                        <div class="test-category">
+                            <button class="category-header">
+                                <span>🔴 ENDURANCE</span>
+                                <span class="toggle-icon">▼</span>
+                            </button>
+                            <div class="category-content">
+                                <div class="test-item">
+                                    <label>VMA (km/h) <button class="help-btn" data-test="vma">?</button></label>
+                                    <input type="number" id="test-vma" step="0.1">
+                                </div>
+                                <div class="test-item">
+                                    <label>Max Pompes 1 min (répétitions) <button class="help-btn" data-test="pushups">?</button></label>
+                                    <input type="number" id="test-pushups">
+                                </div>
+                                <div class="test-item">
+                                    <label>Max Squats 1 min (répétitions) <button class="help-btn" data-test="squats60">?</button></label>
+                                    <input type="number" id="test-squats60">
+                                </div>
+                                <div class="bilateral-test">
+                                    <label>Chaise Unilatérale (secondes)</label>
+                                    <div class="bilateral-inputs">
+                                        <input type="number" id="test-wallsit-left" placeholder="Gauche" step="0.1">
+                                        <input type="number" id="test-wallsit-right" placeholder="Droite" step="0.1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Explosivité -->
+                        <div class="test-category">
+                            <button class="category-header">
+                                <span>🟣 EXPLOSIVITÉ</span>
+                                <span class="toggle-icon">▼</span>
+                            </button>
+                            <div class="category-content">
+                                <div class="test-item">
+                                    <label>Détente Verticale (cm) <button class="help-btn" data-test="vertjump">?</button></label>
+                                    <input type="number" id="test-vertjump" step="0.1">
+                                </div>
+                                <div class="test-item">
+                                    <label>Détente Horizontale (cm) <button class="help-btn" data-test="horizjump">?</button></label>
+                                    <input type="number" id="test-horizjump" step="0.1">
+                                </div>
+                                <div class="test-item">
+                                    <label>MedBall Throw 3kg (mètres) <button class="help-btn" data-test="medball">?</button></label>
+                                    <input type="number" id="test-medball" step="0.1">
+                                </div>
+                                <div class="bilateral-test">
+                                    <label>CMJ Unilatéral (cm)</label>
+                                    <div class="bilateral-inputs">
+                                        <input type="number" id="test-cmj-left" placeholder="Gauche" step="0.1">
+                                        <input type="number" id="test-cmj-right" placeholder="Droite" step="0.1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Core -->
+                        <div class="test-category">
+                            <button class="category-header">
+                                <span>🔵 CORE & STABILITÉ</span>
+                                <span class="toggle-icon">▼</span>
+                            </button>
+                            <div class="category-content">
+                                <div class="test-item">
+                                    <label>RKC Plank (secondes) <button class="help-btn" data-test="rkcplank">?</button></label>
+                                    <input type="number" id="test-rkcplank" step="0.1">
+                                </div>
+                                <div class="bilateral-test">
+                                    <label>Side Plank (secondes)</label>
+                                    <div class="bilateral-inputs">
+                                        <input type="number" id="test-sideplank-left" placeholder="Gauche" step="0.1">
+                                        <input type="number" id="test-sideplank-right" placeholder="Droite" step="0.1">
+                                    </div>
+                                </div>
+                                <div class="test-item">
+                                    <label>Bird Dog (qualité 0-3) <button class="help-btn" data-test="birddog">?</button></label>
+                                    <input type="number" id="test-birddog" min="0" max="3" step="1">
+                                </div>
+                                <div class="test-item">
+                                    <label>McGill Flexor (secondes) <button class="help-btn" data-test="mcgillflexor">?</button></label>
+                                    <input type="number" id="test-mcgillflexor" step="0.1">
+                                </div>
+                                <div class="test-item">
+                                    <label>McGill Extensor (secondes) <button class="help-btn" data-test="mcgillextensor">?</button></label>
+                                    <input type="number" id="test-mcgillextensor" step="0.1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mobilité -->
+                        <div class="test-category">
+                            <button class="category-header">
+                                <span>🟠 MOBILITÉ & SOUPLESSE</span>
+                                <span class="toggle-icon">▼</span>
+                            </button>
+                            <div class="category-content">
+                                <div class="test-item">
+                                    <label>Seat & Reach (cm) <button class="help-btn" data-test="sitreach">?</button></label>
+                                    <input type="number" id="test-sitreach" step="0.1">
+                                </div>
+                                <div class="test-item">
+                                    <label>Rotation Thoracique (degrés) <button class="help-btn" data-test="thoracic">?</button></label>
+                                    <input type="number" id="test-thoracic" step="1">
+                                </div>
+                                <div class="bilateral-test">
+                                    <label>Hip Rotation Interne (degrés)</label>
+                                    <div class="bilateral-inputs">
+                                        <input type="number" id="test-hipint-left" placeholder="Gauche" step="1">
+                                        <input type="number" id="test-hipint-right" placeholder="Droite" step="1">
+                                    </div>
+                                </div>
+                                <div class="bilateral-test">
+                                    <label>Hip Rotation Externe (degrés)</label>
+                                    <div class="bilateral-inputs">
+                                        <input type="number" id="test-hipext-left" placeholder="Gauche" step="1">
+                                        <input type="number" id="test-hipext-right" placeholder="Droite" step="1">
+                                    </div>
+                                </div>
+                                <div class="bilateral-test">
+                                    <label>Dorsiflexion Cheville (cm)</label>
+                                    <div class="bilateral-inputs">
+                                        <input type="number" id="test-ankle-left" placeholder="Gauche" step="0.1">
+                                        <input type="number" id="test-ankle-right" placeholder="Droite" step="0.1">
+                                    </div>
+                                </div>
+                                <div class="bilateral-test">
+                                    <label>Test Épaules - Apley (cm)</label>
+                                    <div class="bilateral-inputs">
+                                        <input type="number" id="test-shoulder-left" placeholder="Gauche" step="0.1">
+                                        <input type="number" id="test-shoulder-right" placeholder="Droite" step="0.1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Équilibre -->
+                        <div class="test-category">
+                            <button class="category-header">
+                                <span>⚪ ÉQUILIBRE</span>
+                                <span class="toggle-icon">▼</span>
+                            </button>
+                            <div class="category-content">
+                                <div class="bilateral-test">
+                                    <label>Yeux Ouverts (secondes)</label>
+                                    <div class="bilateral-inputs">
+                                        <input type="number" id="test-balanceopen-left" placeholder="Gauche" step="0.1">
+                                        <input type="number" id="test-balanceopen-right" placeholder="Droite" step="0.1">
+                                    </div>
+                                </div>
+                                <div class="bilateral-test">
+                                    <label>Yeux Fermés (secondes)</label>
+                                    <div class="bilateral-inputs">
+                                        <input type="number" id="test-balanceclosed-left" placeholder="Gauche" step="0.1">
+                                        <input type="number" id="test-balanceclosed-right" placeholder="Droite" step="0.1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tests TPI -->
+                        <div class="test-category">
+                            <button class="category-header">
+                                <span>🏌️ TESTS TPI (Pass/Fail)</span>
+                                <span class="toggle-icon">▼</span>
+                            </button>
+                            <div class="category-content">
+                                <div class="tpi-tests-grid">
+                                    <!-- Les 16 tests TPI visibles sur l'image -->
+                                    <div class="tpi-test-item">
+                                        <label>Pelvic Tilt</label>
+                                        <select id="tpi-pelvic-tilt">
+                                            <option value="">-</option>
+                                            <option value="pass">Pass</option>
+                                            <option value="fail">Fail</option>
+                                        </select>
+                                    </div>
+                                    <div class="tpi-test-item">
+                                        <label>Pelvic Rotation</label>
+                                        <select id="tpi-pelvic-rotation">
+                                            <option value="">-</option>
+                                            <option value="pass">Pass</option>
+                                            <option value="fail">Fail</option>
+                                        </select>
+                                    </div>
+                                    <div class="tpi-test-item">
+                                        <label>Torso Rotation</label>
+                                        <select id="tpi-torso-rotation">
+                                            <option value="">-</option>
+                                            <option value="pass">Pass</option>
+                                            <option value="fail">Fail</option>
+                                        </select>
+                                    </div>
+                                    <div class="tpi-test-item">
+                                        <label>Lower Quarter Lat Test</label>
+                                        <select id="tpi-lower-lat">
+                                            <option value="">-</option>
+                                            <option value="pass">Pass</option>
+                                            <option value="fail">Fail</option>
+                                        </select>
+                                    </div>
+                                    <div class="tpi-test-item">
+                                        <label>Seated Trunk Rotation</label>
+                                        <select id="tpi-trunk-rotation">
+                                            <option value="">-</option>
+                                            <option value="pass">Pass</option>
+                                            <option value="fail">Fail</option>
+                                        </select>
+                                    </div>
+                                    <div class="tpi-test-item">
+                                        <label>Bridge w/ Leg Extension</label>
+                                        <select id="tpi-bridge">
+                                            <option value="">-</option>
+                                            <option value="pass">Pass</option>
+                                            <option value="fail">Fail</option>
+                                        </select>
+                                    </div>
+                                    <div class="tpi-test-item">
+                                        <label>Overhead Deep Squat</label>
+                                        <select id="tpi-overhead-squat">
+                                            <option value="">-</option>
+                                            <option value="pass">Pass</option>
+                                            <option value="fail">Fail</option>
+                                        </select>
+                                    </div>
+                                    <div class="tpi-test-item">
+                                        <label>Toe Touch</label>
+                                        <select id="tpi-toe-touch">
+                                            <option value="">-</option>
+                                            <option value="pass">Pass</option>
+                                            <option value="fail">Fail</option>
+                                        </select>
+                                    </div>
+                                    <div class="tpi-test-item">
+                                        <label>90/90</label>
+                                        <select id="tpi-9090">
+                                            <option value="">-</option>
+                                            <option value="pass">Pass</option>
+                                            <option value="fail">Fail</option>
+                                        </select>
+                                    </div>
+                                    <div class="tpi-test-item">
+                                        <label>Single Leg Balance</label>
+                                        <select id="tpi-single-leg">
+                                            <option value="">-</option>
+                                            <option value="pass">Pass</option>
+                                            <option value="fail">Fail</option>
+                                        </select>
+                                    </div>
+                                    <div class="tpi-test-item">
+                                        <label>Cervical Rotation</label>
+                                        <select id="tpi-cervical">
+                                            <option value="">-</option>
+                                            <option value="pass">Pass</option>
+                                            <option value="fail">Fail</option>
+                                        </select>
+                                    </div>
+                                    <div class="tpi-test-item">
+                                        <label>Forearm Rotation</label>
+                                        <select id="tpi-forearm">
+                                            <option value="">-</option>
+                                            <option value="pass">Pass</option>
+                                            <option value="fail">Fail</option>
+                                        </select>
+                                    </div>
+                                    <div class="tpi-test-item">
+                                        <label>Wrist Hinge</label>
+                                        <select id="tpi-wrist-hinge">
+                                            <option value="">-</option>
+                                            <option value="pass">Pass</option>
+                                            <option value="fail">Fail</option>
+                                        </select>
+                                    </div>
+                                    <div class="tpi-test-item">
+                                        <label>Wrist Flexion/Extension</label>
+                                        <select id="tpi-wrist-flex">
+                                            <option value="">-</option>
+                                            <option value="pass">Pass</option>
+                                            <option value="fail">Fail</option>
+                                        </select>
+                                    </div>
+                                    <div class="tpi-test-item">
+                                        <label>Shoulder Mobility</label>
+                                        <select id="tpi-shoulder">
+                                            <option value="">-</option>
+                                            <option value="pass">Pass</option>
+                                            <option value="fail">Fail</option>
+                                        </select>
+                                    </div>
+                                    <div class="tpi-test-item">
+                                        <label>Lat Test</label>
+                                        <select id="tpi-lat">
+                                            <option value="">-</option>
+                                            <option value="pass">Pass</option>
+                                            <option value="fail">Fail</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="test-actions">
+                        <button class="btn btn-primary" id="saveTests">Enregistrer les Tests</button>
+                        <button class="btn btn-secondary" id="clearTests">Effacer</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onglet Dashboard -->
+            <div id="dashboard-tab" class="tab-content">
+                <div class="dashboard-container">
+                    <div class="dashboard-header">
+                        <h3>Dashboard Performance</h3>
+                        <div class="player-info-display" id="playerInfoDisplay"></div>
+                    </div>
+
+                    <!-- Alertes Asymétries -->
+                    <div id="asymmetryAlerts" class="asymmetry-alerts"></div>
+
+                    <!-- Graphique Radar -->
+                    <div class="radar-container">
+                        <h4>Profil Performance (Radar)</h4>
+                        <canvas id="radarChart"></canvas>
+                    </div>
+
+                    <!-- Scores Détaillés par Catégorie -->
+                    <div id="detailedScores" class="detailed-scores"></div>
+                </div>
+            </div>
+
+            <!-- Onglet Historique -->
+            <div id="history-tab" class="tab-content">
+                <div class="history-container">
+                    <h3>Historique des Tests</h3>
+                    <div class="history-controls">
+                        <select id="historyTestSelect">
+                            <option value="">Sélectionner un test...</option>
+                        </select>
+                        <button class="btn btn-secondary" id="clearHistory">Effacer l'historique</button>
+                    </div>
+                    <div class="history-chart-container">
+                        <canvas id="historyChart"></canvas>
+                    </div>
+                    <div id="historyTable" class="history-table"></div>
+                </div>
+            </div>
+
+            <!-- Onglet Données -->
+            <div id="data-tab" class="tab-content">
+                <div class="data-container">
+                    <h3>Gestion des Données</h3>
+                    <div class="data-actions">
+                        <div class="data-action-card">
+                            <h4>📥 Importer des données</h4>
+                            <p>Charger des données depuis un fichier JSON</p>
+                            <input type="file" id="importFile" accept=".json" style="display: none;">
+                            <button class="btn btn-secondary" id="importBtn">Importer</button>
+                        </div>
+                        <div class="data-action-card">
+                            <h4>📤 Exporter des données</h4>
+                            <p>Sauvegarder toutes vos données en JSON</p>
+                            <button class="btn btn-primary" id="exportBtn">Exporter</button>
+                        </div>
+                        <div class="data-action-card">
+                            <h4>📄 Générer un Rapport</h4>
+                            <p>Créer un rapport PDF de vos performances</p>
+                            <button class="btn btn-primary" id="generateReport">Générer Rapport</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Contact -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <h2 class="section-title">Me Contacter</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <div class="contact-icon">📧</div>
+                        <div>
+                            <h4>Email</h4>
+                            <a href="mailto:bastianmas@gmail.com">bastianmas@gmail.com</a>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">📱</div>
+                        <div>
+                            <h4>Téléphone</h4>
+                            <a href="tel:+33618778582">06 18 77 85 82</a>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">📍</div>
+                        <div>
+                            <h4>Localisation</h4>
+                            <p>Claye-Souilly (77)<br>École de Golf Mont Griffon (95)</p>
+                        </div>
+                    </div>
+                    <div class="social-links">
+                        <a href="https://www.instagram.com/babas.prepa.physique" target="_blank" class="social-link">
+                            <svg viewBox="0 0 24 24" width="24" height="24">
+                                <path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                            </svg>
+                            @babas.prepa.physique
+                        </a>
+                        <a href="https://www.facebook.com/bastianmas" target="_blank" class="social-link">
+                            <svg viewBox="0 0 24 24" width="24" height="24">
+                                <path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            </svg>
+                            Facebook
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Bastian MAS - Préparateur Physique Golf. Tous droits réservés.</p>
+            <p>TPI Certified | Golf Performance Specialist</p>
+        </div>
+    </footer>
+
+    <!-- Modal d'aide pour les protocoles -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3 id="modalTitle"></h3>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="baremes.js"></script>
+    <script src="app-light.js"></script>
+</body>
+</html>

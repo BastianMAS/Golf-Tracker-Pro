@@ -1,0 +1,22 @@
+{
+  "name": "Golf Performance Tracker - Bastian MAS",
+  "short_name": "Golf Tracker",
+  "description": "Application de suivi de performance physique pour golfeurs - Bastian MAS, Préparateur Physique",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a4d2e",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "logo_bastian.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo_bastian.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
