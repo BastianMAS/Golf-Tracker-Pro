@@ -583,37 +583,6 @@ const TEST_CATEGORIES = {
 };
 
 // Noms affichés des tests
-const TEST_NAMES = {
-    squat: "Squat",
-    deadlift: "Deadlift",
-    benchpress: "Développé Couché",
-    pullup: "Tirage Vertical",
-    legext: "Leg Extension",
-    press: "Presse",
-    shuttle: "Navette 5x10m",
-    driverspeed: "Driver Speed",
-    vma: "VMA",
-    pushups: "Pompes 1min",
-    squats60: "Squats 1min",
-    wallsit: "Chaise Unilatérale",
-    vertjump: "Détente Verticale",
-    horizjump: "Détente Horizontale",
-    medball: "MedBall Throw 3kg",
-    cmj: "CMJ Unilatéral",
-    rkcplank: "RKC Plank",
-    sideplank: "Side Plank",
-    birddog: "Bird Dog",
-    mcgillflexor: "McGill Flexor",
-    mcgillextensor: "McGill Extensor",
-    sitreach: "Seat & Reach",
-    thoracic: "Rotation Thoracique",
-    hipint: "Hip Rotation Interne",
-    hipext: "Hip Rotation Externe",
-    ankle: "Dorsiflexion Cheville",
-    shoulder: "Test Épaules (Apley)",
-    balanceopen: "Équilibre Yeux Ouverts",
-    balanceclosed: "Équilibre Yeux Fermés"
-};
 
 // ==================== BARÈMES ADDITIONNELS POUR ADULTES ====================
 // Ajouter les tranches d'âge 17-25, 25-40, 40-50, 50+ à tous les tests
