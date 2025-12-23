@@ -6,7 +6,7 @@ const BAREMES = {
     // FORCE - Ratio poids de corps
     squat: {
         unit: 'ratio',
-        bilat Human: false,
+        bilateral: false,
         levels: {
             'M': {
                 '<12': [0.8, 1.0, 1.2, 1.5],
