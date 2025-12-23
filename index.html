@@ -549,6 +549,19 @@
                                     <label>McGill Extensor (secondes) <button class="help-btn" data-test="mcgillextensor">?</button></label>
                                     <input type="number" id="test-mcgillextensor" step="0.1">
                                 </div>
+                                <div class="test-item">
+                                    <label>Pallof Press (secondes) <button class="help-btn" data-test="pallof">?</button></label>
+                                    <div style="margin: 0.5rem 0;">
+                                        <label style="font-size: 0.9rem;">Type de résistance:</label>
+                                        <select id="pallof-resistance-type" style="margin-left: 0.5rem; padding: 0.3rem;">
+                                            <option value="cable">Câble (25% poids de corps)</option>
+                                            <option value="band-15">Élastique Vert (15kg)</option>
+                                            <option value="band-25">Élastique Jaune (25kg)</option>
+                                            <option value="band-30">Élastique Orange (30kg)</option>
+                                        </select>
+                                    </div>
+                                    <input type="number" id="test-pallof" placeholder="Temps de maintien" step="0.1">
+                                </div>
                             </div>
                         </div>
 
@@ -563,9 +576,12 @@
                                     <label>Seat & Reach (cm) <button class="help-btn" data-test="sitreach">?</button></label>
                                     <input type="number" id="test-sitreach" step="0.1">
                                 </div>
-                                <div class="test-item">
+                                <div class="bilateral-test">
                                     <label>Rotation Thoracique (degrés) <button class="help-btn" data-test="thoracic">?</button></label>
-                                    <input type="number" id="test-thoracic" step="1">
+                                    <div class="bilateral-inputs">
+                                        <input type="number" id="test-thoracic-left" placeholder="Gauche" step="1">
+                                        <input type="number" id="test-thoracic-right" placeholder="Droite" step="1">
+                                    </div>
                                 </div>
                                 <div class="bilateral-test">
                                     <label>Hip Rotation Interne (degrés)</label>
@@ -589,10 +605,14 @@
                                     </div>
                                 </div>
                                 <div class="bilateral-test">
-                                    <label>Test Épaules - Apley (cm)</label>
+                                    <label>Test Épaules - Apley (0-5) <button class="help-btn" data-test="shoulder">?</button></label>
+                                    <p style="font-size: 0.85rem; margin: 0.3rem 0; color: #666;">0 = ne touche pas | 5 = mains se superposent</p>
+                                    <div style="margin: 0.5rem 0;">
+                                        <label style="font-size: 0.9rem;">Épaule testée (bras vers le haut):</label>
+                                    </div>
                                     <div class="bilateral-inputs">
-                                        <input type="number" id="test-shoulder-left" placeholder="Gauche" step="0.1">
-                                        <input type="number" id="test-shoulder-right" placeholder="Droite" step="0.1">
+                                        <input type="number" id="test-shoulder-left" placeholder="Gauche" min="0" max="5" step="1">
+                                        <input type="number" id="test-shoulder-right" placeholder="Droite" min="0" max="5" step="1">
                                     </div>
                                 </div>
                             </div>
@@ -629,6 +649,12 @@
                                 <span class="toggle-icon">▼</span>
                             </button>
                             <div class="category-content">
+                                <div style="margin-bottom: 1rem; padding: 1rem; background: #e8f5e9; border-radius: 8px;">
+                                    <p style="margin: 0 0 0.5rem 0; font-weight: 500;">📸 Protocoles visuels des tests TPI</p>
+                                    <button class="btn btn-secondary" onclick="document.getElementById('tpiProtocolModal').style.display='block'" style="font-size: 0.9rem;">
+                                        Voir les images des protocoles TPI
+                                    </button>
+                                </div>
                                 <div class="tpi-tests-grid">
                                     <!-- Les 16 tests TPI visibles sur l'image -->
                                     <div class="tpi-test-item">
@@ -655,21 +681,47 @@
                                             <option value="fail">Fail</option>
                                         </select>
                                     </div>
-                                    <div class="tpi-test-item">
+                                    <div class="tpi-test-item bilateral">
                                         <label>Lower Quarter Lat Test</label>
-                                        <select id="tpi-lower-lat">
-                                            <option value="">-</option>
-                                            <option value="pass">Pass</option>
-                                            <option value="fail">Fail</option>
-                                        </select>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                            <div>
+                                                <small style="display: block; margin-bottom: 0.2rem;">Gauche</small>
+                                                <select id="tpi-lower-lat-left">
+                                                    <option value="">-</option>
+                                                    <option value="pass">Pass</option>
+                                                    <option value="fail">Fail</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <small style="display: block; margin-bottom: 0.2rem;">Droite</small>
+                                                <select id="tpi-lower-lat-right">
+                                                    <option value="">-</option>
+                                                    <option value="pass">Pass</option>
+                                                    <option value="fail">Fail</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="tpi-test-item">
+                                    <div class="tpi-test-item bilateral">
                                         <label>Seated Trunk Rotation</label>
-                                        <select id="tpi-trunk-rotation">
-                                            <option value="">-</option>
-                                            <option value="pass">Pass</option>
-                                            <option value="fail">Fail</option>
-                                        </select>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                            <div>
+                                                <small style="display: block; margin-bottom: 0.2rem;">Gauche</small>
+                                                <select id="tpi-trunk-rotation-left">
+                                                    <option value="">-</option>
+                                                    <option value="pass">Pass</option>
+                                                    <option value="fail">Fail</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <small style="display: block; margin-bottom: 0.2rem;">Droite</small>
+                                                <select id="tpi-trunk-rotation-right">
+                                                    <option value="">-</option>
+                                                    <option value="pass">Pass</option>
+                                                    <option value="fail">Fail</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="tpi-test-item">
                                         <label>Bridge w/ Leg Extension</label>
@@ -703,45 +755,110 @@
                                             <option value="fail">Fail</option>
                                         </select>
                                     </div>
-                                    <div class="tpi-test-item">
+                                    <div class="tpi-test-item bilateral">
                                         <label>Single Leg Balance</label>
-                                        <select id="tpi-single-leg">
-                                            <option value="">-</option>
-                                            <option value="pass">Pass</option>
-                                            <option value="fail">Fail</option>
-                                        </select>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                            <div>
+                                                <small style="display: block; margin-bottom: 0.2rem;">Gauche</small>
+                                                <select id="tpi-single-leg-left">
+                                                    <option value="">-</option>
+                                                    <option value="pass">Pass</option>
+                                                    <option value="fail">Fail</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <small style="display: block; margin-bottom: 0.2rem;">Droite</small>
+                                                <select id="tpi-single-leg-right">
+                                                    <option value="">-</option>
+                                                    <option value="pass">Pass</option>
+                                                    <option value="fail">Fail</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="tpi-test-item">
+                                    <div class="tpi-test-item bilateral">
                                         <label>Cervical Rotation</label>
-                                        <select id="tpi-cervical">
-                                            <option value="">-</option>
-                                            <option value="pass">Pass</option>
-                                            <option value="fail">Fail</option>
-                                        </select>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                            <div>
+                                                <small style="display: block; margin-bottom: 0.2rem;">Gauche</small>
+                                                <select id="tpi-cervical-left">
+                                                    <option value="">-</option>
+                                                    <option value="pass">Pass</option>
+                                                    <option value="fail">Fail</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <small style="display: block; margin-bottom: 0.2rem;">Droite</small>
+                                                <select id="tpi-cervical-right">
+                                                    <option value="">-</option>
+                                                    <option value="pass">Pass</option>
+                                                    <option value="fail">Fail</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="tpi-test-item">
+                                    <div class="tpi-test-item bilateral">
                                         <label>Forearm Rotation</label>
-                                        <select id="tpi-forearm">
-                                            <option value="">-</option>
-                                            <option value="pass">Pass</option>
-                                            <option value="fail">Fail</option>
-                                        </select>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                            <div>
+                                                <small style="display: block; margin-bottom: 0.2rem;">Gauche</small>
+                                                <select id="tpi-forearm-left">
+                                                    <option value="">-</option>
+                                                    <option value="pass">Pass</option>
+                                                    <option value="fail">Fail</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <small style="display: block; margin-bottom: 0.2rem;">Droite</small>
+                                                <select id="tpi-forearm-right">
+                                                    <option value="">-</option>
+                                                    <option value="pass">Pass</option>
+                                                    <option value="fail">Fail</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="tpi-test-item">
+                                    <div class="tpi-test-item bilateral">
                                         <label>Wrist Hinge</label>
-                                        <select id="tpi-wrist-hinge">
-                                            <option value="">-</option>
-                                            <option value="pass">Pass</option>
-                                            <option value="fail">Fail</option>
-                                        </select>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                            <div>
+                                                <small style="display: block; margin-bottom: 0.2rem;">Gauche</small>
+                                                <select id="tpi-wrist-hinge-left">
+                                                    <option value="">-</option>
+                                                    <option value="pass">Pass</option>
+                                                    <option value="fail">Fail</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <small style="display: block; margin-bottom: 0.2rem;">Droite</small>
+                                                <select id="tpi-wrist-hinge-right">
+                                                    <option value="">-</option>
+                                                    <option value="pass">Pass</option>
+                                                    <option value="fail">Fail</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="tpi-test-item">
+                                    <div class="tpi-test-item bilateral">
                                         <label>Wrist Flexion/Extension</label>
-                                        <select id="tpi-wrist-flex">
-                                            <option value="">-</option>
-                                            <option value="pass">Pass</option>
-                                            <option value="fail">Fail</option>
-                                        </select>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                            <div>
+                                                <small style="display: block; margin-bottom: 0.2rem;">Gauche</small>
+                                                <select id="tpi-wrist-flex-left">
+                                                    <option value="">-</option>
+                                                    <option value="pass">Pass</option>
+                                                    <option value="fail">Fail</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <small style="display: block; margin-bottom: 0.2rem;">Droite</small>
+                                                <select id="tpi-wrist-flex-right">
+                                                    <option value="">-</option>
+                                                    <option value="pass">Pass</option>
+                                                    <option value="fail">Fail</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="tpi-test-item">
                                         <label>Shoulder Mobility</label>
@@ -898,6 +1015,23 @@
             <h3 id="modalTitle"></h3>
             <div id="modalBody"></div>
                       </div>
+    </div>
+
+    <!-- Modal TPI Protocols -->
+    <div id="tpiProtocolModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <span class="close" onclick="document.getElementById('tpiProtocolModal').style.display='none'">&times;</span>
+            <h3>📋 Protocoles Visuels des Tests TPI</h3>
+            <div style="margin-top: 1rem;">
+                <img src="TPI_TEST_SCREEN.jpg" alt="Tests TPI" style="width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div style="margin-top: 1rem; padding: 1rem; background: #f7fafc; border-radius: 8px;">
+                    <p style="margin: 0; font-size: 0.9rem; color: #666;">
+                        <strong>Note :</strong> Pour les tests unilatéraux (Lower Quarter Lat, Single Leg Balance, Cervical Rotation, Forearm Rotation, Wrist Hinge, Wrist Flexion/Extension), 
+                        assurez-vous de tester les deux côtés (gauche et droite) pour détecter les asymétries.
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts -->

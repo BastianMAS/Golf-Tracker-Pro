@@ -8,6 +8,583 @@ let allTests = [];
 let radarChart = null;
 let historyChart = null;
 
+// ==================== PROTOCOLES DES TESTS ====================
+const PROTOCOLS = {
+    // FORCE
+    squat: {
+        title: "Squat - 1RM",
+        material: "Barre, cage à squat, disques",
+        protocol: `1. Échauffement articulaire et musculaire progressif
+2. Commencer avec la barre seule pour vérifier la technique
+3. Monter progressivement la charge (par paliers de 5-10kg)
+4. Trouver le 1RM (charge maximale pour 1 répétition) ou 3RM
+5. Si 3RM, calculer le 1RM estimé avec la formule de Brzycki
+
+Position :
+- Pieds largeur épaules, pointes légèrement vers l'extérieur
+- Barre sur les trapèzes (position haute)
+- Descendre jusqu'à ce que les cuisses soient parallèles au sol (90°)
+- Remonter en poussant fort sur les talons
+
+L'application calculera automatiquement le ratio poids de corps.`,
+        tips: "Garder le dos droit, regarder devant soi. Ne pas décoller les talons. Contrôler la descente."
+    },
+    
+    deadlift: {
+        title: "Deadlift (Soulevé de terre) - 1RM",
+        material: "Barre, disques",
+        protocol: `1. Échauffement progressif
+2. Monter en charge jusqu'au 1RM ou 3RM
+3. Si 3RM, calculer le 1RM estimé
+
+Position :
+- Pieds largeur hanches, sous la barre
+- Saisir la barre en pronation (ou mixte si lourd)
+- Dos plat, poitrine sortie
+- Tirer la barre en gardant le dos droit
+- Extension complète en haut (épaules en arrière)
+
+Attention : Ne jamais arrondir le dos !`,
+        tips: "Engager les abdos et les fessiers. La barre doit rester proche du corps tout au long du mouvement."
+    },
+    
+    benchpress: {
+        title: "Développé Couché - 1RM",
+        material: "Banc, barre, disques",
+        protocol: `1. Échauffement progressif
+2. Monter en charge jusqu'au 1RM ou 3RM
+3. Si 3RM, calculer le 1RM estimé
+
+Position :
+- Allongé sur le banc, pieds au sol
+- Saisir la barre légèrement plus large que les épaules
+- Descendre la barre vers le milieu de la poitrine
+- Remonter en contrôle jusqu'à extension complète des bras
+
+Important : Avoir un pareur pour la sécurité !`,
+        tips: "Contracter les omoplates, garder les fesses sur le banc. Ne pas rebondir sur la poitrine."
+    },
+    
+    pullup: {
+        title: "Tirage Vertical - 1RM",
+        material: "Barre de traction ou machine guidée, lest éventuel",
+        protocol: `1. Échauffement progressif
+2. Si traction au poids de corps facile, ajouter du lest
+3. Trouver le 1RM (ou 3RM puis calculer)
+
+Position :
+- Saisir la barre en pronation, mains légèrement plus larges que les épaules
+- Tirer jusqu'à ce que le menton dépasse la barre
+- Descendre en contrôle jusqu'à extension complète
+
+Pour le ratio : poids de corps + lest = charge totale`,
+        tips: "Ne pas se balancer. Contrôler la descente. Engager les dorsaux."
+    },
+    
+    legextension: {
+        title: "Leg Extension Unilatéral",
+        material: "Machine de leg extension",
+        protocol: `1. Échauffement léger
+2. Tester JAMBE PAR JAMBE séparément
+3. Trouver le 1RM ou 3RM de chaque jambe
+
+Position :
+- Assis, dos contre le dossier
+- Une seule jambe active à la fois
+- Extension complète du genou
+- Descente contrôlée
+
+L'application calculera :
+- Le ratio charge/poids de corps pour chaque jambe
+- L'asymétrie gauche/droite (ALERTE si >15%)`,
+        tips: "Ne pas donner d'élan. Contracter le quadriceps en haut du mouvement."
+    },
+    
+    legpress: {
+        title: "Presse Unilatérale",
+        material: "Machine de presse à cuisses",
+        protocol: `1. Échauffement progressif
+2. Tester JAMBE PAR JAMBE séparément
+3. Trouver le 1RM ou 3RM de chaque jambe
+
+Position :
+- Une seule jambe sur le plateau
+- Pied au centre, l'autre jambe au repos
+- Descendre jusqu'à 90° de flexion de genou
+- Pousser jusqu'à extension presque complète
+
+L'application détectera les déséquilibres G/D`,
+        tips: "Ne pas décoller les lombaires du siège. Garder le dos plaqué."
+    },
+    
+    // VITESSE
+    shuttle: {
+        title: "Navette 5x10m",
+        material: "2 plots, chronomètre ou cellules photoélectriques",
+        protocol: `1. Placer 2 lignes à 10 mètres l'une de l'autre
+2. Le joueur doit faire 5 allers-retours (= 10 passages de ligne)
+3. TOTAL = 50 mètres parcourus
+4. Il DOIT toucher la ligne avec la main à chaque virage
+5. Chronomètre du départ jusqu'au 5ème retour
+
+Important : Si le joueur ne touche pas la ligne = test invalide
+
+Consigne : "Sprint maximal, touche la ligne à chaque fois !"`,
+        tips: "S'échauffer 10 minutes avant. Faire 2 essais, garder le meilleur temps."
+    },
+    
+    driverspeed: {
+        title: "Driver Speed (Vitesse de club)",
+        material: "Radar (Trackman, Flightscope, etc.), driver du joueur",
+        protocol: `1. Échauffement complet avec le driver
+2. Effectuer 5 drives MAXIMUM
+3. Le joueur doit swinguer à vitesse maximale (pas de précision)
+4. Noter la vitesse de club (clubhead speed) pour chaque essai
+5. Garder la vitesse MAXIMALE (pas la moyenne !)
+
+Mesure : Vitesse en mph (miles par heure)
+
+Note : Ce test mesure la capacité de transfert de puissance au golf`,
+        tips: "Swinguer à fond sans se soucier de la direction. C'est un test de VITESSE pure."
+    },
+    
+    // ENDURANCE
+    vma: {
+        title: "VMA (Vitesse Maximale Aérobie)",
+        material: "Piste ou terrain plat, chronomètre",
+        protocol: `Option 1 - Test Luc Léger :
+- Navettes de 20m avec bips sonores
+- Vitesse augmente chaque minute
+- S'arrêter à épuisement
+- Convertir le palier en km/h
+
+Option 2 - Demi-Cooper (6 minutes) :
+- Courir la plus grande distance en 6 minutes
+- Formule : Distance (m) ÷ 100 = VMA (km/h)
+- Exemple : 1200m en 6min = VMA 12 km/h`,
+        tips: "Bien s'échauffer. C'est un effort maximal. Le test doit se terminer en épuisement."
+    },
+    
+    maxpushups: {
+        title: "Maximum Pompes en 1 minute",
+        material: "Chronomètre, tapis",
+        protocol: `1. Position de départ : planche haute, mains largeur épaules
+2. Au signal, effectuer le MAXIMUM de pompes en 60 secondes
+3. Amplitude complète obligatoire :
+   - Descente : poitrine à 5cm du sol
+   - Montée : bras tendus
+4. Compter uniquement les pompes techniquement correctes
+
+Fautes éliminatoires :
+- Bassin qui s'affaisse
+- Amplitude incomplète
+- Arrêt de plus de 3 secondes`,
+        tips: "Rester gainé. Mieux vaut ralentir que de tricher sur l'amplitude."
+    },
+    
+    maxsquats: {
+        title: "Maximum Squats en 1 minute",
+        material: "Chronomètre",
+        protocol: `1. Position : pieds largeur épaules, poids de corps uniquement
+2. Au signal, effectuer le MAXIMUM de squats en 60 secondes
+3. Amplitude : cuisses parallèles au sol (90° au genou)
+4. Remonter jusqu'à extension complète
+
+Consigne technique :
+- Dos droit
+- Talons au sol
+- Genoux dans l'axe des pieds
+
+Fautes : amplitude insuffisante, talons décollés`,
+        tips: "Trouver son rythme. Respirer régulièrement."
+    },
+    
+    wallsit: {
+        title: "Chaise Unilatérale (Asymétrie)",
+        material: "Mur, chronomètre",
+        protocol: `1. Se placer dos au mur
+2. Descendre jusqu'à 90° (cuisses parallèles au sol)
+3. LEVER UNE JAMBE (tendue devant)
+4. Tenir le plus longtemps possible
+5. Chronomètre jusqu'à :
+   - La jambe d'appui tremble trop
+   - Le dos décolle du mur
+   - L'autre pied touche le sol
+
+Tester GAUCHE et DROITE séparément.
+L'application calculera l'asymétrie.`,
+        tips: "Tester la jambe la plus faible en premier. Récupérer 2-3 minutes entre les jambes."
+    },
+    
+    // EXPLOSIVITÉ
+    vertjump: {
+        title: "Détente Verticale (CMJ)",
+        material: "Toise murale ou tapis de mesure, craie",
+        protocol: `1. Se placer debout, mains sur les hanches (pour isoler les jambes)
+2. Fléchir les genoux et sauter LE PLUS HAUT possible
+3. Pas d'élan, départ pieds joints
+4. Mesurer la hauteur maximale atteinte
+
+Mesure :
+- Marquer avec la craie le point le plus haut atteint
+- Ou utiliser un tapis de détente (Vertec, MyJump, etc.)
+
+Faire 3 essais, garder le meilleur.`,
+        tips: "Explosivité maximale. Utiliser les bras pour s'équilibrer à la réception."
+    },
+    
+    horizjump: {
+        title: "Détente Horizontale",
+        material: "Décamètre, ligne de départ",
+        protocol: `1. Se placer pieds joints sur la ligne de départ
+2. Balancer les bras et sauter LE PLUS LOIN possible
+3. Pas d'élan, départ statique
+4. Mesurer du talon le plus proche de la ligne de départ
+
+Consigne :
+- Réception équilibrée (ne pas tomber en arrière)
+- Distance mesurée au talon le plus proche
+
+Faire 3 essais, garder le meilleur.`,
+        tips: "Bien fléchir les genoux avant le saut. Projeter les bras vers l'avant."
+    },
+    
+    medball: {
+        title: "MedBall Throw",
+        material: "Medecine ball 2kg ou 3kg, décamètre",
+        protocol: `Protocole : Lancer ASSIS (comme un chest pass)
+
+1. S'asseoir au sol, dos contre un mur, jambes tendues
+2. Tenir le medball à 2 mains devant la poitrine
+3. Lancer le plus loin possible devant soi
+4. Mesurer la distance d'impact au sol
+
+Poids du medball :
+- 2kg pour les jeunes/femmes
+- 3kg pour les hommes adultes
+
+Faire 3 essais, garder le meilleur.`,
+        tips: "Explosion maximale des bras. Le dos doit rester contre le mur (pas d'élan du tronc)."
+    },
+    
+    cmjunilateral: {
+        title: "CMJ Unilatéral (Asymétrie)",
+        material: "Toise ou tapis de détente",
+        protocol: `1. Même protocole que la détente verticale
+2. MAIS sur une seule jambe
+3. L'autre jambe reste fléchie en l'air
+4. Mains sur les hanches
+
+Tester GAUCHE et DROITE séparément.
+
+Important : Ce test révèle les déséquilibres de puissance.
+Au golf, la jambe d'appui est cruciale.`,
+        tips: "S'équilibrer avant de sauter. Réception sur la même jambe."
+    },
+    
+    // CORE
+    rkcplank: {
+        title: "RKC Plank (Gainage intensif)",
+        material: "Chronomètre, tapis",
+        protocol: `1. Position planche (coudes au sol)
+2. DIFFÉRENCE avec planche classique :
+   - Contraction MAXIMALE volontaire
+   - Fessiers serrés à fond
+   - Abdos contractés à fond
+   - Quadriceps contractés
+   - Coudes qui "tirent" vers les pieds (sans bouger)
+
+3. Tenir le plus longtemps possible en maintenant cette tension
+
+Arrêt quand :
+- Le bassin s'affaisse
+- Impossible de maintenir la contraction maximale`,
+        tips: "C'est un gainage de QUALITÉ, pas de durée. 20-30 secondes en RKC = excellent !"
+    },
+    
+    sideplank: {
+        title: "Side Plank (Gainage latéral)",
+        material: "Chronomètre, tapis",
+        protocol: `1. Position latérale, appui sur un coude
+2. Corps aligné (tête-tronc-bassin-jambes)
+3. Bassin relevé, corps droit
+4. Tenir le plus longtemps possible
+
+Tester GAUCHE et DROITE.
+
+Arrêt quand :
+- Le bassin descend
+- Le corps pivote`,
+        tips: "Regarder devant. Contracter les obliques. L'application détectera les asymétries."
+    },
+    
+    birddog: {
+        title: "Bird Dog (Qualité 0-3)",
+        material: "Tapis, bâton (optionnel)",
+        protocol: `1. Position à 4 pattes
+2. Lever bras droit ET jambe gauche simultanément
+3. Maintenir 10 secondes
+4. Répéter de l'autre côté
+
+NOTATION (0 à 3) :
+0 = Impossible de lever bras + jambe
+1 = Peut lever mais mouvement du dos/bassin
+2 = Stable mais léger mouvement
+3 = Parfait, aucun mouvement du dos/bassin
+
+Test de référence :
+- Placer un bâton sur les lombaires
+- Il ne doit PAS tomber pendant l'exercice`,
+        tips: "Pas un test de temps mais de QUALITÉ. La stabilité du bassin est primordiale."
+    },
+    
+    mcgillflexor: {
+        title: "McGill Flexor Test",
+        material: "Banc ou support incliné à 60°, chronomètre",
+        protocol: `1. S'asseoir sur un banc incliné à 60°
+2. Genoux et hanches à 90°
+3. Croiser les bras sur la poitrine
+4. Retirer le support dorsal
+5. Tenir la position le plus longtemps possible
+
+Position :
+- Dos à 60° par rapport à l'horizontal
+- Pas de support
+- Immobile
+
+Arrêt quand :
+- Le dos descend
+- Douleur lombaire`,
+        tips: "Test crucial pour la santé du dos du golfeur. Contracter les abdos profonds."
+    },
+    
+    mcgillextensor: {
+        title: "McGill Extensor Test",
+        material: "Banc, chronomètre",
+        protocol: `1. S'allonger à plat ventre sur le bord d'un banc
+2. Le haut du corps dépasse dans le vide (à partir de la crête iliaque)
+3. Un partenaire tient les jambes
+4. Maintenir le tronc à l'horizontale
+5. Bras croisés sur la poitrine
+6. Tenir le plus longtemps possible
+
+Arrêt quand :
+- Le buste descend
+- Douleur lombaire`,
+        tips: "Serrer les fessiers. Ne pas cambrer. Test essentiel pour les extenseurs du dos."
+    },
+    
+    pallof: {
+        title: "Pallof Press",
+        material: "Câble ou élastique Décathlon, chronomètre",
+        protocol: `MATÉRIEL :
+- Câble : 25% du poids de corps
+- OU Élastique Décathlon :
+  • Vert = 15kg
+  • Jaune = 25kg
+  • Orange = 30kg
+
+PROTOCOLE :
+1. Se placer latéralement par rapport à la résistance
+2. Distance au point d'attache : 1,5 à 2 mètres
+3. Saisir la poignée/élastique à 2 mains devant la poitrine
+4. Tendre les bras devant soi
+5. Maintenir la position bras tendus sans rotation du tronc
+6. Chronométrer le temps de maintien
+
+Position :
+- Pieds largeur d'épaules
+- Genoux légèrement fléchis
+- Abdos contractés
+- PAS de rotation du bassin/tronc
+
+Arrêt quand :
+- Le corps pivote
+- Les bras fléchissent`,
+        tips: "C'est un test d'anti-rotation. Le core doit résister à la force qui essaie de vous faire tourner."
+    },
+    
+    // MOBILITÉ
+    sitreach: {
+        title: "Seat & Reach (Souplesse ischio-jambiers)",
+        material: "Banc de Seat & Reach ou règle",
+        protocol: `1. S'asseoir jambes tendues devant soi
+2. Pieds contre le support (ou mur)
+3. Tendre les bras et se pencher en avant
+4. Pousser avec les mains le plus loin possible
+5. Mesurer la distance atteinte
+   - Au-delà des orteils = positif (+)
+   - Avant les orteils = négatif (-)
+
+Consigne :
+- Garder les genoux tendus
+- Pas de rebond
+- Maintenir 2 secondes à la position maximale`,
+        tips: "S'échauffer avant. Expirer en se penchant."
+    },
+    
+    thoracic: {
+        title: "Rotation Thoracique",
+        material: "Bâton, goniomètre ou application smartphone",
+        protocol: `1. S'asseoir sur une chaise ou un banc
+2. Placer un bâton sur les épaules (derrière la nuque)
+3. Bloquer le bassin (ne doit PAS bouger)
+4. Tourner le buste au maximum À GAUCHE
+5. Mesurer l'angle de rotation (en degrés)
+6. Répéter À DROITE
+
+Mesure :
+- Utiliser un goniomètre
+- Ou application smartphone (inclinomètre)
+- Angle entre la ligne des épaules et l'axe initial
+
+Important : TESTER LES DEUX CÔTÉS
+L'application détectera les asymétries.`,
+        tips: "Le bassin ne doit ABSOLUMENT PAS bouger. Seul le tronc tourne."
+    },
+    
+    hiprotation: {
+        title: "Rotation de Hanche Interne/Externe",
+        material: "Table/banc, goniomètre",
+        protocol: `Position de départ :
+1. Allongé sur le dos
+2. Jambe testée : hanche et genou fléchis à 90°
+3. L'autre jambe tendue au sol
+
+ROTATION INTERNE :
+- Laisser tomber le pied VERS L'EXTÉRIEUR
+- La cuisse pivote vers l'intérieur
+- Mesurer l'angle
+
+ROTATION EXTERNE :
+- Laisser tomber le pied VERS L'INTÉRIEUR
+- La cuisse pivote vers l'extérieur
+- Mesurer l'angle
+
+Tester GAUCHE et DROITE pour chaque rotation.
+
+Mesure : angle en degrés (goniomètre ou app)`,
+        tips: "Bassin bien plaqué au sol. Ne pas tricher en soulevant la hanche."
+    },
+    
+    ankle: {
+        title: "Dorsiflexion Cheville (Test du mur)",
+        material: "Mur, mètre ruban",
+        protocol: `1. Se placer face à un mur
+2. Avancer le genou vers le mur
+3. Le TALON ne doit PAS décoller du sol
+4. Mesurer la distance maximale entre les ORTEILS et le mur
+5. Répéter pour l'autre pied
+
+Position :
+- Un pied à la fois
+- Genou dans l'axe du pied
+- Talon cloué au sol
+
+Tester GAUCHE et DROITE.
+
+Important : Mobilité cruciale pour le swing de golf.`,
+        tips: "Plus la distance orteils-mur est grande, meilleure est la mobilité."
+    },
+    
+    shoulder: {
+        title: "Test Épaules - Apley Scratch",
+        material: "Aucun",
+        protocol: `PRINCIPE :
+Tenter de toucher ses mains dans le dos.
+Une main vient PAR LE HAUT, l'autre PAR LE BAS.
+
+NOTATION (0 à 5) :
+0 = Les mains ne se touchent pas du tout (écart >10cm)
+1 = Écart de 5-10cm
+2 = Écart de 2-5cm
+3 = Les doigts se touchent
+4 = Les mains se chevauchent légèrement
+5 = Les mains se superposent complètement
+
+ÉPAULE TESTÉE :
+= Celle qui a le bras VERS LE HAUT
+
+Tester GAUCHE et DROITE :
+- Gauche : bras gauche en haut
+- Droite : bras droit en haut`,
+        tips: "Bien se tenir droit. Ne pas pencher le tronc pour tricher."
+    },
+    
+    // ÉQUILIBRE
+    balanceopen: {
+        title: "Équilibre Yeux Ouverts",
+        material: "Chronomètre",
+        protocol: `1. Se tenir sur une jambe
+2. Mains sur les hanches
+3. Regard fixe devant soi
+4. Tenir 60 secondes maximum
+
+Tester GAUCHE et DROITE.
+
+Arrêt quand :
+- Le pied d'appui bouge (même légèrement)
+- L'autre pied touche le sol
+- Les mains quittent les hanches
+- Perte d'équilibre
+
+Objectif : 60 secondes sans bouger`,
+        tips: "Fixer un point devant soi. Contracter le core."
+    },
+    
+    balanceclosed: {
+        title: "Équilibre Yeux Fermés",
+        material: "Chronomètre",
+        protocol: `1. Même protocole que yeux ouverts
+2. MAIS les yeux sont FERMÉS
+3. Tenir le plus longtemps possible
+
+Tester GAUCHE et DROITE.
+
+Arrêt quand :
+- Le pied d'appui bouge
+- L'autre pied touche le sol
+- Les mains quittent les hanches
+- Perte d'équilibre
+
+Ce test est BEAUCOUP plus difficile !`,
+        tips: "Bien s'équilibrer avant de fermer les yeux. Concentration maximale."
+    }
+};
+
+const TEST_NAMES = {
+    squat: "Squat 1RM",
+    deadlift: "Deadlift 1RM",
+    benchpress: "Développé Couché 1RM",
+    pullup: "Tirage Vertical 1RM",
+    legextension: "Leg Extension (G/D)",
+    legpress: "Presse (G/D)",
+    shuttle: "Navette 5x10m",
+    driverspeed: "Driver Speed",
+    vma: "VMA",
+    maxpushups: "Max Pompes 1min",
+    maxsquats: "Max Squats 1min",
+    wallsit: "Chaise Unilatérale (G/D)",
+    vertjump: "Détente Verticale",
+    horizjump: "Détente Horizontale",
+    medball: "MedBall Throw",
+    cmjunilateral: "CMJ Unilatéral (G/D)",
+    rkcplank: "RKC Plank",
+    sideplank: "Side Plank (G/D)",
+    birddog: "Bird Dog",
+    mcgillflexor: "McGill Flexor",
+    mcgillextensor: "McGill Extensor",
+    pallof: "Pallof Press",
+    sitreach: "Seat & Reach",
+    thoracic: "Rotation Thoracique (G/D)",
+    hiprotation: "Hip Rotation",
+    ankle: "Dorsiflexion (G/D)",
+    shoulder: "Test Épaules (G/D)",
+    balanceopen: "Équilibre Yeux Ouverts (G/D)",
+    balanceclosed: "Équilibre Yeux Fermés (G/D)"
+};
+
+
 // ==================== INITIALISATION ====================
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Initialisation de l\'application...');
