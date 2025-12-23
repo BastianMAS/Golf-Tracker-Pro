@@ -610,6 +610,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadPlayerData();
     setupMobileMenu();
     setupRMCalculators();
+    setupLivePerformanceIndicators();
 });
 
 function initializeApp() {
@@ -701,6 +702,18 @@ function setupEventListeners() {
     ['playerGender', 'playerAge', 'playerHeight', 'playerSittingHeight', 'playerWeight'].forEach(id => {
         document.getElementById(id)?.addEventListener('input', calculateMirwald);
         document.getElementById(id)?.addEventListener('change', calculateMirwald);
+    });
+    
+    // Mise à jour des barèmes quand le profil change
+    document.getElementById('playerGender')?.addEventListener('change', () => {
+        if (typeof displayCategoryBaremes === 'function') {
+            displayCategoryBaremes();
+        }
+    });
+    document.getElementById('playerAge')?.addEventListener('change', () => {
+        if (typeof displayCategoryBaremes === 'function') {
+            displayCategoryBaremes();
+        }
     });
 }
 
@@ -1285,6 +1298,306 @@ function loadFromLocalStorage() {
             allTests = [];
         }
     }
+}
+
+// ==================== INDICATEURS DE PERFORMANCE EN TEMPS RÉEL ====================
+function setupLivePerformanceIndicators() {
+    // Afficher les barèmes généraux pour chaque catégorie
+    displayCategoryBaremes();
+    
+    // Liste de tous les tests avec leurs inputs
+    const testInputs = {
+        // Force
+        'squat': { input: 'test-squat-1rm', type: 'ratio', needsWeight: true },
+        'deadlift': { input: 'test-deadlift-1rm', type: 'ratio', needsWeight: true },
+        'benchpress': { input: 'test-benchpress-1rm', type: 'ratio', needsWeight: true },
+        'pullup': { input: 'test-pullup-1rm', type: 'ratio', needsWeight: true },
+        
+        // Vitesse
+        'shuttle': { input: 'test-shuttle', type: 'direct' },
+        'driverspeed': { input: 'test-driverspeed', type: 'direct' },
+        
+        // Endurance
+        'vma': { input: 'test-vma', type: 'direct' },
+        'maxpushups': { input: 'test-maxpushups', type: 'direct' },
+        'maxsquats': { input: 'test-maxsquats', type: 'direct' },
+        
+        // Explosivité
+        'vertjump': { input: 'test-vertjump', type: 'direct' },
+        'horizjump': { input: 'test-horizjump', type: 'direct' },
+        'medball': { input: 'test-medball', type: 'direct' },
+        
+        // Core
+        'rkcplank': { input: 'test-rkcplank', type: 'direct' },
+        'mcgillflexor': { input: 'test-mcgillflexor', type: 'direct' },
+        'mcgillextensor': { input: 'test-mcgillextensor', type: 'direct' },
+        'birddog': { input: 'test-birddog', type: 'direct' },
+        
+        // Mobilité
+        'sitreach': { input: 'test-sitreach', type: 'direct' }
+    };
+    
+    // Ajouter des listeners sur chaque input
+    Object.keys(testInputs).forEach(testKey => {
+        const config = testInputs[testKey];
+        const input = document.getElementById(config.input);
+        
+        if (input) {
+            // Créer l'indicateur de niveau
+            createPerformanceIndicator(input, testKey, config);
+            
+            // Écouter les changements
+            input.addEventListener('input', () => {
+                updatePerformanceIndicator(input, testKey, config);
+            });
+            
+            // Mise à jour si le profil change
+            document.getElementById('playerGender')?.addEventListener('change', () => {
+                updatePerformanceIndicator(input, testKey, config);
+            });
+            document.getElementById('playerAge')?.addEventListener('change', () => {
+                updatePerformanceIndicator(input, testKey, config);
+            });
+            document.getElementById('playerWeight')?.addEventListener('input', () => {
+                if (config.needsWeight) {
+                    updatePerformanceIndicator(input, testKey, config);
+                }
+            });
+        }
+    });
+}
+
+function createPerformanceIndicator(inputElement, testKey, config) {
+    // Créer l'élément indicateur
+    const indicator = document.createElement('div');
+    indicator.className = 'performance-indicator';
+    indicator.id = `indicator-${config.input}`;
+    indicator.innerHTML = '<span class="level-badge"></span>';
+    
+    // Insérer après l'input
+    inputElement.parentNode.insertBefore(indicator, inputElement.nextSibling);
+}
+
+function updatePerformanceIndicator(inputElement, testKey, config) {
+    const indicator = document.getElementById(`indicator-${config.input}`);
+    if (!indicator) return;
+    
+    const value = parseFloat(inputElement.value);
+    if (!value || value <= 0) {
+        indicator.innerHTML = '';
+        return;
+    }
+    
+    // Récupérer les infos du profil
+    const gender = document.getElementById('playerGender')?.value || 'M';
+    const age = parseInt(document.getElementById('playerAge')?.value) || 25;
+    const weight = parseFloat(document.getElementById('playerWeight')?.value) || 70;
+    
+    // Déterminer la tranche d'âge
+    let ageGroup;
+    if (age < 12) ageGroup = '<12';
+    else if (age < 14) ageGroup = '12-14';
+    else if (age < 16) ageGroup = '14-16';
+    else if (age < 25) ageGroup = '17-25';
+    else if (age < 40) ageGroup = '25-40';
+    else if (age < 50) ageGroup = '40-50';
+    else ageGroup = '50+';
+    
+    // Récupérer le barème
+    const bareme = BAREMES[testKey];
+    if (!bareme || !bareme.levels || !bareme.levels[gender] || !bareme.levels[gender][ageGroup]) {
+        return;
+    }
+    
+    const levels = bareme.levels[gender][ageGroup];
+    
+    // Calculer la valeur à comparer
+    let compareValue = value;
+    if (config.needsWeight && weight > 0) {
+        // Pour les tests de force, calculer le ratio
+        compareValue = value / weight;
+    }
+    
+    // Déterminer le niveau
+    const level = getPerformanceLevel(compareValue, levels, bareme.higherIsBetter);
+    const levelInfo = getLevelInfo(level);
+    
+    // Afficher l'indicateur
+    indicator.innerHTML = `
+        <span class="level-badge level-${level}" style="
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: ${levelInfo.color};
+            color: white;
+            margin-top: 0.3rem;
+        ">
+            ${levelInfo.icon} ${levelInfo.label}
+        </span>
+    `;
+}
+
+function getPerformanceLevel(value, levels, higherIsBetter = true) {
+    // levels = [niveau1, niveau2, niveau3, niveau4]
+    // Retourne 1, 2, 3 ou 4
+    
+    if (higherIsBetter) {
+        // Plus c'est haut, mieux c'est (ex: détente, force)
+        if (value >= levels[3]) return 4; // Élite
+        if (value >= levels[2]) return 3; // Bon
+        if (value >= levels[1]) return 2; // Moyen
+        return 1; // Faible
+    } else {
+        // Moins c'est haut, mieux c'est (ex: navette, temps)
+        if (value <= levels[3]) return 4; // Élite
+        if (value <= levels[2]) return 3; // Bon
+        if (value <= levels[1]) return 2; // Moyen
+        return 1; // Faible
+    }
+}
+
+function getLevelInfo(level) {
+    const levels = {
+        1: { label: 'Faible', icon: '🔴', color: '#e74c3c' },
+        2: { label: 'Moyen', icon: '🟡', color: '#f39c12' },
+        3: { label: 'Bon', icon: '🟢', color: '#27ae60' },
+        4: { label: 'Élite', icon: '🏆', color: '#8e44ad' }
+    };
+    return levels[level] || levels[1];
+}
+
+function displayCategoryBaremes() {
+    // Récupérer les infos du profil
+    const gender = document.getElementById('playerGender')?.value || 'M';
+    const age = parseInt(document.getElementById('playerAge')?.value) || 25;
+    
+    // Déterminer la tranche d'âge
+    let ageGroup;
+    if (age < 12) ageGroup = '<12';
+    else if (age < 14) ageGroup = '12-14';
+    else if (age < 16) ageGroup = '14-16';
+    else if (age < 25) ageGroup = '17-25';
+    else if (age < 40) ageGroup = '25-40';
+    else if (age < 50) ageGroup = '40-50';
+    else ageGroup = '50+';
+    
+    // Catégories de tests
+    const categories = {
+        'force': ['squat', 'deadlift', 'benchpress', 'pullup'],
+        'vitesse': ['shuttle', 'driverspeed'],
+        'endurance': ['vma', 'maxpushups', 'maxsquats'],
+        'explosivite': ['vertjump', 'horizjump', 'medball'],
+        'core': ['rkcplank', 'mcgillflexor', 'mcgillextensor'],
+        'mobilite': ['sitreach']
+    };
+    
+    // Insérer les tableaux de barèmes
+    Object.keys(categories).forEach(categoryKey => {
+        const tests = categories[categoryKey];
+        const container = createBaremeTable(tests, gender, ageGroup);
+        
+        // Insérer dans la page
+        insertBaremeIntoCategory(categoryKey, container);
+    });
+}
+
+function createBaremeTable(tests, gender, ageGroup) {
+    const genderLabel = gender === 'M' ? 'Homme' : 'Femme';
+    
+    let html = `
+        <div class="baremes-info" style="
+            background: #f7fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #1a4d2e;
+        ">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <h4 style="margin: 0; color: #1a4d2e; font-size: 1rem;">
+                    📊 Barèmes de référence
+                </h4>
+                <span style="font-size: 0.9rem; color: #666;">
+                    ${genderLabel}, ${ageGroup} ans
+                </span>
+            </div>
+            <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #ddd;">
+                        <th style="text-align: left; padding: 0.5rem;">Test</th>
+                        <th style="padding: 0.5rem; text-align: center;">🔴 Faible</th>
+                        <th style="padding: 0.5rem; text-align: center;">🟡 Moyen</th>
+                        <th style="padding: 0.5rem; text-align: center;">🟢 Bon</th>
+                        <th style="padding: 0.5rem; text-align: center;">🏆 Élite</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    tests.forEach(testKey => {
+        const bareme = BAREMES[testKey];
+        if (!bareme || !bareme.levels || !bareme.levels[gender] || !bareme.levels[gender][ageGroup]) {
+            return;
+        }
+        
+        const levels = bareme.levels[gender][ageGroup];
+        const testName = TEST_NAMES[testKey] || testKey;
+        const unit = bareme.unit || '';
+        
+        html += `
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 0.5rem; font-weight: 500;">${testName}</td>
+                <td style="padding: 0.5rem; text-align: center; background: #ffe6e6;">< ${levels[0]}${unit}</td>
+                <td style="padding: 0.5rem; text-align: center; background: #fff9e6;">${levels[0]}-${levels[1]}${unit}</td>
+                <td style="padding: 0.5rem; text-align: center; background: #e6ffe6;">${levels[1]}-${levels[2]}${unit}</td>
+                <td style="padding: 0.5rem; text-align: center; background: #f3e6ff;">≥ ${levels[2]}${unit}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    return html;
+}
+
+function insertBaremeIntoCategory(categoryKey, htmlContent) {
+    // Trouver la catégorie correspondante
+    const categoryMap = {
+        'force': 'FORCE',
+        'vitesse': 'VITESSE',
+        'endurance': 'ENDURANCE',
+        'explosivite': 'EXPLOSIVITÉ',
+        'core': 'CORE',
+        'mobilite': 'MOBILITÉ'
+    };
+    
+    const categoryName = categoryMap[categoryKey];
+    if (!categoryName) return;
+    
+    // Trouver le header de la catégorie
+    const headers = document.querySelectorAll('.category-header');
+    headers.forEach(header => {
+        if (header.textContent.includes(categoryName)) {
+            const content = header.nextElementSibling;
+            if (content) {
+                // Vérifier s'il n'y a pas déjà un barème
+                const existing = content.querySelector('.baremes-info');
+                if (existing) {
+                    existing.remove();
+                }
+                
+                // Insérer au début du contenu
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlContent;
+                content.insertBefore(tempDiv.firstChild, content.firstChild);
+            }
+        }
+    });
 }
 
 // ==================== SMOOTH SCROLL ====================

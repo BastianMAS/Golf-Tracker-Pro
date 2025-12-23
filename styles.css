@@ -1380,3 +1380,33 @@ img {
         align-items: stretch;
     }
 }
+
+/* ==================== INDICATEURS DE PERFORMANCE ==================== */
+.performance-indicator {
+    margin-top: 0.3rem;
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: all 0.3s ease;
+}
+
+.level-badge:hover {
+    transform: scale(1.05);
+}
+
+/* Responsive pour les indicateurs */
+@media (max-width: 768px) {
+    .level-badge {
+        font-size: 0.75rem !important;
+        padding: 0.2rem 0.6rem !important;
+    }
+}
