@@ -488,27 +488,44 @@ Important : Mobilité cruciale pour le swing de golf.`,
     },
     
     shoulder: {
-        title: "Test Épaules - Apley Scratch",
-        material: "Aucun",
-        protocol: `PRINCIPE :
-Tenter de toucher ses mains dans le dos.
-Une main vient PAR LE HAUT, l'autre PAR LE BAS.
+        title: "Test Épaules - Apley Scratch Test",
+        material: "Mètre ruban ou règle",
+        protocol: `PRINCIPE (selon littérature) :
+Évaluer la mobilité de l'épaule en rotation interne et externe.
+Une main vient PAR LE HAUT (abduction + rotation externe),
+l'autre PAR LE BAS (adduction + rotation interne).
 
-NOTATION (0 à 5) :
-0 = Les mains ne se touchent pas du tout (écart >10cm)
-1 = Écart de 5-10cm
-2 = Écart de 2-5cm
-3 = Les doigts se touchent
-4 = Les mains se chevauchent légèrement
-5 = Les mains se superposent complètement
+PROTOCOLE :
+1. Position debout, dos droit contre un mur
+2. Demander au patient de joindre ses mains dans le dos
+3. Main dominante en HAUT derrière la nuque
+4. Main non-dominante en BAS depuis la taille
+5. Mesurer la DISTANCE entre les doigts du milieu (majeurs)
+
+MESURE (en centimètres) :
+- DISTANCE POSITIVE (+) = Les mains NE SE TOUCHENT PAS
+  • Exemple : +15 cm = 15 cm d'écart entre les doigts
+- DISTANCE ZÉRO (0) = Les doigts se touchent exactement
+- DISTANCE NÉGATIVE (-) = Les mains SE CHEVAUCHENT
+  • Exemple : -5 cm = 5 cm de chevauchement
 
 ÉPAULE TESTÉE :
-= Celle qui a le bras VERS LE HAUT
+L'épaule testée est celle du bras qui vient PAR LE HAUT.
 
-Tester GAUCHE et DROITE :
-- Gauche : bras gauche en haut
-- Droite : bras droit en haut`,
-        tips: "Bien se tenir droit. Ne pas pencher le tronc pour tricher."
+Tester LES DEUX CÔTÉS :
+- Test 1 : Bras DROIT en haut → épaule droite
+- Test 2 : Bras GAUCHE en haut → épaule gauche
+
+VALEURS DE RÉFÉRENCE (littérature) :
+• Excellente mobilité : -5 à -10 cm (chevauchement)
+• Bonne mobilité : 0 cm (doigts se touchent)
+• Mobilité modérée : +5 à +10 cm
+• Mobilité limitée : > +15 cm
+
+IMPORTANT :
+Comparer gauche vs droite pour détecter les asymétries.
+Un écart >5cm entre les deux côtés est significatif.`,
+        tips: "Bien se tenir droit contre le mur. Ne pas pencher le tronc ou cambrer le dos. Respirer normalement, ne pas forcer en apnée."
     },
     
     // ÉQUILIBRE
