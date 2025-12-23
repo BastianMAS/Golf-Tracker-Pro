@@ -855,3 +855,52 @@ const TEST_NAMES = {
     balanceopen: "Équilibre Yeux Ouverts",
     balanceclosed: "Équilibre Yeux Fermés"
 };
+
+// ==================== BARÈMES ADDITIONNELS POUR ADULTES ====================
+// Ajouter les tranches d'âge 17-25, 25-40, 40-50, 50+ à tous les tests
+
+// Fonction pour mettre à jour tous les barèmes avec les nouvelles tranches
+(function updateBaremes() {
+    Object.keys(BAREMES).forEach(testKey => {
+        const test = BAREMES[testKey];
+        ['M', 'F'].forEach(gender => {
+            if (test.levels[gender]) {
+                const base17 = test.levels[gender]['17+'];
+                
+                // 17-25 ans : identique à 17+
+                test.levels[gender]['17-25'] = [...base17];
+                
+                // 25-40 ans : légère baisse (5%)
+                test.levels[gender]['25-40'] = base17.map(v => {
+                    if (test.higherIsBetter === false) {
+                        // Pour les tests où moins est mieux (ex: navette)
+                        return parseFloat((v * 1.05).toFixed(2));
+                    } else {
+                        return parseFloat((v * 0.95).toFixed(2));
+                    }
+                });
+                
+                // 40-50 ans : baisse modérée (15%)
+                test.levels[gender]['40-50'] = base17.map(v => {
+                    if (test.higherIsBetter === false) {
+                        return parseFloat((v * 1.15).toFixed(2));
+                    } else {
+                        return parseFloat((v * 0.85).toFixed(2));
+                    }
+                });
+                
+                // 50+ ans : baisse importante (25%)
+                test.levels[gender]['50+'] = base17.map(v => {
+                    if (test.higherIsBetter === false) {
+                        return parseFloat((v * 1.25).toFixed(2));
+                    } else {
+                        return parseFloat((v * 0.75).toFixed(2));
+                    }
+                });
+            }
+        });
+    });
+    
+    console.log('✅ Barèmes mis à jour avec les tranches d\'âge adultes');
+})();
+

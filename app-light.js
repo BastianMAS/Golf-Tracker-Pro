@@ -983,3 +983,291 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         }
     });
 });
+
+// ==================== NOUVELLES FONCTIONNALITÉS PROFIL ====================
+
+// Gestion de la photo de profil
+document.getElementById('profilePhoto')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const preview = document.getElementById('profilePhotoPreview');
+            preview.src = event.target.result;
+            preview.style.display = 'block';
+            document.getElementById('removePhoto').style.display = 'inline-block';
+            
+            // Sauvegarder la photo en base64
+            if (currentPlayer) {
+                currentPlayer.photo = event.target.result;
+                localStorage.setItem('currentPlayer', JSON.stringify(currentPlayer));
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('removePhoto')?.addEventListener('click', function() {
+    document.getElementById('profilePhotoPreview').style.display = 'none';
+    document.getElementById('profilePhoto').value = '';
+    this.style.display = 'none';
+    if (currentPlayer) {
+        delete currentPlayer.photo;
+        localStorage.setItem('currentPlayer', JSON.stringify(currentPlayer));
+    }
+});
+
+// Gestion de la couleur de personnalisation
+document.getElementById('profileColor')?.addEventListener('change', function() {
+    const color = this.value;
+    document.documentElement.style.setProperty('--primary-color', color);
+    document.getElementById('colorPreview').textContent = color;
+    
+    if (currentPlayer) {
+        currentPlayer.color = color;
+        localStorage.setItem('currentPlayer', JSON.stringify(currentPlayer));
+    }
+});
+
+// Gestion du niveau de jeu
+document.getElementById('playerLevel')?.addEventListener('change', function() {
+    const handicapGroup = document.getElementById('handicapGroup');
+    const circuitGroup = document.getElementById('circuitGroup');
+    
+    if (this.value === 'playing-pro') {
+        handicapGroup.style.display = 'none';
+        circuitGroup.style.display = 'block';
+    } else {
+        handicapGroup.style.display = 'block';
+        circuitGroup.style.display = 'none';
+    }
+});
+
+// Calcul de l'équation de Mirwald
+function calculateMirwald() {
+    const gender = document.getElementById('playerGender').value;
+    const age = document.getElementById('playerAge').value;
+    const height = parseFloat(document.getElementById('playerHeight').value);
+    const sittingHeight = parseFloat(document.getElementById('playerSittingHeight').value);
+    const weight = parseFloat(document.getElementById('playerWeight').value);
+    
+    // Seulement pour les jeunes < 17 ans
+    if (!age || age === '17-25' || age === '25-40' || age === '40-50' || age === '50+') {
+        document.getElementById('mirwaldResult').style.display = 'none';
+        return null;
+    }
+    
+    if (!height || !sittingHeight || !weight) {
+        document.getElementById('mirwaldResult').style.display = 'none';
+        return null;
+    }
+    
+    // Calcul de l'âge depuis le pic de croissance (Mirwald et al., 2002)
+    const legLength = height - sittingHeight;
+    const sittingHeightRatio = (sittingHeight / height) * 100;
+    
+    let maturityOffset;
+    
+    if (gender === 'M') {
+        // Garçons
+        maturityOffset = -9.236 + 
+                        (0.0002708 * legLength * sittingHeight) + 
+                        (-0.001663 * age * legLength) + 
+                        (0.007216 * age * sittingHeight) + 
+                        (0.02292 * weight / height * 100);
+    } else {
+        // Filles
+        maturityOffset = -9.376 + 
+                        (0.0001882 * legLength * sittingHeight) + 
+                        (0.0022 * age * legLength) + 
+                        (0.005841 * age * sittingHeight) + 
+                        (-0.002658 * age * weight) + 
+                        (0.07693 * weight / height * 100);
+    }
+    
+    // Afficher le résultat
+    const resultDiv = document.getElementById('mirwaldResult');
+    const displayDiv = resultDiv.querySelector('.mirwald-display');
+    
+    resultDiv.style.display = 'block';
+    
+    if (maturityOffset < -1) {
+        displayDiv.innerHTML = `⏳ Pré-pubertaire<br><small>${Math.abs(maturityOffset).toFixed(1)} ans avant le pic de croissance</small>`;
+        displayDiv.style.background = '#e3f2fd';
+    } else if (maturityOffset >= -1 && maturityOffset <= 1) {
+        displayDiv.innerHTML = `📈 En plein pic de croissance<br><small>Phase critique de développement</small>`;
+        displayDiv.style.background = '#fff3e0';
+    } else {
+        displayDiv.innerHTML = `✅ Post-pubertaire<br><small>${maturityOffset.toFixed(1)} ans après le pic de croissance</small>`;
+        displayDiv.style.background = '#e8f5e9';
+    }
+    
+    return maturityOffset;
+}
+
+// Écouter les changements pour calculer Mirwald
+['playerGender', 'playerAge', 'playerHeight', 'playerSittingHeight', 'playerWeight'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', calculateMirwald);
+    document.getElementById(id)?.addEventListener('change', calculateMirwald);
+});
+
+// Bouton d'aide Mirwald
+document.getElementById('mirwaldHelp')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    showMirwaldInfo();
+});
+
+function showMirwaldInfo() {
+    const modal = document.getElementById('helpModal');
+    const title = document.getElementById('modalTitle');
+    const body = document.getElementById('modalBody');
+    
+    title.textContent = "Équation de Mirwald - Maturité Biologique";
+    body.innerHTML = `
+        <h4>Qu'est-ce que l'équation de Mirwald ?</h4>
+        <p>L'équation de Mirwald (2002) permet d'estimer l'âge de maturité d'un jeune athlète en calculant 
+        son écart par rapport au pic de vitesse de croissance (PHV - Peak Height Velocity).</p>
+        
+        <h4>Pourquoi c'est important ?</h4>
+        <ul>
+            <li><strong>Individualisation :</strong> Deux joueurs de 14 ans peuvent avoir des niveaux de maturité très différents</li>
+            <li><strong>Prévention des blessures :</strong> Les phases de croissance rapide augmentent les risques</li>
+            <li><strong>Programmation adaptée :</strong> L'entraînement doit s'adapter au stade de développement</li>
+            <li><strong>Détection de talents :</strong> Éviter de confondre maturité précoce et talent réel</li>
+        </ul>
+        
+        <h4>Comment mesurer ?</h4>
+        <ol>
+            <li><strong>Taille debout :</strong> Se tenir droit contre un mur, pieds joints</li>
+            <li><strong>Taille assise :</strong> Assis sur un banc dur, dos contre le mur, mesurer du sommet de la tête au banc</li>
+            <li>L'équation calcule automatiquement l'écart au pic de croissance</li>
+        </ol>
+        
+        <h4>Interprétation</h4>
+        <ul>
+            <li><strong>&lt; -1 an :</strong> Pré-pubertaire (avant le pic)</li>
+            <li><strong>-1 à +1 an :</strong> En plein pic de croissance (phase critique)</li>
+            <li><strong>&gt; +1 an :</strong> Post-pubertaire (après le pic)</li>
+        </ul>
+        
+        <p style="margin-top: 1rem;"><strong>📚 Référence :</strong> Mirwald et al. (2002). 
+        "An assessment of maturity from anthropometric measurements." 
+        Medicine & Science in Sports & Exercise.</p>
+    `;
+    
+    modal.style.display = 'block';
+}
+
+// Effacer le profil
+document.getElementById('clearProfile')?.addEventListener('click', function() {
+    if (confirm('Êtes-vous sûr de vouloir effacer toutes les informations du profil ?')) {
+        document.getElementById('playerName').value = '';
+        document.getElementById('playerGender').value = 'M';
+        document.getElementById('playerAge').value = '<12';
+        document.getElementById('playerWeight').value = '';
+        document.getElementById('playerHeight').value = '';
+        document.getElementById('playerSittingHeight').value = '';
+        document.getElementById('playerLevel').value = 'amateur';
+        document.getElementById('playerHandicap').value = '';
+        document.getElementById('profilePhoto').value = '';
+        document.getElementById('profilePhotoPreview').style.display = 'none';
+        document.getElementById('removePhoto').style.display = 'none';
+        document.getElementById('profileColor').value = '#1a4d2e';
+        document.getElementById('mirwaldResult').style.display = 'none';
+    }
+});
+
+// Mettre à jour la fonction saveProfile
+const originalSaveProfile = window.saveProfile;
+window.saveProfile = function() {
+    const name = document.getElementById('playerName').value;
+    const gender = document.getElementById('playerGender').value;
+    const age = document.getElementById('playerAge').value;
+    const weight = parseFloat(document.getElementById('playerWeight').value);
+    const height = parseFloat(document.getElementById('playerHeight').value);
+    const sittingHeight = parseFloat(document.getElementById('playerSittingHeight').value) || null;
+    const level = document.getElementById('playerLevel').value;
+    const handicap = document.getElementById('playerHandicap').value || null;
+    const circuit = document.getElementById('playerCircuit').value || null;
+    const color = document.getElementById('profileColor').value;
+    const photoPreview = document.getElementById('profilePhotoPreview');
+    const photo = photoPreview.style.display !== 'none' ? photoPreview.src : null;
+    
+    if (!name || !weight || weight <= 0 || !height || height <= 0) {
+        alert('Veuillez remplir tous les champs obligatoires (*) avec des valeurs valides.');
+        return;
+    }
+    
+    currentPlayer = { 
+        name, 
+        gender, 
+        age, 
+        weight, 
+        height,
+        sittingHeight,
+        level,
+        handicap,
+        circuit,
+        color,
+        photo
+    };
+    
+    // Calculer Mirwald si applicable
+    if (sittingHeight) {
+        currentPlayer.mirwald = calculateMirwald();
+    }
+    
+    localStorage.setItem('currentPlayer', JSON.stringify(currentPlayer));
+    
+    // Appliquer la couleur
+    document.documentElement.style.setProperty('--primary-color', color);
+    
+    alert(`Profil de ${name} enregistré !`);
+    updatePlayerDisplay();
+};
+
+// Mettre à jour la fonction loadPlayerData
+const originalLoadPlayerData = window.loadPlayerData;
+window.loadPlayerData = function() {
+    const saved = localStorage.getItem('currentPlayer');
+    if (saved) {
+        currentPlayer = JSON.parse(saved);
+        document.getElementById('playerName').value = currentPlayer.name;
+        document.getElementById('playerGender').value = currentPlayer.gender;
+        document.getElementById('playerAge').value = currentPlayer.age || '17+';
+        document.getElementById('playerWeight').value = currentPlayer.weight;
+        document.getElementById('playerHeight').value = currentPlayer.height || '';
+        document.getElementById('playerSittingHeight').value = currentPlayer.sittingHeight || '';
+        document.getElementById('playerLevel').value = currentPlayer.level || 'amateur';
+        document.getElementById('playerHandicap').value = currentPlayer.handicap || '';
+        document.getElementById('playerCircuit').value = currentPlayer.circuit || '';
+        document.getElementById('profileColor').value = currentPlayer.color || '#1a4d2e';
+        
+        // Appliquer la couleur
+        if (currentPlayer.color) {
+            document.documentElement.style.setProperty('--primary-color', currentPlayer.color);
+            document.getElementById('colorPreview').textContent = currentPlayer.color;
+        }
+        
+        // Charger la photo
+        if (currentPlayer.photo) {
+            const preview = document.getElementById('profilePhotoPreview');
+            preview.src = currentPlayer.photo;
+            preview.style.display = 'block';
+            document.getElementById('removePhoto').style.display = 'inline-block';
+        }
+        
+        // Afficher le bon groupe (handicap ou circuit)
+        if (currentPlayer.level === 'playing-pro') {
+            document.getElementById('handicapGroup').style.display = 'none';
+            document.getElementById('circuitGroup').style.display = 'block';
+        }
+        
+        updatePlayerDisplay();
+        calculateMirwald();
+    }
+};
+
+// Initialiser au chargement
+loadPlayerData();
+

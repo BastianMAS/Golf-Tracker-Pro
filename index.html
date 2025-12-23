@@ -65,8 +65,8 @@
             <div class="expertise-grid">
                 <div class="expertise-card">
                     <div class="expertise-icon">🏌️</div>
-                    <h3>Golf Haut Niveau</h3>
-                    <p>Préparateur physique à l'École de Golf de Mont Griffon et au C.R.E Ligue Paris-IDF, FFGolf interligue U12</p>
+                    <h3>Préparation Physique PRO & Haut Niveau</h3>
+                    <p>Préparation physique joueurs professionnels et haut niveau. Responsable Préparation Physique C.R.E Ligue Paris-IDF, intervenant aux interligues U12 FFGolf et dans les écoles de golf.</p>
                 </div>
                 <div class="expertise-card">
                     <div class="expertise-icon">🎓</div>
@@ -80,8 +80,8 @@
                 </div>
                 <div class="expertise-card">
                     <div class="expertise-icon">📊</div>
-                    <h3>Tests TPI</h3>
-                    <p>Évaluation complète selon les protocoles TPI pour optimiser votre swing et prévenir les blessures</p>
+                    <h3>Screening & Évaluation Avancée</h3>
+                    <p>Screening complet TPI certifié enrichi par 15+ ans d'expérience terrain. Évaluation biomécanique approfondie pour optimiser votre swing et prévenir les blessures grâce à une analyse personnalisée des compensations et limitations physiques.</p>
                 </div>
             </div>
         </div>
@@ -169,33 +169,140 @@
             <div id="profile-tab" class="tab-content active">
                 <div class="profile-form">
                     <h3>Profil Joueur</h3>
+                    
+                    <!-- Photo et Couleur -->
+                    <div class="profile-customization">
+                        <div class="profile-photo-section">
+                            <label>Photo de profil</label>
+                            <div class="photo-upload-area">
+                                <img id="profilePhotoPreview" src="" alt="Photo" style="display:none; max-width: 150px; border-radius: 50%; margin-bottom: 1rem;">
+                                <input type="file" id="profilePhoto" accept="image/*" style="display:none;">
+                                <button type="button" class="btn btn-secondary" onclick="document.getElementById('profilePhoto').click()">
+                                    📷 Choisir une photo
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="removePhoto" style="display:none; margin-left: 0.5rem;">
+                                    ❌ Supprimer
+                                </button>
+                            </div>
+                        </div>
+                        <div class="profile-color-section">
+                            <label for="profileColor">Couleur de personnalisation</label>
+                            <div class="color-picker-wrapper">
+                                <input type="color" id="profileColor" value="#1a4d2e">
+                                <span id="colorPreview" class="color-preview-text">Vert Golf</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations de base -->
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="playerName">Nom du joueur</label>
-                            <input type="text" id="playerName" placeholder="Nom et prénom">
+                            <label for="playerName">Nom du joueur *</label>
+                            <input type="text" id="playerName" placeholder="Nom et prénom" required>
                         </div>
                         <div class="form-group">
-                            <label for="playerGender">Sexe</label>
-                            <select id="playerGender">
+                            <label for="playerGender">Sexe *</label>
+                            <select id="playerGender" required>
                                 <option value="M">Homme</option>
                                 <option value="F">Femme</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="playerAge">Tranche d'âge</label>
-                            <select id="playerAge">
+                            <label for="playerAge">Tranche d'âge *</label>
+                            <select id="playerAge" required>
                                 <option value="<12">&lt;12 ans</option>
                                 <option value="12-14">12-14 ans</option>
                                 <option value="14-16">14-16 ans</option>
-                                <option value="17+">17+ ans</option>
+                                <option value="17-25">17-25 ans</option>
+                                <option value="25-40">25-40 ans</option>
+                                <option value="40-50">40-50 ans</option>
+                                <option value="50+">50+ ans</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="playerWeight">Poids (kg)</label>
-                            <input type="number" id="playerWeight" placeholder="65" step="0.1">
+                            <label for="playerWeight">Poids (kg) *</label>
+                            <input type="number" id="playerWeight" placeholder="65" step="0.1" required>
                         </div>
                     </div>
-                    <button class="btn btn-primary" id="saveProfile">Enregistrer le profil</button>
+
+                    <!-- Mensurations -->
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="playerHeight">Taille debout (cm) *</label>
+                            <input type="number" id="playerHeight" placeholder="175" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="playerSittingHeight">
+                                Taille assise (cm) 
+                                <button type="button" class="help-btn" id="mirwaldHelp">?</button>
+                            </label>
+                            <input type="number" id="playerSittingHeight" placeholder="90" step="0.1">
+                        </div>
+                        <div class="form-group" id="mirwaldResult" style="display:none;">
+                            <label>Âge de Maturité (Mirwald)</label>
+                            <div class="mirwald-display"></div>
+                        </div>
+                    </div>
+
+                    <!-- Niveau de jeu -->
+                    <div class="form-section">
+                        <h4>Niveau de jeu</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="playerLevel">Statut *</label>
+                                <select id="playerLevel" required>
+                                    <option value="amateur">Amateur</option>
+                                    <option value="teaching-pro">Professionnel - Enseignant</option>
+                                    <option value="playing-pro">Professionnel - Joueur</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="handicapGroup">
+                                <label for="playerHandicap">Handicap</label>
+                                <input type="number" id="playerHandicap" placeholder="10.5" step="0.1">
+                            </div>
+                            <div class="form-group" id="circuitGroup" style="display:none;">
+                                <label for="playerCircuit">Circuit</label>
+                                <select id="playerCircuit">
+                                    <optgroup label="Hommes">
+                                        <option value="dp-world">DP World Tour</option>
+                                        <option value="challenge">Challenge Tour</option>
+                                        <option value="alps">Alps Tour</option>
+                                        <option value="pro-golf">Pro Golf Tour</option>
+                                    </optgroup>
+                                    <optgroup label="Femmes">
+                                        <option value="let">LET (Ladies European Tour)</option>
+                                        <option value="let-access">LET Access</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Boutons -->
+                    <div class="profile-actions">
+                        <button class="btn btn-primary" id="saveProfile">💾 Enregistrer le profil</button>
+                        <button class="btn btn-secondary" id="clearProfile">🗑️ Effacer</button>
+                    </div>
+
+                    <!-- Options de sauvegarde -->
+                    <div class="save-options">
+                        <h4>Options de sauvegarde</h4>
+                        <div class="save-info">
+                            <p><strong>💾 Sauvegarde locale (LocalStorage)</strong></p>
+                            <p class="info-text">
+                                Les données sont sauvegardées automatiquement dans votre navigateur. 
+                                <strong>⚠️ Important :</strong> Si vous effacez les données du navigateur ou changez d'appareil, 
+                                vous perdrez vos données. Pensez à exporter régulièrement !
+                            </p>
+                        </div>
+                        <div class="save-info">
+                            <p><strong>☁️ Sauvegarde externe recommandée</strong></p>
+                            <p class="info-text">
+                                Pour sécuriser vos données, exportez-les régulièrement (onglet "Données") 
+                                et sauvegardez le fichier JSON sur votre Google Drive, Dropbox ou autre service cloud.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -657,7 +764,7 @@
                         <div class="contact-icon">📧</div>
                         <div>
                             <h4>Email</h4>
-                            <a href="/cdn-cgi/l/email-protection#4f2d2e3c3b262e21222e3c0f28222e2623612c2022"><span class="__cf_email__" data-cfemail="e3818290978a828d8e8290a3848e828a8fcd808c8e">[email&#160;protected]</span></a>
+                            <a href="mailto:bastianmas@gmail.com">bastianmas@gmail.com</a>
                         </div>
                     </div>
                     <div class="contact-item">

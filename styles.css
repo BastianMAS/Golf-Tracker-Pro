@@ -389,8 +389,113 @@ img {
     background: var(--bg-light);
     padding: 2rem;
     border-radius: 12px;
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
+}
+
+.profile-customization {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+}
+
+.profile-photo-section,
+.profile-color-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.photo-upload-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.color-picker-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.color-picker-wrapper input[type="color"] {
+    width: 60px;
+    height: 40px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.color-preview-text {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.form-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.form-section h4 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.profile-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin: 2rem 0;
+}
+
+.save-options {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.save-options h4 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.save-info {
+    background: var(--bg-light);
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--info-color);
+}
+
+.save-info p {
+    margin: 0.5rem 0;
+}
+
+.info-text {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+.mirwald-display {
+    padding: 0.75rem;
+    background: var(--accent-color);
+    border-radius: 6px;
+    font-weight: 600;
+    color: var(--primary-dark);
+}
+
+#mirwaldResult {
+    grid-column: 1 / -1;
 }
 
 .form-grid {
@@ -1057,6 +1162,10 @@ img {
         grid-template-columns: 1fr;
     }
     
+    .profile-customization {
+        grid-template-columns: 1fr;
+    }
+    
     .bilateral-inputs {
         grid-template-columns: 1fr;
     }
@@ -1087,6 +1196,14 @@ img {
     .modal-content {
         margin: 10% 5%;
         max-width: 90%;
+    }
+    
+    .profile-actions {
+        flex-direction: column;
+    }
+    
+    .data-actions {
+        grid-template-columns: 1fr;
     }
 }
 
