@@ -595,15 +595,16 @@ const PROTOCOLS = {
     },
     shuttle: {
         title: "Navette 5x10m",
-        material: "Plots, chronomètre",
+        material: "Plots, chronomètre ou cellules",
         protocol: `
-            1. Placer 2 lignes à 10m de distance
-            2. Au signal, faire 5 allers-retours le plus vite possible
+            1. Placer deux lignes à 10m de distance
+            2. Au signal, effectuer 5 courses de 10m en aller-retour (soit 2,5 allers-retours)
             3. Toucher la ligne avec la main à chaque virage
-            4. Chronométrer le temps total
-            5. Faire 2 essais et garder le meilleur
+            4. Total : 50 mètres parcourus
+            5. Chronométrer le temps total
+            6. Faire 2 essais et garder le meilleur
         `,
-        tips: "Travaillez vos appuis pour minimiser le temps de freinage/relance."
+        tips: "Travaillez vos appuis pour minimiser le temps de freinage/relance. C'est un test de vitesse-agilité, pas d'endurance."
     },
     driverspeed: {
         title: "Vitesse de Driver",
@@ -676,16 +677,18 @@ const PROTOCOLS = {
         tips: "Propulsez-vous en avant et vers le haut, pas seulement en avant."
     },
     medball: {
-        title: "Lancer de Medecine Ball 3kg",
-        material: "Medecine Ball 3kg, décamètre",
+        title: "Lancer de Medicine Ball (2 ou 3kg)",
+        material: "Medicine Ball 2kg ou 3kg, décamètre",
         protocol: `
-            1. Lancer de face (type touche de foot) ou de profil (rotation golf)
-            2. Position de départ : pieds écartés largeur hanches
-            3. Lancer le plus loin possible avec force maximale
-            4. Mesurer la distance d'impact au sol
-            5. Faire 3 essais, garder le meilleur
+            1. Position ASSISE en tailleur, dos contre un mur
+            2. Tenir le ballon au niveau de la poitrine
+            3. Lancer le ballon le plus loin possible en avant
+            4. Utiliser UNIQUEMENT l'explosivité du haut du corps
+            5. Les fesses doivent rester au sol (pas de poussée des jambes)
+            6. Mesurer la distance d'impact au sol
+            7. Faire 3 essais, garder le meilleur
         `,
-        tips: "Engagez tout le corps dans le mouvement, pas seulement les bras."
+        tips: "Ce test évalue l'explosivité pure du haut du corps. Gardez le dos contre le mur au départ pour éviter toute compensation."
     },
     rkcplank: {
         title: "RKC Plank",
@@ -787,7 +790,7 @@ const PROTOCOLS = {
 // Catégories de tests pour l'affichage
 const TEST_CATEGORIES = {
     force: {
-        name: "Force & Asymétrie",
+        name: "Force",
         icon: "🟢",
         tests: ['squat', 'deadlift', 'benchpress', 'pullup', 'legext', 'press']
     },

@@ -1271,3 +1271,183 @@ window.loadPlayerData = function() {
 // Initialiser au chargement
 loadPlayerData();
 
+
+// ==================== CALCULATEUR 1RM (FORMULE DE BRZYCKI) ====================
+
+/**
+ * Formule de Brzycki pour calculer le 1RM
+ * 1RM = poids × (36 / (37 - répétitions))
+ * Valable pour 1-12 répétitions
+ */
+function calculateBrzycki(weight, reps) {
+    if (!weight || !reps || reps < 1 || reps > 12) return null;
+    if (reps === 1) return weight;
+    
+    const oneRM = weight * (36 / (37 - reps));
+    return Math.round(oneRM * 10) / 10; // Arrondir à 0.1
+}
+
+// Fonction pour mettre à jour le 1RM calculé
+function setupRMCalculator(exerciseName) {
+    const rmInput = document.getElementById(`test-${exerciseName}-1rm`);
+    const weightInput = document.getElementById(`test-${exerciseName}-weight`);
+    const repsInput = document.getElementById(`test-${exerciseName}-reps`);
+    const calculatedDisplay = document.getElementById(`${exerciseName}-calculated`);
+    
+    if (!rmInput || !weightInput || !repsInput || !calculatedDisplay) return;
+    
+    // Quand on entre un 1RM direct, on vide les autres champs
+    rmInput.addEventListener('input', function() {
+        if (this.value) {
+            weightInput.value = '';
+            repsInput.value = '';
+            calculatedDisplay.textContent = this.value + ' kg';
+            calculatedDisplay.style.color = '#fff';
+        } else {
+            calculatedDisplay.textContent = '-';
+        }
+    });
+    
+    // Quand on entre poids + reps, on calcule le 1RM
+    function updateCalculated() {
+        const weight = parseFloat(weightInput.value);
+        const reps = parseInt(repsInput.value);
+        
+        if (weight && reps) {
+            rmInput.value = ''; // Vider le 1RM direct
+            const calculated = calculateBrzycki(weight, reps);
+            if (calculated) {
+                calculatedDisplay.textContent = calculated + ' kg';
+                calculatedDisplay.style.color = '#ffd700';
+            } else {
+                calculatedDisplay.textContent = 'Erreur';
+                calculatedDisplay.style.color = '#ff6b6b';
+            }
+        } else {
+            calculatedDisplay.textContent = '-';
+        }
+    }
+    
+    weightInput.addEventListener('input', updateCalculated);
+    repsInput.addEventListener('input', updateCalculated);
+}
+
+// Initialiser les calculateurs pour tous les exercices
+['squat', 'deadlift', 'benchpress', 'pullup'].forEach(exercise => {
+    setupRMCalculator(exercise);
+});
+
+// ==================== GESTION DE LA DATE DES TESTS ====================
+
+// Initialiser la date à aujourd'hui
+const testDateInput = document.getElementById('testDate');
+if (testDateInput) {
+    testDateInput.valueAsDate = new Date();
+}
+
+// Bouton "Aujourd'hui"
+document.getElementById('setToday')?.addEventListener('click', function() {
+    if (testDateInput) {
+        testDateInput.valueAsDate = new Date();
+    }
+});
+
+// ==================== MODIFICATION DE LA FONCTION SAVE TESTS ====================
+
+// Sauvegarder l'ancienne fonction
+const originalSaveTests = window.saveTests;
+
+// Nouvelle fonction qui inclut la date et gère les 1RM calculés
+window.saveTests = function() {
+    if (!currentPlayer) {
+        alert('Veuillez d\'abord enregistrer un profil joueur.');
+        switchTab('profile');
+        return;
+    }
+    
+    const testDate = document.getElementById('testDate')?.value || new Date().toISOString().split('T')[0];
+    
+    const testData = {
+        date: new Date(testDate).toISOString(),
+        player: currentPlayer,
+        results: {}
+    };
+    
+    // Collecter les tests de force avec 1RM calculé
+    ['squat', 'deadlift', 'benchpress', 'pullup'].forEach(exerciseName => {
+        const rmDirect = parseFloat(document.getElementById(`test-${exerciseName}-1rm`)?.value);
+        const weight = parseFloat(document.getElementById(`test-${exerciseName}-weight`)?.value);
+        const reps = parseInt(document.getElementById(`test-${exerciseName}-reps`)?.value);
+        
+        let finalRM = null;
+        
+        if (rmDirect) {
+            finalRM = rmDirect;
+        } else if (weight && reps) {
+            finalRM = calculateBrzycki(weight, reps);
+        }
+        
+        if (finalRM) {
+            testData.results[exerciseName] = finalRM;
+        }
+    });
+    
+    // Collecter tous les autres tests (code original)
+    Object.keys(BAREMES).forEach(testKey => {
+        // Skip les tests de force déjà traités
+        if (['squat', 'deadlift', 'benchpress', 'pullup'].includes(testKey)) return;
+        
+        const bareme = BAREMES[testKey];
+        
+        if (bareme.bilateral) {
+            const leftValue = parseFloat(document.getElementById(`test-${testKey}-left`)?.value);
+            const rightValue = parseFloat(document.getElementById(`test-${testKey}-right`)?.value);
+            
+            if (!isNaN(leftValue) && !isNaN(rightValue)) {
+                testData.results[testKey] = {
+                    left: leftValue,
+                    right: rightValue
+                };
+            }
+        } else {
+            const value = parseFloat(document.getElementById(`test-${testKey}`)?.value);
+            if (!isNaN(value)) {
+                testData.results[testKey] = value;
+            }
+        }
+    });
+    
+    // Collecter le poids du medball
+    const medballWeight = document.getElementById('test-medball-weight')?.value;
+    if (testData.results.medball) {
+        testData.medballWeight = medballWeight;
+    }
+    
+    // Collecter les tests TPI
+    const tpiTests = {};
+    document.querySelectorAll('[id^="tpi-"]').forEach(select => {
+        if (select.value) {
+            const testName = select.id.replace('tpi-', '');
+            tpiTests[testName] = select.value;
+        }
+    });
+    if (Object.keys(tpiTests).length > 0) {
+        testData.tpi = tpiTests;
+    }
+    
+    // Vérifier qu'au moins un test a été saisi
+    if (Object.keys(testData.results).length === 0 && !testData.tpi) {
+        alert('Veuillez saisir au moins un test.');
+        return;
+    }
+    
+    // Sauvegarder
+    allTests.push(testData);
+    localStorage.setItem('allTests', JSON.stringify(allTests));
+    
+    alert(`Tests du ${new Date(testDate).toLocaleDateString('fr-FR')} enregistrés ! ${Object.keys(testData.results).length} tests physiques + ${Object.keys(testData.tpi || {}).length} tests TPI`);
+    
+    // Mettre à jour le dashboard
+    switchTab('dashboard');
+};
+
