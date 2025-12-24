@@ -1302,8 +1302,10 @@ function loadFromLocalStorage() {
 
 // ==================== INDICATEURS DE PERFORMANCE EN TEMPS RÉEL ====================
 function setupLivePerformanceIndicators() {
-    // Afficher les barèmes généraux pour chaque catégorie
-    displayCategoryBaremes();
+    // Afficher les barèmes généraux pour chaque catégorie (avec délai pour que le DOM soit prêt)
+    setTimeout(() => {
+        displayCategoryBaremes();
+    }, 500);
     
     // Liste de tous les tests avec leurs inputs
     const testInputs = {
@@ -1495,9 +1497,13 @@ function getLevelInfo(level) {
 }
 
 function displayCategoryBaremes() {
+    console.log('🔍 displayCategoryBaremes appelée');
+    
     // Récupérer les infos du profil
     const gender = document.getElementById('playerGender')?.value || 'M';
     const age = parseInt(document.getElementById('playerAge')?.value) || 25;
+    
+    console.log('👤 Profil:', { gender, age });
     
     // Déterminer la tranche d'âge
     let ageGroup;
@@ -1508,6 +1514,8 @@ function displayCategoryBaremes() {
     else if (age < 40) ageGroup = '25-40';
     else if (age < 50) ageGroup = '40-50';
     else ageGroup = '50+';
+    
+    console.log('📅 Tranche d\'âge:', ageGroup);
     
     // Catégories de tests
     const categories = {
@@ -1528,6 +1536,8 @@ function displayCategoryBaremes() {
         // Insérer dans la page
         insertBaremeIntoCategory(categoryKey, container);
     });
+    
+    console.log('✅ Barèmes affichés');
 }
 
 function createBaremeTable(tests, gender, ageGroup) {
@@ -1605,27 +1615,42 @@ function insertBaremeIntoCategory(categoryKey, htmlContent) {
     };
     
     const categoryName = categoryMap[categoryKey];
-    if (!categoryName) return;
+    if (!categoryName) {
+        console.warn(`⚠️ Catégorie inconnue: ${categoryKey}`);
+        return;
+    }
+    
+    console.log(`🔍 Recherche de la catégorie: ${categoryName}`);
     
     // Trouver le header de la catégorie
     const headers = document.querySelectorAll('.category-header');
+    let found = false;
+    
     headers.forEach(header => {
         if (header.textContent.includes(categoryName)) {
+            found = true;
+            console.log(`✅ Catégorie ${categoryName} trouvée`);
             const content = header.nextElementSibling;
             if (content) {
                 // Vérifier s'il n'y a pas déjà un barème
                 const existing = content.querySelector('.baremes-info');
                 if (existing) {
                     existing.remove();
+                    console.log(`🗑️ Ancien barème supprimé pour ${categoryName}`);
                 }
                 
                 // Insérer au début du contenu
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = htmlContent;
                 content.insertBefore(tempDiv.firstChild, content.firstChild);
+                console.log(`📊 Barème inséré pour ${categoryName}`);
             }
         }
     });
+    
+    if (!found) {
+        console.warn(`❌ Catégorie ${categoryName} NON trouvée dans le DOM`);
+    }
 }
 
 // ==================== SMOOTH SCROLL ====================
