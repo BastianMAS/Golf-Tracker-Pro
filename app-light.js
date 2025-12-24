@@ -715,6 +715,16 @@ function setupEventListeners() {
             displayCategoryBaremes();
         }
     });
+    document.getElementById('playerLevel')?.addEventListener('change', () => {
+        if (typeof displayCategoryBaremes === 'function') {
+            displayCategoryBaremes();
+        }
+    });
+    document.getElementById('playerHandicap')?.addEventListener('change', () => {
+        if (typeof displayCategoryBaremes === 'function') {
+            displayCategoryBaremes();
+        }
+    });
 }
 
 // ==================== MENU MOBILE ====================
@@ -1288,6 +1298,38 @@ function generateReport() {
     alert('Fonction rapport en cours de développement');
 }
 
+// ==================== DÉTERMINATION DE LA CATÉGORIE JOUEUR ====================
+function getPlayerCategory() {
+    const age = parseInt(document.getElementById('playerAge')?.value) || 18;
+    const playerLevel = document.getElementById('playerLevel')?.value || 'amateur';
+    const handicap = parseFloat(document.getElementById('playerHandicap')?.value);
+    
+    // JEUNES (jusqu'à 18 ans) : catégorie par ÂGE
+    if (age < 12) return '<12';
+    if (age < 14) return '12-14';
+    if (age < 16) return '14-16';
+    if (age < 18) return '16-18';
+    
+    // ADULTES (18+ ans) : catégorie par NIVEAU DE JEU
+    if (playerLevel === 'pro_joueur') {
+        return 'professionnel';
+    }
+    
+    if (playerLevel === 'pro_enseignant') {
+        return 'amateur_negatif'; // Enseignants = catégorie négatif
+    }
+    
+    // Amateur : selon handicap
+    if (!isNaN(handicap)) {
+        if (handicap < 0) return 'amateur_negatif';  // Handicap négatif
+        if (handicap <= 7) return 'amateur_0to7';     // 0-7
+        return 'amateur_8plus';                        // 8+
+    }
+    
+    // Par défaut : amateur 8+
+    return 'amateur_8plus';
+}
+
 // ==================== LOCAL STORAGE ====================
 function loadFromLocalStorage() {
     const savedTests = localStorage.getItem('allTests');
@@ -1415,29 +1457,19 @@ function updatePerformanceIndicator(inputElement, testKey, config) {
     
     // Récupérer les infos du profil
     const gender = document.getElementById('playerGender')?.value || 'M';
-    const age = parseInt(document.getElementById('playerAge')?.value) || 25;
+    const category = getPlayerCategory(); // Nouvelle fonction
     const weight = parseFloat(document.getElementById('playerWeight')?.value) || 70;
-    
-    // Déterminer la tranche d'âge
-    let ageGroup;
-    if (age < 12) ageGroup = '<12';
-    else if (age < 14) ageGroup = '12-14';
-    else if (age < 16) ageGroup = '14-16';
-    else if (age < 25) ageGroup = '17-25';
-    else if (age < 40) ageGroup = '25-40';
-    else if (age < 50) ageGroup = '40-50';
-    else ageGroup = '50+';
     
     // Utiliser testKey optionnel pour les tests bilatéraux
     const baremeKey = config.testKey || testKey;
     
     // Récupérer le barème
     const bareme = BAREMES[baremeKey];
-    if (!bareme || !bareme.levels || !bareme.levels[gender] || !bareme.levels[gender][ageGroup]) {
+    if (!bareme || !bareme.levels || !bareme.levels[gender] || !bareme.levels[gender][category]) {
         return;
     }
     
-    const levels = bareme.levels[gender][ageGroup];
+    const levels = bareme.levels[gender][category];
     
     // Calculer la valeur à comparer
     let compareValue = value;
@@ -1501,21 +1533,9 @@ function displayCategoryBaremes() {
     
     // Récupérer les infos du profil
     const gender = document.getElementById('playerGender')?.value || 'M';
-    const age = parseInt(document.getElementById('playerAge')?.value) || 25;
+    const category = getPlayerCategory();
     
-    console.log('👤 Profil:', { gender, age });
-    
-    // Déterminer la tranche d'âge
-    let ageGroup;
-    if (age < 12) ageGroup = '<12';
-    else if (age < 14) ageGroup = '12-14';
-    else if (age < 16) ageGroup = '14-16';
-    else if (age < 25) ageGroup = '17-25';
-    else if (age < 40) ageGroup = '25-40';
-    else if (age < 50) ageGroup = '40-50';
-    else ageGroup = '50+';
-    
-    console.log('📅 Tranche d\'âge:', ageGroup);
+    console.log('👤 Profil:', { gender, category });
     
     // Catégories de tests
     const categories = {
@@ -1531,7 +1551,7 @@ function displayCategoryBaremes() {
     // Insérer les tableaux de barèmes
     Object.keys(categories).forEach(categoryKey => {
         const tests = categories[categoryKey];
-        const container = createBaremeTable(tests, gender, ageGroup);
+        const container = createBaremeTable(tests, gender, category);
         
         // Insérer dans la page
         insertBaremeIntoCategory(categoryKey, container);
@@ -1540,8 +1560,22 @@ function displayCategoryBaremes() {
     console.log('✅ Barèmes affichés');
 }
 
-function createBaremeTable(tests, gender, ageGroup) {
+function createBaremeTable(tests, gender, category) {
     const genderLabel = gender === 'M' ? 'Homme' : 'Femme';
+    
+    // Libellés des catégories
+    const categoryLabels = {
+        '<12': '<12 ans',
+        '12-14': '12-14 ans',
+        '14-16': '14-16 ans',
+        '16-18': '16-18 ans',
+        'amateur_8plus': 'Amateur HCP 8+',
+        'amateur_0to7': 'Amateur HCP 0-7',
+        'amateur_negatif': 'Amateur HCP négatif / Enseignant',
+        'professionnel': 'Professionnel'
+    };
+    
+    const categoryLabel = categoryLabels[category] || category;
     
     let html = `
         <div class="baremes-info" style="
@@ -1558,7 +1592,7 @@ function createBaremeTable(tests, gender, ageGroup) {
                     📊 Barèmes de référence
                 </h4>
                 <span style="font-size: 0.9rem; color: #666;">
-                    ${genderLabel}, ${ageGroup} ans
+                    ${genderLabel}, ${categoryLabel}
                 </span>
             </div>
             <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
@@ -1576,11 +1610,11 @@ function createBaremeTable(tests, gender, ageGroup) {
     
     tests.forEach(testKey => {
         const bareme = BAREMES[testKey];
-        if (!bareme || !bareme.levels || !bareme.levels[gender] || !bareme.levels[gender][ageGroup]) {
+        if (!bareme || !bareme.levels || !bareme.levels[gender] || !bareme.levels[gender][category]) {
             return;
         }
         
-        const levels = bareme.levels[gender][ageGroup];
+        const levels = bareme.levels[gender][category];
         const testName = TEST_NAMES[testKey] || testKey;
         const unit = bareme.unit || '';
         
