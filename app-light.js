@@ -1545,6 +1545,8 @@ function createBaremeTable(tests, gender, ageGroup) {
     
     let html = `
         <div class="baremes-info" style="
+            display: block !important;
+            visibility: visible !important;
             background: #f7fafc;
             padding: 1rem;
             border-radius: 8px;
