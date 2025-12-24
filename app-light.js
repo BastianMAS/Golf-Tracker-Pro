@@ -1319,22 +1319,45 @@ function setupLivePerformanceIndicators() {
         
         // Endurance
         'vma': { input: 'test-vma', type: 'direct' },
-        'maxpushups': { input: 'test-maxpushups', type: 'direct' },
-        'maxsquats': { input: 'test-maxsquats', type: 'direct' },
+        'maxpushups': { input: 'test-pushups', type: 'direct' },
+        'maxsquats': { input: 'test-squats60', type: 'direct' },
+        'wallsit-left': { input: 'test-wallsit-left', type: 'direct', testKey: 'wallsit' },
+        'wallsit-right': { input: 'test-wallsit-right', type: 'direct', testKey: 'wallsit' },
         
         // Explosivité
         'vertjump': { input: 'test-vertjump', type: 'direct' },
         'horizjump': { input: 'test-horizjump', type: 'direct' },
         'medball': { input: 'test-medball', type: 'direct' },
+        'cmjunilateral-left': { input: 'test-cmj-left', type: 'direct', testKey: 'cmjunilateral' },
+        'cmjunilateral-right': { input: 'test-cmj-right', type: 'direct', testKey: 'cmjunilateral' },
         
         // Core
         'rkcplank': { input: 'test-rkcplank', type: 'direct' },
+        'sideplank-left': { input: 'test-sideplank-left', type: 'direct', testKey: 'sideplank' },
+        'sideplank-right': { input: 'test-sideplank-right', type: 'direct', testKey: 'sideplank' },
         'mcgillflexor': { input: 'test-mcgillflexor', type: 'direct' },
         'mcgillextensor': { input: 'test-mcgillextensor', type: 'direct' },
         'birddog': { input: 'test-birddog', type: 'direct' },
+        'pallof': { input: 'test-pallof', type: 'direct' },
         
         // Mobilité
-        'sitreach': { input: 'test-sitreach', type: 'direct' }
+        'sitreach': { input: 'test-sitreach', type: 'direct' },
+        'thoracic-left': { input: 'test-thoracic-left', type: 'direct', testKey: 'thoracic' },
+        'thoracic-right': { input: 'test-thoracic-right', type: 'direct', testKey: 'thoracic' },
+        'hipint-left': { input: 'test-hipint-left', type: 'direct', testKey: 'hipint' },
+        'hipint-right': { input: 'test-hipint-right', type: 'direct', testKey: 'hipint' },
+        'hipext-left': { input: 'test-hipext-left', type: 'direct', testKey: 'hipext' },
+        'hipext-right': { input: 'test-hipext-right', type: 'direct', testKey: 'hipext' },
+        'ankle-left': { input: 'test-ankle-left', type: 'direct', testKey: 'ankle' },
+        'ankle-right': { input: 'test-ankle-right', type: 'direct', testKey: 'ankle' },
+        'shoulder-left': { input: 'test-shoulder-left', type: 'direct', testKey: 'shoulder' },
+        'shoulder-right': { input: 'test-shoulder-right', type: 'direct', testKey: 'shoulder' },
+        
+        // Équilibre
+        'balanceopen-left': { input: 'test-balanceopen-left', type: 'direct', testKey: 'balanceopen' },
+        'balanceopen-right': { input: 'test-balanceopen-right', type: 'direct', testKey: 'balanceopen' },
+        'balanceclosed-left': { input: 'test-balanceclosed-left', type: 'direct', testKey: 'balanceclosed' },
+        'balanceclosed-right': { input: 'test-balanceclosed-right', type: 'direct', testKey: 'balanceclosed' }
     };
     
     // Ajouter des listeners sur chaque input
@@ -1403,8 +1426,11 @@ function updatePerformanceIndicator(inputElement, testKey, config) {
     else if (age < 50) ageGroup = '40-50';
     else ageGroup = '50+';
     
+    // Utiliser testKey optionnel pour les tests bilatéraux
+    const baremeKey = config.testKey || testKey;
+    
     // Récupérer le barème
-    const bareme = BAREMES[testKey];
+    const bareme = BAREMES[baremeKey];
     if (!bareme || !bareme.levels || !bareme.levels[gender] || !bareme.levels[gender][ageGroup]) {
         return;
     }
@@ -1487,10 +1513,11 @@ function displayCategoryBaremes() {
     const categories = {
         'force': ['squat', 'deadlift', 'benchpress', 'pullup'],
         'vitesse': ['shuttle', 'driverspeed'],
-        'endurance': ['vma', 'maxpushups', 'maxsquats'],
-        'explosivite': ['vertjump', 'horizjump', 'medball'],
-        'core': ['rkcplank', 'mcgillflexor', 'mcgillextensor'],
-        'mobilite': ['sitreach']
+        'endurance': ['vma', 'maxpushups', 'maxsquats', 'wallsit'],
+        'explosivite': ['vertjump', 'horizjump', 'medball', 'cmjunilateral'],
+        'core': ['rkcplank', 'sideplank', 'mcgillflexor', 'mcgillextensor', 'birddog', 'pallof'],
+        'mobilite': ['sitreach', 'thoracic', 'hipint', 'hipext', 'ankle', 'shoulder'],
+        'equilibre': ['balanceopen', 'balanceclosed']
     };
     
     // Insérer les tableaux de barèmes
@@ -1573,7 +1600,8 @@ function insertBaremeIntoCategory(categoryKey, htmlContent) {
         'endurance': 'ENDURANCE',
         'explosivite': 'EXPLOSIVITÉ',
         'core': 'CORE',
-        'mobilite': 'MOBILITÉ'
+        'mobilite': 'MOBILITÉ',
+        'equilibre': 'ÉQUILIBRE'
     };
     
     const categoryName = categoryMap[categoryKey];
