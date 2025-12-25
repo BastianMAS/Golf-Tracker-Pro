@@ -249,48 +249,22 @@ Faire 3 essais, garder le meilleur.`,
         tips: "Bien fléchir les genoux avant le saut. Projeter les bras vers l'avant."
     },
     
-    medballchest: {
-        title: "MedBall Chest Pass (assis)",
-        material: "Medicine ball 2-3kg, décamètre",
-        protocol: `PROTOCOLE CHEST PASS ASSIS :
+    medball: {
+        title: "MedBall Throw",
+        material: "Medecine ball 2kg ou 3kg, décamètre",
+        protocol: `Protocole : Lancer ASSIS (comme un chest pass)
 
-1. S'asseoir au sol en tailleur, DOS CONTRE MUR
-2. Tenir le medicine ball à 2 mains devant la poitrine
-3. Lancer le plus loin possible devant soi (chest pass)
-4. Le dos doit RESTER contre le mur (pas d'élan du tronc)
-5. Mesurer la distance d'impact au sol
+1. S'asseoir au sol, dos contre un mur, jambes tendues
+2. Tenir le medball à 2 mains devant la poitrine
+3. Lancer le plus loin possible devant soi
+4. Mesurer la distance d'impact au sol
 
-Poids du medicine ball :
+Poids du medball :
 - 2kg pour les jeunes/femmes
 - 3kg pour les hommes adultes
-
-⚠️ Ce test isole le haut du corps (pas de jambes)
 
 Faire 3 essais, garder le meilleur.`,
-        tips: "Explosion maximale des bras et pectoraux. Aucun mouvement du tronc autorisé."
-    },
-    
-    medballrotation: {
-        title: "MedBall Rotation Throw (debout)",
-        material: "Medicine ball 2-3kg, décamètre",
-        protocol: `PROTOCOLE ROTATION THROW :
-
-1. DEBOUT, perpendiculaire à la cible
-2. Pieds largeur d'épaules, genoux légèrement fléchis  
-3. Tenir le medicine ball à 2 mains
-4. Rotation explosive du tronc (comme un swing de golf)
-5. Lancer LATÉRAL le plus loin possible
-6. Mesurer la distance d'impact au sol
-
-Poids du medicine ball :
-- 2kg pour les jeunes/femmes
-- 3kg pour les hommes adultes
-
-⚠️ Ce test évalue la puissance rotationnelle (golf-spécifique)
-
-Tester les 2 CÔTÉS (gauche et droite).
-Faire 3 essais par côté, garder le meilleur.`,
-        tips: "Utiliser tout le corps : jambes, hanches, tronc, bras. Mouvement explosif et coordonné."
+        tips: "Explosion maximale des bras. Le dos doit rester contre le mur (pas d'élan du tronc)."
     },
     
     cmjunilateral: {
@@ -345,49 +319,23 @@ Arrêt quand :
     },
     
     birddog: {
-        title: "Bird Dog - Score Qualitatif (0-3)",
-        material: "Tapis, bâton (optionnel pour validation)",
-        protocol: `PROTOCOLE BIRD DOG TPI :
+        title: "Bird Dog (Qualité 0-3)",
+        material: "Tapis, bâton (optionnel)",
+        protocol: `1. Position à 4 pattes
+2. Lever bras droit ET jambe gauche simultanément
+3. Maintenir 10 secondes
+4. Répéter de l'autre côté
 
-Position de départ :
-1. Position quadrupède (4 pattes au sol)
-2. Mains sous les épaules, genoux sous les hanches
-3. Colonne neutre (ni cambrée, ni arrondie)
+NOTATION (0 à 3) :
+0 = Impossible de lever bras + jambe
+1 = Peut lever mais mouvement du dos/bassin
+2 = Stable mais léger mouvement
+3 = Parfait, aucun mouvement du dos/bassin
 
-Exécution :
-1. Lever BRAS OPPOSÉ + JAMBE OPPOSÉE simultanément
-   (ex: bras droit + jambe gauche)
-2. Extension complète bras et jambe (ligne droite épaule-hanche-cheville)
-3. MAINTENIR 10 SECONDES en position
-4. Répéter de l'autre côté (bras gauche + jambe droite)
-
-⚠️ NOTATION QUALITATIVE (0 à 3) :
-
-0️⃣ = ÉCHEC
-   - Ne peut pas réaliser le mouvement
-   - Perd l'équilibre immédiatement
-
-1️⃣ = INSTABLE  
-   - Peut lever bras + jambe mais perd l'équilibre rapidement
-   - Compensations majeures (rotation bassin, affaissement)
-
-2️⃣ = COMPENSATIONS VISIBLES
-   - Tient 10s mais avec compensations :
-     * Rotation du bassin
-     * Cambrure lombaire
-     * Affaissement des épaules
-     * Tremblement excessif
-
-3️⃣ = PARFAIT ✅
-   - Tient 10s avec contrôle total
-   - Alignement parfait (ligne droite)
-   - Aucune compensation
-   - Bassin stable, pas de rotation
-
-Test de validation (optionnel) :
+Test de référence :
 - Placer un bâton sur les lombaires
-- Il ne doit PAS bouger/tomber pendant les 10s`,
-        tips: "Ce n'est PAS un test de temps mais de QUALITÉ du contrôle moteur. La stabilité du bassin et l'alignement sont primordiaux."
+- Il ne doit PAS tomber pendant l'exercice`,
+        tips: "Pas un test de temps mais de QUALITÉ. La stabilité du bassin est primordiale."
     },
     
     mcgillflexor: {
@@ -426,33 +374,53 @@ Arrêt quand :
         tips: "Serrer les fessiers. Ne pas cambrer. Test essentiel pour les extenseurs du dos."
     },
     
+    pallof: {
+        title: "Pallof Press",
+        material: "Câble ou élastique Décathlon, chronomètre",
+        protocol: `MATÉRIEL :
+- Câble : 25% du poids de corps
+- OU Élastique Décathlon :
+  • Vert = 15kg
+  • Jaune = 25kg
+  • Orange = 30kg
+
+PROTOCOLE :
+1. Se placer latéralement par rapport à la résistance
+2. Distance au point d'attache : 1,5 à 2 mètres
+3. Saisir la poignée/élastique à 2 mains devant la poitrine
+4. Tendre les bras devant soi
+5. Maintenir la position bras tendus sans rotation du tronc
+6. Chronométrer le temps de maintien
+
+Position :
+- Pieds largeur d'épaules
+- Genoux légèrement fléchis
+- Abdos contractés
+- PAS de rotation du bassin/tronc
+
+Arrêt quand :
+- Le corps pivote
+- Les bras fléchissent`,
+        tips: "C'est un test d'anti-rotation. Le core doit résister à la force qui essaie de vous faire tourner."
+    },
     
     // MOBILITÉ
-    standreach: {
-        title: "Stand & Reach (Souplesse chaîne postérieure)",
-        material: "Marche ou step (20-30cm), règle ou mètre",
-        protocol: `PROTOCOLE STAND & REACH :
+    sitreach: {
+        title: "Seat & Reach (Souplesse ischio-jambiers)",
+        material: "Banc de Seat & Reach ou règle",
+        protocol: `1. S'asseoir jambes tendues devant soi
+2. Pieds contre le support (ou mur)
+3. Tendre les bras et se pencher en avant
+4. Pousser avec les mains le plus loin possible
+5. Mesurer la distance atteinte
+   - Au-delà des orteils = positif (+)
+   - Avant les orteils = négatif (-)
 
-1. DEBOUT sur une marche ou un step
-2. Pieds joints, genoux TENDUS
-3. Se pencher en avant, bras tendus
-4. Descendre les mains le PLUS BAS possible le long des jambes
-5. Mesurer la distance SOUS le niveau des orteils
-
-Mesure :
-- Point 0 = niveau des orteils
-- POSITIF (+) = les mains dépassent SOUS les orteils ✅
-- NÉGATIF (-) = les mains n'atteignent PAS les orteils ❌
-
-Exemple : 
-- +10 cm = mains 10 cm sous les orteils (BIEN)
-- -5 cm = mains 5 cm AU-DESSUS des orteils (raide)
-
-Consignes :
-- Garder les genoux TENDUS
-- Pas de rebond, mouvement fluide
+Consigne :
+- Garder les genoux tendus
+- Pas de rebond
 - Maintenir 2 secondes à la position maximale`,
-        tips: "S'échauffer avant. Expirer en descendant. Ce test évalue TOUTE la chaîne postérieure (mollets + ischio + dos)."
+        tips: "S'échauffer avant. Expirer en se penchant."
     },
     
     thoracic: {
@@ -616,15 +584,15 @@ const TEST_NAMES = {
     wallsit: "Chaise Unilatérale (G/D)",
     vertjump: "Détente Verticale",
     horizjump: "Détente Horizontale",
-    medballchest: "MedBall Chest Pass",
-    medballrotation: "MedBall Rotation Throw (G/D)",
+    medball: "MedBall Throw",
     cmjunilateral: "CMJ Unilatéral (G/D)",
     rkcplank: "RKC Plank",
     sideplank: "Side Plank (G/D)",
     birddog: "Bird Dog",
     mcgillflexor: "McGill Flexor",
     mcgillextensor: "McGill Extensor",
-    standreach: "Stand & Reach",
+    pallof: "Pallof Press",
+    sitreach: "Seat & Reach",
     thoracic: "Rotation Thoracique (G/D)",
     hiprotation: "Hip Rotation",
     ankle: "Dorsiflexion (G/D)",
@@ -642,7 +610,6 @@ document.addEventListener('DOMContentLoaded', function() {
     loadPlayerData();
     setupMobileMenu();
     setupRMCalculators();
-    setupLivePerformanceIndicators();
 });
 
 function initializeApp() {
@@ -734,28 +701,6 @@ function setupEventListeners() {
     ['playerGender', 'playerAge', 'playerHeight', 'playerSittingHeight', 'playerWeight'].forEach(id => {
         document.getElementById(id)?.addEventListener('input', calculateMirwald);
         document.getElementById(id)?.addEventListener('change', calculateMirwald);
-    });
-    
-    // Mise à jour des barèmes quand le profil change
-    document.getElementById('playerGender')?.addEventListener('change', () => {
-        if (typeof displayCategoryBaremes === 'function') {
-            displayCategoryBaremes();
-        }
-    });
-    document.getElementById('playerAge')?.addEventListener('change', () => {
-        if (typeof displayCategoryBaremes === 'function') {
-            displayCategoryBaremes();
-        }
-    });
-    document.getElementById('playerLevel')?.addEventListener('change', () => {
-        if (typeof displayCategoryBaremes === 'function') {
-            displayCategoryBaremes();
-        }
-    });
-    document.getElementById('playerHandicap')?.addEventListener('change', () => {
-        if (typeof displayCategoryBaremes === 'function') {
-            displayCategoryBaremes();
-        }
     });
 }
 
@@ -1173,14 +1118,10 @@ function saveTests() {
         }
     });
     
-    // Poids des medballs
-    const medballChestWeight = document.getElementById('test-medballchest-weight')?.value;
-    const medballRotationWeight = document.getElementById('test-medballrotation-weight')?.value;
-    if (testData.results.medballchest) {
-        testData.medballChestWeight = medballChestWeight;
-    }
-    if (testData.results.medballrotation) {
-        testData.medballRotationWeight = medballRotationWeight;
+    // Poids du medball
+    const medballWeight = document.getElementById('test-medball-weight')?.value;
+    if (testData.results.medball) {
+        testData.medballWeight = medballWeight;
     }
     
     // Tests TPI
@@ -1334,38 +1275,6 @@ function generateReport() {
     alert('Fonction rapport en cours de développement');
 }
 
-// ==================== DÉTERMINATION DE LA CATÉGORIE JOUEUR ====================
-function getPlayerCategory() {
-    const age = parseInt(document.getElementById('playerAge')?.value) || 18;
-    const playerLevel = document.getElementById('playerLevel')?.value || 'amateur';
-    const handicap = parseFloat(document.getElementById('playerHandicap')?.value);
-    
-    // JEUNES (jusqu'à 18 ans) : catégorie par ÂGE
-    if (age < 12) return '<12';
-    if (age < 14) return '12-14';
-    if (age < 16) return '14-16';
-    if (age < 18) return '16-18';
-    
-    // ADULTES (18+ ans) : catégorie par NIVEAU DE JEU
-    if (playerLevel === 'pro_joueur') {
-        return 'professionnel';
-    }
-    
-    if (playerLevel === 'pro_enseignant') {
-        return 'amateur_negatif'; // Enseignants = catégorie négatif
-    }
-    
-    // Amateur : selon handicap
-    if (!isNaN(handicap)) {
-        if (handicap < 0) return 'amateur_negatif';  // Handicap négatif
-        if (handicap <= 7) return 'amateur_0to7';     // 0-7
-        return 'amateur_8plus';                        // 8+
-    }
-    
-    // Par défaut : amateur 8+
-    return 'amateur_8plus';
-}
-
 // ==================== LOCAL STORAGE ====================
 function loadFromLocalStorage() {
     const savedTests = localStorage.getItem('allTests');
@@ -1375,354 +1284,6 @@ function loadFromLocalStorage() {
         } catch (e) {
             allTests = [];
         }
-    }
-}
-
-// ==================== INDICATEURS DE PERFORMANCE EN TEMPS RÉEL ====================
-function setupLivePerformanceIndicators() {
-    // Afficher les barèmes généraux pour chaque catégorie (avec délai pour que le DOM soit prêt)
-    setTimeout(() => {
-        displayCategoryBaremes();
-    }, 500);
-    
-    // Liste de tous les tests avec leurs inputs
-    const testInputs = {
-        // Force
-        'squat': { input: 'test-squat-1rm', type: 'ratio', needsWeight: true },
-        'deadlift': { input: 'test-deadlift-1rm', type: 'ratio', needsWeight: true },
-        'benchpress': { input: 'test-benchpress-1rm', type: 'ratio', needsWeight: true },
-        'pullup': { input: 'test-pullup-1rm', type: 'ratio', needsWeight: true },
-        
-        // Vitesse
-        'shuttle': { input: 'test-shuttle', type: 'direct' },
-        'driverspeed': { input: 'test-driverspeed', type: 'direct' },
-        
-        // Endurance
-        'vma': { input: 'test-vma', type: 'direct' },
-        'maxpushups': { input: 'test-pushups', type: 'direct' },
-        'maxsquats': { input: 'test-squats60', type: 'direct' },
-        'wallsit-left': { input: 'test-wallsit-left', type: 'direct', testKey: 'wallsit' },
-        'wallsit-right': { input: 'test-wallsit-right', type: 'direct', testKey: 'wallsit' },
-        
-        // Explosivité
-        'vertjump': { input: 'test-vertjump', type: 'direct' },
-        'horizjump': { input: 'test-horizjump', type: 'direct' },
-        'medballchest': { input: 'test-medballchest', type: 'direct' },
-        'medballrotation-left': { input: 'test-medballrotation-left', type: 'direct', testKey: 'medballrotation' },
-        'medballrotation-right': { input: 'test-medballrotation-right', type: 'direct', testKey: 'medballrotation' },
-        'cmjunilateral-left': { input: 'test-cmj-left', type: 'direct', testKey: 'cmjunilateral' },
-        'cmjunilateral-right': { input: 'test-cmj-right', type: 'direct', testKey: 'cmjunilateral' },
-        
-        // Core
-        'rkcplank': { input: 'test-rkcplank', type: 'direct' },
-        'sideplank-left': { input: 'test-sideplank-left', type: 'direct', testKey: 'sideplank' },
-        'sideplank-right': { input: 'test-sideplank-right', type: 'direct', testKey: 'sideplank' },
-        'mcgillflexor': { input: 'test-mcgillflexor', type: 'direct' },
-        'mcgillextensor': { input: 'test-mcgillextensor', type: 'direct' },
-        'birddog': { input: 'test-birddog', type: 'direct' },
-        
-        // Mobilité
-        'standreach': { input: 'test-standreach', type: 'direct' },
-        'thoracic-left': { input: 'test-thoracic-left', type: 'direct', testKey: 'thoracic' },
-        'thoracic-right': { input: 'test-thoracic-right', type: 'direct', testKey: 'thoracic' },
-        'hipint-left': { input: 'test-hipint-left', type: 'direct', testKey: 'hipint' },
-        'hipint-right': { input: 'test-hipint-right', type: 'direct', testKey: 'hipint' },
-        'hipext-left': { input: 'test-hipext-left', type: 'direct', testKey: 'hipext' },
-        'hipext-right': { input: 'test-hipext-right', type: 'direct', testKey: 'hipext' },
-        'ankle-left': { input: 'test-ankle-left', type: 'direct', testKey: 'ankle' },
-        'ankle-right': { input: 'test-ankle-right', type: 'direct', testKey: 'ankle' },
-        'shoulder-left': { input: 'test-shoulder-left', type: 'direct', testKey: 'shoulder' },
-        'shoulder-right': { input: 'test-shoulder-right', type: 'direct', testKey: 'shoulder' },
-        
-        // Équilibre
-        'balanceopen-left': { input: 'test-balanceopen-left', type: 'direct', testKey: 'balanceopen' },
-        'balanceopen-right': { input: 'test-balanceopen-right', type: 'direct', testKey: 'balanceopen' },
-        'balanceclosed-left': { input: 'test-balanceclosed-left', type: 'direct', testKey: 'balanceclosed' },
-        'balanceclosed-right': { input: 'test-balanceclosed-right', type: 'direct', testKey: 'balanceclosed' }
-    };
-    
-    // Ajouter des listeners sur chaque input
-    Object.keys(testInputs).forEach(testKey => {
-        const config = testInputs[testKey];
-        const input = document.getElementById(config.input);
-        
-        if (input) {
-            // Créer l'indicateur de niveau
-            createPerformanceIndicator(input, testKey, config);
-            
-            // Écouter les changements
-            input.addEventListener('input', () => {
-                updatePerformanceIndicator(input, testKey, config);
-            });
-            
-            // Mise à jour si le profil change
-            document.getElementById('playerGender')?.addEventListener('change', () => {
-                updatePerformanceIndicator(input, testKey, config);
-            });
-            document.getElementById('playerAge')?.addEventListener('change', () => {
-                updatePerformanceIndicator(input, testKey, config);
-            });
-            document.getElementById('playerWeight')?.addEventListener('input', () => {
-                if (config.needsWeight) {
-                    updatePerformanceIndicator(input, testKey, config);
-                }
-            });
-        }
-    });
-}
-
-function createPerformanceIndicator(inputElement, testKey, config) {
-    // Créer l'élément indicateur
-    const indicator = document.createElement('div');
-    indicator.className = 'performance-indicator';
-    indicator.id = `indicator-${config.input}`;
-    indicator.innerHTML = '<span class="level-badge"></span>';
-    
-    // Insérer après l'input
-    inputElement.parentNode.insertBefore(indicator, inputElement.nextSibling);
-}
-
-function updatePerformanceIndicator(inputElement, testKey, config) {
-    const indicator = document.getElementById(`indicator-${config.input}`);
-    if (!indicator) return;
-    
-    const value = parseFloat(inputElement.value);
-    if (!value || value <= 0) {
-        indicator.innerHTML = '';
-        return;
-    }
-    
-    // Récupérer les infos du profil
-    const gender = document.getElementById('playerGender')?.value || 'M';
-    const category = getPlayerCategory(); // Nouvelle fonction
-    const weight = parseFloat(document.getElementById('playerWeight')?.value) || 70;
-    
-    // Utiliser testKey optionnel pour les tests bilatéraux
-    const baremeKey = config.testKey || testKey;
-    
-    // Récupérer le barème
-    const bareme = BAREMES[baremeKey];
-    if (!bareme || !bareme.levels || !bareme.levels[gender] || !bareme.levels[gender][category]) {
-        return;
-    }
-    
-    const levels = bareme.levels[gender][category];
-    
-    // Calculer la valeur à comparer
-    let compareValue = value;
-    if (config.needsWeight && weight > 0) {
-        // Pour les tests de force, calculer le ratio
-        compareValue = value / weight;
-    }
-    
-    // Déterminer le niveau
-    const level = getPerformanceLevel(compareValue, levels, bareme.higherIsBetter);
-    const levelInfo = getLevelInfo(level);
-    
-    // Afficher l'indicateur
-    indicator.innerHTML = `
-        <span class="level-badge level-${level}" style="
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            background: ${levelInfo.color};
-            color: white;
-            margin-top: 0.3rem;
-        ">
-            ${levelInfo.icon} ${levelInfo.label}
-        </span>
-    `;
-}
-
-function getPerformanceLevel(value, levels, higherIsBetter = true) {
-    // levels = [niveau1, niveau2, niveau3, niveau4]
-    // Retourne 1, 2, 3 ou 4
-    
-    if (higherIsBetter) {
-        // Plus c'est haut, mieux c'est (ex: détente, force)
-        if (value >= levels[3]) return 4; // Élite
-        if (value >= levels[2]) return 3; // Bon
-        if (value >= levels[1]) return 2; // Moyen
-        return 1; // Faible
-    } else {
-        // Moins c'est haut, mieux c'est (ex: navette, temps)
-        if (value <= levels[3]) return 4; // Élite
-        if (value <= levels[2]) return 3; // Bon
-        if (value <= levels[1]) return 2; // Moyen
-        return 1; // Faible
-    }
-}
-
-function getLevelInfo(level) {
-    const levels = {
-        1: { label: 'Faible', icon: '🔴', color: '#e74c3c' },
-        2: { label: 'Moyen', icon: '🟡', color: '#f39c12' },
-        3: { label: 'Bon', icon: '🟢', color: '#27ae60' },
-        4: { label: 'Élite', icon: '🏆', color: '#8e44ad' }
-    };
-    return levels[level] || levels[1];
-}
-
-function displayCategoryBaremes() {
-    console.log('🔍 displayCategoryBaremes appelée');
-    
-    // Récupérer les infos du profil
-    const gender = document.getElementById('playerGender')?.value || 'M';
-    const category = getPlayerCategory();
-    
-    console.log('👤 Profil:', { gender, category });
-    
-    // Catégories de tests
-    const categories = {
-        'force': ['squat', 'deadlift', 'benchpress', 'pullup'],
-        'vitesse': ['shuttle', 'driverspeed'],
-        'endurance': ['vma', 'maxpushups', 'maxsquats', 'wallsit'],
-        'explosivite': ['vertjump', 'horizjump', 'medballchest', 'medballrotation', 'cmjunilateral'],
-        'core': ['rkcplank', 'sideplank', 'mcgillflexor', 'mcgillextensor', 'birddog'],
-        'mobilite': ['standreach', 'thoracic', 'hipint', 'hipext', 'ankle', 'shoulder'],
-        'equilibre': ['balanceopen', 'balanceclosed']
-    };
-    
-    // Insérer les tableaux de barèmes
-    Object.keys(categories).forEach(categoryKey => {
-        const tests = categories[categoryKey];
-        const container = createBaremeTable(tests, gender, category);
-        
-        // Insérer dans la page
-        insertBaremeIntoCategory(categoryKey, container);
-    });
-    
-    console.log('✅ Barèmes affichés');
-}
-
-function createBaremeTable(tests, gender, category) {
-    const genderLabel = gender === 'M' ? 'Homme' : 'Femme';
-    
-    // Libellés des catégories
-    const categoryLabels = {
-        '<12': '<12 ans',
-        '12-14': '12-14 ans',
-        '14-16': '14-16 ans',
-        '16-18': '16-18 ans',
-        'amateur_8plus': 'Amateur HCP 8+',
-        'amateur_0to7': 'Amateur HCP 0-7',
-        'amateur_negatif': 'Amateur HCP négatif / Enseignant',
-        'professionnel': 'Professionnel'
-    };
-    
-    const categoryLabel = categoryLabels[category] || category;
-    
-    let html = `
-        <div class="baremes-info" style="
-            display: block !important;
-            visibility: visible !important;
-            background: #f7fafc;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            border-left: 4px solid #1a4d2e;
-        ">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <h4 style="margin: 0; color: #1a4d2e; font-size: 1rem;">
-                    📊 Barèmes de référence
-                </h4>
-                <span style="font-size: 0.9rem; color: #666;">
-                    ${genderLabel}, ${categoryLabel}
-                </span>
-            </div>
-            <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
-                <thead>
-                    <tr style="border-bottom: 2px solid #ddd;">
-                        <th style="text-align: left; padding: 0.5rem;">Test</th>
-                        <th style="padding: 0.5rem; text-align: center;">🔴 Faible</th>
-                        <th style="padding: 0.5rem; text-align: center;">🟡 Moyen</th>
-                        <th style="padding: 0.5rem; text-align: center;">🟢 Bon</th>
-                        <th style="padding: 0.5rem; text-align: center;">🏆 Élite</th>
-                    </tr>
-                </thead>
-                <tbody>
-    `;
-    
-    tests.forEach(testKey => {
-        const bareme = BAREMES[testKey];
-        if (!bareme || !bareme.levels || !bareme.levels[gender] || !bareme.levels[gender][category]) {
-            return;
-        }
-        
-        const levels = bareme.levels[gender][category];
-        const testName = TEST_NAMES[testKey] || testKey;
-        const unit = bareme.unit || '';
-        
-        html += `
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 0.5rem; font-weight: 500;">${testName}</td>
-                <td style="padding: 0.5rem; text-align: center; background: #ffe6e6;">< ${levels[0]}${unit}</td>
-                <td style="padding: 0.5rem; text-align: center; background: #fff9e6;">${levels[0]}-${levels[1]}${unit}</td>
-                <td style="padding: 0.5rem; text-align: center; background: #e6ffe6;">${levels[1]}-${levels[2]}${unit}</td>
-                <td style="padding: 0.5rem; text-align: center; background: #f3e6ff;">≥ ${levels[2]}${unit}</td>
-            </tr>
-        `;
-    });
-    
-    html += `
-                </tbody>
-            </table>
-        </div>
-    `;
-    
-    return html;
-}
-
-function insertBaremeIntoCategory(categoryKey, htmlContent) {
-    // Trouver la catégorie correspondante
-    const categoryMap = {
-        'force': 'FORCE',
-        'vitesse': 'VITESSE',
-        'endurance': 'ENDURANCE',
-        'explosivite': 'EXPLOSIVITÉ',
-        'core': 'CORE',
-        'mobilite': 'MOBILITÉ',
-        'equilibre': 'ÉQUILIBRE'
-    };
-    
-    const categoryName = categoryMap[categoryKey];
-    if (!categoryName) {
-        console.warn(`⚠️ Catégorie inconnue: ${categoryKey}`);
-        return;
-    }
-    
-    console.log(`🔍 Recherche de la catégorie: ${categoryName}`);
-    
-    // Trouver le header de la catégorie
-    const headers = document.querySelectorAll('.category-header');
-    let found = false;
-    
-    headers.forEach(header => {
-        if (header.textContent.includes(categoryName)) {
-            found = true;
-            console.log(`✅ Catégorie ${categoryName} trouvée`);
-            const content = header.nextElementSibling;
-            if (content) {
-                // Vérifier s'il n'y a pas déjà un barème
-                const existing = content.querySelector('.baremes-info');
-                if (existing) {
-                    existing.remove();
-                    console.log(`🗑️ Ancien barème supprimé pour ${categoryName}`);
-                }
-                
-                // Insérer au début du contenu
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = htmlContent;
-                content.insertBefore(tempDiv.firstChild, content.firstChild);
-                console.log(`📊 Barème inséré pour ${categoryName}`);
-            }
-        }
-    });
-    
-    if (!found) {
-        console.warn(`❌ Catégorie ${categoryName} NON trouvée dans le DOM`);
     }
 }
 
