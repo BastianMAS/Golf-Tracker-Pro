@@ -249,22 +249,48 @@ Faire 3 essais, garder le meilleur.`,
         tips: "Bien fléchir les genoux avant le saut. Projeter les bras vers l'avant."
     },
     
-    medball: {
-        title: "MedBall Throw",
-        material: "Medecine ball 2kg ou 3kg, décamètre",
-        protocol: `Protocole : Lancer ASSIS (comme un chest pass)
+    medballchest: {
+        title: "MedBall Chest Pass (assis)",
+        material: "Medicine ball 2-3kg, décamètre",
+        protocol: `PROTOCOLE CHEST PASS ASSIS :
 
-1. S'asseoir au sol, dos contre un mur, jambes tendues
-2. Tenir le medball à 2 mains devant la poitrine
-3. Lancer le plus loin possible devant soi
-4. Mesurer la distance d'impact au sol
+1. S'asseoir au sol en tailleur, DOS CONTRE MUR
+2. Tenir le medicine ball à 2 mains devant la poitrine
+3. Lancer le plus loin possible devant soi (chest pass)
+4. Le dos doit RESTER contre le mur (pas d'élan du tronc)
+5. Mesurer la distance d'impact au sol
 
-Poids du medball :
+Poids du medicine ball :
 - 2kg pour les jeunes/femmes
 - 3kg pour les hommes adultes
 
+⚠️ Ce test isole le haut du corps (pas de jambes)
+
 Faire 3 essais, garder le meilleur.`,
-        tips: "Explosion maximale des bras. Le dos doit rester contre le mur (pas d'élan du tronc)."
+        tips: "Explosion maximale des bras et pectoraux. Aucun mouvement du tronc autorisé."
+    },
+    
+    medballrotation: {
+        title: "MedBall Rotation Throw (debout)",
+        material: "Medicine ball 2-3kg, décamètre",
+        protocol: `PROTOCOLE ROTATION THROW :
+
+1. DEBOUT, perpendiculaire à la cible
+2. Pieds largeur d'épaules, genoux légèrement fléchis  
+3. Tenir le medicine ball à 2 mains
+4. Rotation explosive du tronc (comme un swing de golf)
+5. Lancer LATÉRAL le plus loin possible
+6. Mesurer la distance d'impact au sol
+
+Poids du medicine ball :
+- 2kg pour les jeunes/femmes
+- 3kg pour les hommes adultes
+
+⚠️ Ce test évalue la puissance rotationnelle (golf-spécifique)
+
+Tester les 2 CÔTÉS (gauche et droite).
+Faire 3 essais par côté, garder le meilleur.`,
+        tips: "Utiliser tout le corps : jambes, hanches, tronc, bras. Mouvement explosif et coordonné."
     },
     
     cmjunilateral: {
@@ -319,23 +345,49 @@ Arrêt quand :
     },
     
     birddog: {
-        title: "Bird Dog (Qualité 0-3)",
-        material: "Tapis, bâton (optionnel)",
-        protocol: `1. Position à 4 pattes
-2. Lever bras droit ET jambe gauche simultanément
-3. Maintenir 10 secondes
-4. Répéter de l'autre côté
+        title: "Bird Dog - Score Qualitatif (0-3)",
+        material: "Tapis, bâton (optionnel pour validation)",
+        protocol: `PROTOCOLE BIRD DOG TPI :
 
-NOTATION (0 à 3) :
-0 = Impossible de lever bras + jambe
-1 = Peut lever mais mouvement du dos/bassin
-2 = Stable mais léger mouvement
-3 = Parfait, aucun mouvement du dos/bassin
+Position de départ :
+1. Position quadrupède (4 pattes au sol)
+2. Mains sous les épaules, genoux sous les hanches
+3. Colonne neutre (ni cambrée, ni arrondie)
 
-Test de référence :
+Exécution :
+1. Lever BRAS OPPOSÉ + JAMBE OPPOSÉE simultanément
+   (ex: bras droit + jambe gauche)
+2. Extension complète bras et jambe (ligne droite épaule-hanche-cheville)
+3. MAINTENIR 10 SECONDES en position
+4. Répéter de l'autre côté (bras gauche + jambe droite)
+
+⚠️ NOTATION QUALITATIVE (0 à 3) :
+
+0️⃣ = ÉCHEC
+   - Ne peut pas réaliser le mouvement
+   - Perd l'équilibre immédiatement
+
+1️⃣ = INSTABLE  
+   - Peut lever bras + jambe mais perd l'équilibre rapidement
+   - Compensations majeures (rotation bassin, affaissement)
+
+2️⃣ = COMPENSATIONS VISIBLES
+   - Tient 10s mais avec compensations :
+     * Rotation du bassin
+     * Cambrure lombaire
+     * Affaissement des épaules
+     * Tremblement excessif
+
+3️⃣ = PARFAIT ✅
+   - Tient 10s avec contrôle total
+   - Alignement parfait (ligne droite)
+   - Aucune compensation
+   - Bassin stable, pas de rotation
+
+Test de validation (optionnel) :
 - Placer un bâton sur les lombaires
-- Il ne doit PAS tomber pendant l'exercice`,
-        tips: "Pas un test de temps mais de QUALITÉ. La stabilité du bassin est primordiale."
+- Il ne doit PAS bouger/tomber pendant les 10s`,
+        tips: "Ce n'est PAS un test de temps mais de QUALITÉ du contrôle moteur. La stabilité du bassin et l'alignement sont primordiaux."
     },
     
     mcgillflexor: {
@@ -374,53 +426,33 @@ Arrêt quand :
         tips: "Serrer les fessiers. Ne pas cambrer. Test essentiel pour les extenseurs du dos."
     },
     
-    pallof: {
-        title: "Pallof Press",
-        material: "Câble ou élastique Décathlon, chronomètre",
-        protocol: `MATÉRIEL :
-- Câble : 25% du poids de corps
-- OU Élastique Décathlon :
-  • Vert = 15kg
-  • Jaune = 25kg
-  • Orange = 30kg
-
-PROTOCOLE :
-1. Se placer latéralement par rapport à la résistance
-2. Distance au point d'attache : 1,5 à 2 mètres
-3. Saisir la poignée/élastique à 2 mains devant la poitrine
-4. Tendre les bras devant soi
-5. Maintenir la position bras tendus sans rotation du tronc
-6. Chronométrer le temps de maintien
-
-Position :
-- Pieds largeur d'épaules
-- Genoux légèrement fléchis
-- Abdos contractés
-- PAS de rotation du bassin/tronc
-
-Arrêt quand :
-- Le corps pivote
-- Les bras fléchissent`,
-        tips: "C'est un test d'anti-rotation. Le core doit résister à la force qui essaie de vous faire tourner."
-    },
     
     // MOBILITÉ
-    sitreach: {
-        title: "Seat & Reach (Souplesse ischio-jambiers)",
-        material: "Banc de Seat & Reach ou règle",
-        protocol: `1. S'asseoir jambes tendues devant soi
-2. Pieds contre le support (ou mur)
-3. Tendre les bras et se pencher en avant
-4. Pousser avec les mains le plus loin possible
-5. Mesurer la distance atteinte
-   - Au-delà des orteils = positif (+)
-   - Avant les orteils = négatif (-)
+    standreach: {
+        title: "Stand & Reach (Souplesse chaîne postérieure)",
+        material: "Marche ou step (20-30cm), règle ou mètre",
+        protocol: `PROTOCOLE STAND & REACH :
 
-Consigne :
-- Garder les genoux tendus
-- Pas de rebond
+1. DEBOUT sur une marche ou un step
+2. Pieds joints, genoux TENDUS
+3. Se pencher en avant, bras tendus
+4. Descendre les mains le PLUS BAS possible le long des jambes
+5. Mesurer la distance SOUS le niveau des orteils
+
+Mesure :
+- Point 0 = niveau des orteils
+- POSITIF (+) = les mains dépassent SOUS les orteils ✅
+- NÉGATIF (-) = les mains n'atteignent PAS les orteils ❌
+
+Exemple : 
+- +10 cm = mains 10 cm sous les orteils (BIEN)
+- -5 cm = mains 5 cm AU-DESSUS des orteils (raide)
+
+Consignes :
+- Garder les genoux TENDUS
+- Pas de rebond, mouvement fluide
 - Maintenir 2 secondes à la position maximale`,
-        tips: "S'échauffer avant. Expirer en se penchant."
+        tips: "S'échauffer avant. Expirer en descendant. Ce test évalue TOUTE la chaîne postérieure (mollets + ischio + dos)."
     },
     
     thoracic: {
@@ -584,15 +616,15 @@ const TEST_NAMES = {
     wallsit: "Chaise Unilatérale (G/D)",
     vertjump: "Détente Verticale",
     horizjump: "Détente Horizontale",
-    medball: "MedBall Throw",
+    medballchest: "MedBall Chest Pass",
+    medballrotation: "MedBall Rotation Throw (G/D)",
     cmjunilateral: "CMJ Unilatéral (G/D)",
     rkcplank: "RKC Plank",
     sideplank: "Side Plank (G/D)",
     birddog: "Bird Dog",
     mcgillflexor: "McGill Flexor",
     mcgillextensor: "McGill Extensor",
-    pallof: "Pallof Press",
-    sitreach: "Seat & Reach",
+    standreach: "Stand & Reach",
     thoracic: "Rotation Thoracique (G/D)",
     hiprotation: "Hip Rotation",
     ankle: "Dorsiflexion (G/D)",
@@ -1371,7 +1403,9 @@ function setupLivePerformanceIndicators() {
         // Explosivité
         'vertjump': { input: 'test-vertjump', type: 'direct' },
         'horizjump': { input: 'test-horizjump', type: 'direct' },
-        'medball': { input: 'test-medball', type: 'direct' },
+        'medballchest': { input: 'test-medballchest', type: 'direct' },
+        'medballrotation-left': { input: 'test-medballrotation-left', type: 'direct', testKey: 'medballrotation' },
+        'medballrotation-right': { input: 'test-medballrotation-right', type: 'direct', testKey: 'medballrotation' },
         'cmjunilateral-left': { input: 'test-cmj-left', type: 'direct', testKey: 'cmjunilateral' },
         'cmjunilateral-right': { input: 'test-cmj-right', type: 'direct', testKey: 'cmjunilateral' },
         
@@ -1382,10 +1416,9 @@ function setupLivePerformanceIndicators() {
         'mcgillflexor': { input: 'test-mcgillflexor', type: 'direct' },
         'mcgillextensor': { input: 'test-mcgillextensor', type: 'direct' },
         'birddog': { input: 'test-birddog', type: 'direct' },
-        'pallof': { input: 'test-pallof', type: 'direct' },
         
         // Mobilité
-        'sitreach': { input: 'test-sitreach', type: 'direct' },
+        'standreach': { input: 'test-standreach', type: 'direct' },
         'thoracic-left': { input: 'test-thoracic-left', type: 'direct', testKey: 'thoracic' },
         'thoracic-right': { input: 'test-thoracic-right', type: 'direct', testKey: 'thoracic' },
         'hipint-left': { input: 'test-hipint-left', type: 'direct', testKey: 'hipint' },
@@ -1542,9 +1575,9 @@ function displayCategoryBaremes() {
         'force': ['squat', 'deadlift', 'benchpress', 'pullup'],
         'vitesse': ['shuttle', 'driverspeed'],
         'endurance': ['vma', 'maxpushups', 'maxsquats', 'wallsit'],
-        'explosivite': ['vertjump', 'horizjump', 'medball', 'cmjunilateral'],
-        'core': ['rkcplank', 'sideplank', 'mcgillflexor', 'mcgillextensor', 'birddog', 'pallof'],
-        'mobilite': ['sitreach', 'thoracic', 'hipint', 'hipext', 'ankle', 'shoulder'],
+        'explosivite': ['vertjump', 'horizjump', 'medballchest', 'medballrotation', 'cmjunilateral'],
+        'core': ['rkcplank', 'sideplank', 'mcgillflexor', 'mcgillextensor', 'birddog'],
+        'mobilite': ['standreach', 'thoracic', 'hipint', 'hipext', 'ankle', 'shoulder'],
         'equilibre': ['balanceopen', 'balanceclosed']
     };
     
