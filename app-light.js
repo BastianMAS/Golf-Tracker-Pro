@@ -861,6 +861,13 @@ function saveProfile() {
     
     alert(`Profil de ${name} enregistré !`);
     updatePlayerDisplay();
+    
+    // Afficher les barèmes après enregistrement du profil
+    setTimeout(() => {
+        if (typeof displayBaremes === 'function') {
+            displayBaremes();
+        }
+    }, 200);
 }
 
 function clearProfile() {
@@ -1300,5 +1307,120 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         }
     });
 });
+
+// ==================== AFFICHAGE DES BARÈMES ====================
+function displayBaremes() {
+    if (!currentPlayer) return;
+    
+    const sexe = currentPlayer.sexe;
+    const age = currentPlayer.age;
+    const niveau = currentPlayer.niveau;
+    
+    // Déterminer la catégorie d'âge
+    let ageCategory;
+    if (age < 12) ageCategory = '<12';
+    else if (age >= 12 && age < 14) ageCategory = '12-14';
+    else if (age >= 14 && age < 18) ageCategory = '14-17';
+    else ageCategory = '18+';
+    
+    // Déterminer le niveau pour les 18+
+    let playerLevel = 'pro'; // Par défaut
+    if (ageCategory === '18+' && niveau) {
+        const handicap = parseInt(niveau);
+        if (handicap >= 8) playerLevel = 'amateur_8+';
+        else if (handicap >= 0 && handicap <= 7) playerLevel = 'amateur_0-7';
+        else if (handicap < 0) playerLevel = 'amateur_negatif';
+        // Si pro, on garde 'pro'
+    }
+    
+    // Liste des tests avec leurs IDs
+    const testsToDisplay = [
+        { testKey: 'squat', inputId: 'test-squat-1rm' },
+        { testKey: 'deadlift', inputId: 'test-deadlift-1rm' },
+        { testKey: 'bench', inputId: 'test-bench-1rm' },
+        { testKey: 'pullup', inputId: 'test-pullup-1rm' },
+        { testKey: 'shuttle', inputId: 'test-shuttle' },
+        { testKey: 'driverspeed', inputId: 'test-driverspeed' },
+        { testKey: 'vma', inputId: 'test-vma' },
+        { testKey: 'maxpushups', inputId: 'test-maxpushups' },
+        { testKey: 'maxsquats', inputId: 'test-maxsquats' },
+        { testKey: 'wallsit', inputId: 'test-wallsit-left' },
+        { testKey: 'vertjump', inputId: 'test-vertjump' },
+        { testKey: 'horizjump', inputId: 'test-horizjump' },
+        { testKey: 'medballchest', inputId: 'test-medballchest' },
+        { testKey: 'medballrotation', inputId: 'test-medballrotation-left' },
+        { testKey: 'cmjunilateral', inputId: 'test-cmj-left' },
+        { testKey: 'rkcplank', inputId: 'test-rkcplank' },
+        { testKey: 'sideplank', inputId: 'test-sideplank-left' },
+        { testKey: 'birddog', inputId: 'test-birddog' },
+        { testKey: 'mcgillflexor', inputId: 'test-mcgillflexor' },
+        { testKey: 'mcgillextensor', inputId: 'test-mcgillextensor' },
+        { testKey: 'standreach', inputId: 'test-standreach' },
+        { testKey: 'thoracic', inputId: 'test-thoracic-left' },
+        { testKey: 'hipint', inputId: 'test-hipint-left' },
+        { testKey: 'hipext', inputId: 'test-hipext-left' },
+        { testKey: 'ankle', inputId: 'test-ankle-left' },
+        { testKey: 'shoulder', inputId: 'test-shoulder' },
+        { testKey: 'balanceopen', inputId: 'test-balanceopen-left' },
+        { testKey: 'balanceclosed', inputId: 'test-balanceclosed-left' }
+    ];
+    
+    testsToDisplay.forEach(test => {
+        const inputElement = document.getElementById(test.inputId);
+        if (!inputElement) return;
+        
+        // Supprimer ancien barème s'il existe
+        const parent = inputElement.closest('.test-item, .bilateral-test');
+        if (!parent) return;
+        
+        const oldBareme = parent.querySelector('.bareme-display');
+        if (oldBareme) oldBareme.remove();
+        
+        // Récupérer les barèmes
+        const baremeData = BAREMES[test.testKey];
+        if (!baremeData) return;
+        
+        let baremeValues;
+        try {
+            const sexeData = baremeData.levels[sexe];
+            if (!sexeData) return;
+            
+            if (ageCategory === '18+') {
+                const levelData = sexeData[ageCategory];
+                if (!levelData || !levelData[playerLevel]) return;
+                baremeValues = levelData[playerLevel];
+            } else {
+                baremeValues = sexeData[ageCategory];
+            }
+            
+            if (!baremeValues || baremeValues.length !== 4) return;
+        } catch (e) {
+            return;
+        }
+        
+        // Créer l'affichage du barème
+        const baremeDiv = document.createElement('div');
+        baremeDiv.className = 'bareme-display';
+        baremeDiv.style.cssText = 'font-size: 0.85rem; color: #666; margin-top: 0.3rem; padding: 0.3rem 0.5rem; background: #f8f9fa; border-radius: 4px;';
+        
+        const unit = baremeData.unit;
+        const labels = ['Faible', 'Moyen', 'Bon', 'Élite'];
+        const colors = ['#e74c3c', '#f39c12', '#27ae60', '#3498db'];
+        
+        let baremeHTML = '📊 <strong>Barèmes:</strong> ';
+        baremeValues.forEach((val, idx) => {
+            baremeHTML += `<span style="color: ${colors[idx]}; font-weight: 600;">${labels[idx]} ${val}${unit === 'ratio' ? '' : unit}</span>`;
+            if (idx < 3) baremeHTML += ' | ';
+        });
+        
+        baremeDiv.innerHTML = baremeHTML;
+        parent.appendChild(baremeDiv);
+    });
+}
+
+// Appeler displayBaremes au chargement si profil existe
+if (currentPlayer) {
+    setTimeout(displayBaremes, 500);
+}
 
 console.log('✅ Application chargée et prête');
