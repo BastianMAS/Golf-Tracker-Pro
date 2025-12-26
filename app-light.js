@@ -122,10 +122,10 @@ L'application détectera les déséquilibres G/D`,
         title: "Navette 5x10m",
         material: "2 plots, chronomètre ou cellules photoélectriques",
         protocol: `1. Placer 2 lignes à 10 mètres l'une de l'autre
-2. Le joueur doit faire 5 allers-retours (= 10 passages de ligne)
+2. Le joueur fait 5 courses de 10m (2,5 allers/retours)
 3. TOTAL = 50 mètres parcourus
 4. Il DOIT toucher la ligne avec la main à chaque virage
-5. Chronomètre du départ jusqu'au 5ème retour
+5. Chronomètre du départ jusqu'à la 5ème arrivée
 
 Important : Si le joueur ne touche pas la ligne = test invalide
 
@@ -374,53 +374,33 @@ Arrêt quand :
         tips: "Serrer les fessiers. Ne pas cambrer. Test essentiel pour les extenseurs du dos."
     },
     
-    pallof: {
-        title: "Pallof Press",
-        material: "Câble ou élastique Décathlon, chronomètre",
-        protocol: `MATÉRIEL :
-- Câble : 25% du poids de corps
-- OU Élastique Décathlon :
-  • Vert = 15kg
-  • Jaune = 25kg
-  • Orange = 30kg
-
-PROTOCOLE :
-1. Se placer latéralement par rapport à la résistance
-2. Distance au point d'attache : 1,5 à 2 mètres
-3. Saisir la poignée/élastique à 2 mains devant la poitrine
-4. Tendre les bras devant soi
-5. Maintenir la position bras tendus sans rotation du tronc
-6. Chronométrer le temps de maintien
-
-Position :
-- Pieds largeur d'épaules
-- Genoux légèrement fléchis
-- Abdos contractés
-- PAS de rotation du bassin/tronc
-
-Arrêt quand :
-- Le corps pivote
-- Les bras fléchissent`,
-        tips: "C'est un test d'anti-rotation. Le core doit résister à la force qui essaie de vous faire tourner."
-    },
     
     // MOBILITÉ
-    sitreach: {
-        title: "Seat & Reach (Souplesse ischio-jambiers)",
-        material: "Banc de Seat & Reach ou règle",
-        protocol: `1. S'asseoir jambes tendues devant soi
-2. Pieds contre le support (ou mur)
-3. Tendre les bras et se pencher en avant
-4. Pousser avec les mains le plus loin possible
-5. Mesurer la distance atteinte
-   - Au-delà des orteils = positif (+)
-   - Avant les orteils = négatif (-)
+    standreach: {
+        title: "Stand & Reach (Souplesse chaîne postérieure)",
+        material: "Marche ou step (20-30cm), règle ou mètre",
+        protocol: `PROTOCOLE STAND & REACH :
 
-Consigne :
-- Garder les genoux tendus
-- Pas de rebond
+1. DEBOUT sur une marche ou un step
+2. Pieds joints, genoux TENDUS
+3. Se pencher en avant, bras tendus
+4. Descendre les mains le PLUS BAS possible le long des jambes
+5. Mesurer la distance SOUS le niveau des orteils
+
+Mesure :
+- Point 0 = niveau des orteils
+- POSITIF (+) = les mains dépassent SOUS les orteils ✅
+- NÉGATIF (-) = les mains n'atteignent PAS les orteils ❌
+
+Exemple : 
+- +10 cm = mains 10 cm sous les orteils (BIEN)
+- -5 cm = mains 5 cm AU-DESSUS des orteils (raide)
+
+Consignes :
+- Garder les genoux TENDUS
+- Pas de rebond, mouvement fluide
 - Maintenir 2 secondes à la position maximale`,
-        tips: "S'échauffer avant. Expirer en se penchant."
+        tips: "S'échauffer avant. Expirer en descendant. Ce test évalue TOUTE la chaîne postérieure (mollets + ischio + dos)."
     },
     
     thoracic: {
@@ -591,8 +571,7 @@ const TEST_NAMES = {
     birddog: "Bird Dog",
     mcgillflexor: "McGill Flexor",
     mcgillextensor: "McGill Extensor",
-    pallof: "Pallof Press",
-    sitreach: "Seat & Reach",
+    standreach: "Stand & Reach",
     thoracic: "Rotation Thoracique (G/D)",
     hiprotation: "Hip Rotation",
     ankle: "Dorsiflexion (G/D)",
