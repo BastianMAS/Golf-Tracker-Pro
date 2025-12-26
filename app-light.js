@@ -204,15 +204,14 @@ Fautes : amplitude insuffisante, talons décollés`,
         material: "Mur, chronomètre",
         protocol: `1. Se placer dos au mur
 2. Descendre jusqu'à 90° (cuisses parallèles au sol)
-3. LEVER UNE JAMBE (tendue devant)
+3. LEVER UNE JAMBE
 4. Tenir le plus longtemps possible
 5. Chronomètre jusqu'à :
    - La jambe d'appui tremble trop
    - Le dos décolle du mur
    - L'autre pied touche le sol
 
-Tester GAUCHE et DROITE séparément.
-L'application calculera l'asymétrie.`,
+Tester GAUCHE et DROITE séparément.`,
         tips: "Tester la jambe la plus faible en premier. Récupérer 2-3 minutes entre les jambes."
     },
     
@@ -457,19 +456,17 @@ L'application détectera les asymétries.`,
 2. Jambe testée : hanche et genou fléchis à 90°
 3. L'autre jambe tendue au sol
 
-ROTATION INTERNE :
-- Laisser tomber le pied VERS L'EXTÉRIEUR
-- La cuisse pivote vers l'intérieur
-- Mesurer l'angle
-
 ROTATION EXTERNE :
-- Laisser tomber le pied VERS L'INTÉRIEUR
+- Laisser tomber le pied VERS L'EXTÉRIEUR
 - La cuisse pivote vers l'extérieur
 - Mesurer l'angle
 
-Tester GAUCHE et DROITE pour chaque rotation.
+ROTATION INTERNE :
+- Laisser tomber le pied VERS L'INTÉRIEUR
+- La cuisse pivote vers l'intérieur
+- Mesurer l'angle
 
-Mesure : angle en degrés (goniomètre ou app)`,
+Tester GAUCHE et DROITE pour chaque rotation.`,
         tips: "Bassin bien plaqué au sol. Ne pas tricher en soulevant la hanche."
     },
     
