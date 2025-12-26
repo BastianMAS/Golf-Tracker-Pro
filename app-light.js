@@ -249,22 +249,48 @@ Faire 3 essais, garder le meilleur.`,
         tips: "Bien fléchir les genoux avant le saut. Projeter les bras vers l'avant."
     },
     
-    medball: {
-        title: "MedBall Throw",
-        material: "Medecine ball 2kg ou 3kg, décamètre",
-        protocol: `Protocole : Lancer ASSIS (comme un chest pass)
+    medballchest: {
+        title: "MedBall Chest Pass (assis)",
+        material: "Medicine ball 2-3kg, décamètre",
+        protocol: `PROTOCOLE CHEST PASS ASSIS :
 
-1. S'asseoir au sol, dos contre un mur, jambes tendues
-2. Tenir le medball à 2 mains devant la poitrine
-3. Lancer le plus loin possible devant soi
-4. Mesurer la distance d'impact au sol
+1. S'asseoir au sol en tailleur, DOS CONTRE MUR
+2. Tenir le medicine ball à 2 mains devant la poitrine
+3. Lancer le plus loin possible devant soi (chest pass)
+4. Le dos doit RESTER contre le mur (pas d'élan du tronc)
+5. Mesurer la distance d'impact au sol
 
-Poids du medball :
+Poids du medicine ball :
 - 2kg pour les jeunes/femmes
 - 3kg pour les hommes adultes
 
+⚠️ Ce test isole le haut du corps (pas de jambes)
+
 Faire 3 essais, garder le meilleur.`,
-        tips: "Explosion maximale des bras. Le dos doit rester contre le mur (pas d'élan du tronc)."
+        tips: "Explosion maximale des bras et pectoraux. Aucun mouvement du tronc autorisé."
+    },
+    
+    medballrotation: {
+        title: "MedBall Rotation Throw (debout)",
+        material: "Medicine ball 2-3kg, décamètre",
+        protocol: `PROTOCOLE ROTATION THROW :
+
+1. DEBOUT, perpendiculaire à la cible
+2. Pieds largeur d'épaules, genoux légèrement fléchis  
+3. Tenir le medicine ball à 2 mains
+4. Rotation explosive du tronc (comme un swing de golf)
+5. Lancer LATÉRAL le plus loin possible
+6. Mesurer la distance d'impact au sol
+
+Poids du medicine ball :
+- 2kg pour les jeunes/femmes
+- 3kg pour les hommes adultes
+
+⚠️ Ce test évalue la puissance rotationnelle (golf-spécifique)
+
+Tester les 2 CÔTÉS (gauche et droite).
+Faire 3 essais par côté, garder le meilleur.`,
+        tips: "Utiliser tout le corps : jambes, hanches, tronc, bras. Mouvement explosif et coordonné."
     },
     
     cmjunilateral: {
@@ -564,7 +590,8 @@ const TEST_NAMES = {
     wallsit: "Chaise Unilatérale (G/D)",
     vertjump: "Détente Verticale",
     horizjump: "Détente Horizontale",
-    medball: "MedBall Throw",
+    medballchest: "MedBall Chest Pass",
+    medballrotation: "MedBall Rotation Throw (G/D)",
     cmjunilateral: "CMJ Unilatéral (G/D)",
     rkcplank: "RKC Plank",
     sideplank: "Side Plank (G/D)",
