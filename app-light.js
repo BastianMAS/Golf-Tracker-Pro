@@ -405,7 +405,7 @@ Arrêt quand :
     },
     
     // MOBILITÉ
-    standreach: {
+    sitreach: {
         title: "Seat & Reach (Souplesse ischio-jambiers)",
         material: "Banc de Seat & Reach ou règle",
         protocol: `1. S'asseoir jambes tendues devant soi
@@ -592,7 +592,7 @@ const TEST_NAMES = {
     mcgillflexor: "McGill Flexor",
     mcgillextensor: "McGill Extensor",
     pallof: "Pallof Press",
-    standreach: "Seat & Reach",
+    sitreach: "Seat & Reach",
     thoracic: "Rotation Thoracique (G/D)",
     hiprotation: "Hip Rotation",
     ankle: "Dorsiflexion (G/D)",

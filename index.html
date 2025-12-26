@@ -500,26 +500,13 @@
                                     <input type="number" id="test-horizjump" step="0.1">
                                 </div>
                                 <div class="test-item">
-                                    <label>MedBall Chest Pass - Assis (mètres) <button class="help-btn" data-test="medballchest">?</button></label>
+                                    <label>MedBall Throw (mètres) <button class="help-btn" data-test="medball">?</button></label>
                                     <div class="medball-config">
-                                        <select id="test-medballchest-weight" class="medball-weight-select">
+                                        <select id="test-medball-weight" class="medball-weight-select">
                                             <option value="2">2 kg</option>
                                             <option value="3" selected>3 kg</option>
                                         </select>
-                                        <input type="number" id="test-medballchest" step="0.1" placeholder="Distance">
-                                    </div>
-                                </div>
-                                <div class="bilateral-test">
-                                    <label>MedBall Rotation Throw - Debout (mètres) <button class="help-btn" data-test="medballrotation">?</button></label>
-                                    <div class="medball-config" style="margin-bottom: 0.5rem;">
-                                        <select id="test-medballrotation-weight" class="medball-weight-select">
-                                            <option value="2">2 kg</option>
-                                            <option value="3" selected>3 kg</option>
-                                        </select>
-                                    </div>
-                                    <div class="bilateral-inputs">
-                                        <input type="number" id="test-medballrotation-left" placeholder="Gauche" step="0.1">
-                                        <input type="number" id="test-medballrotation-right" placeholder="Droite" step="0.1">
+                                        <input type="number" id="test-medball" step="0.1" placeholder="Distance">
                                     </div>
                                 </div>
                                 <div class="bilateral-test">
@@ -562,6 +549,19 @@
                                     <label>McGill Extensor (secondes) <button class="help-btn" data-test="mcgillextensor">?</button></label>
                                     <input type="number" id="test-mcgillextensor" step="0.1">
                                 </div>
+                                <div class="test-item">
+                                    <label>Pallof Press (secondes) <button class="help-btn" data-test="pallof">?</button></label>
+                                    <div style="margin: 0.5rem 0;">
+                                        <label style="font-size: 0.9rem;">Type de résistance:</label>
+                                        <select id="pallof-resistance-type" style="margin-left: 0.5rem; padding: 0.3rem;">
+                                            <option value="cable">Câble (25% poids de corps)</option>
+                                            <option value="band-15">Élastique Vert (15kg)</option>
+                                            <option value="band-25">Élastique Jaune (25kg)</option>
+                                            <option value="band-30">Élastique Orange (30kg)</option>
+                                        </select>
+                                    </div>
+                                    <input type="number" id="test-pallof" placeholder="Temps de maintien" step="0.1">
+                                </div>
                             </div>
                         </div>
 
@@ -573,8 +573,8 @@
                             </button>
                             <div class="category-content">
                                 <div class="test-item">
-                                    <label>Stand & Reach (cm) <button class="help-btn" data-test="standreach">?</button></label>
-                                    <input type="number" id="test-standreach" step="0.1" placeholder="+ = dépasse orteils, - = n'atteint pas">
+                                    <label>Seat & Reach (cm) <button class="help-btn" data-test="sitreach">?</button></label>
+                                    <input type="number" id="test-sitreach" step="0.1">
                                 </div>
                                 <div class="bilateral-test">
                                     <label>Rotation Thoracique (degrés) <button class="help-btn" data-test="thoracic">?</button></label>
@@ -963,7 +963,7 @@
                         <div class="contact-icon">📧</div>
                         <div>
                             <h4>Email</h4>
-                            <a href="/cdn-cgi/l/email-protection#0b696a787f626a65666a784b6c666a626725686466"><span class="__cf_email__" data-cfemail="82e0e3f1f6ebe3ecefe3f1c2e5efe3ebeeace1edef">[email&#160;protected]</span></a>
+                            <a href="/cdn-cgi/l/email-protection#a2c0c3d1d6cbc3cccfc3d1e2c5cfc3cbce8cc1cdcf"><span class="__cf_email__" data-cfemail="d5b7b4a6a1bcb4bbb8b4a695b2b8b4bcb9fbb6bab8">[email&#160;protected]</span></a>
                         </div>
                     </div>
                     <div class="contact-item">
@@ -1025,13 +1025,15 @@
                 <img src="TPI_TEST_SCREEN.jpg" alt="Tests TPI" style="width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                 <div style="margin-top: 1rem; padding: 1rem; background: #f7fafc; border-radius: 8px;">
                     <p style="margin: 0; font-size: 0.9rem; color: #666;">
-                        <strong>Note :</strong> Pour les tests unilatéraux (Lower Quarter Lat, Single Leg Balance, Cervical Rotation, Forearm Rotation, Wrist Hinge, Wrist Flexion/Extension), 
+      Rotation, Wrist Hinge, Wrist Flexion/Extension), 
                         assurez-vous de tester les deux côtés (gauche et droite) pour détecter les asymétries.
                     </p>
                 </div>
             </div>
         </div>
-        <!-- Scripts -->
+    </div>
+
+    <!-- Scripts -->
     <script src="baremes.js" defer></script>
     <script src="app-light.js" defer></script>
 </body>
