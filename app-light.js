@@ -1312,9 +1312,29 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 function displayBaremes() {
     if (!currentPlayer) return;
     
-    const sexe = currentPlayer.sexe;
-    const age = currentPlayer.age;
-    const niveau = currentPlayer.niveau;
+    const sexe = currentPlayer.gender || currentPlayer.sexe; // 'M' ou 'F'
+    const ageValue = currentPlayer.age;
+    const niveau = currentPlayer.handicap || currentPlayer.niveau;
+    
+    // Gérer l'âge (peut être un nombre ou une string comme '40-50')
+    let age;
+    if (typeof ageValue === 'string') {
+        // Si c'est une string genre '40-50', prendre le milieu
+        if (ageValue.includes('-')) {
+            const [min, max] = ageValue.split('-').map(n => parseInt(n));
+            age = (min + max) / 2;
+        } else if (ageValue === '<12') {
+            age = 10;
+        } else if (ageValue === '12-14') {
+            age = 13;
+        } else if (ageValue === '14-17') {
+            age = 15.5;
+        } else {
+            age = parseInt(ageValue) || 25;
+        }
+    } else {
+        age = ageValue;
+    }
     
     // Déterminer la catégorie d'âge
     let ageCategory;
@@ -1327,11 +1347,14 @@ function displayBaremes() {
     let playerLevel = 'pro'; // Par défaut
     if (ageCategory === '18+' && niveau) {
         const handicap = parseInt(niveau);
-        if (handicap >= 8) playerLevel = 'amateur_8+';
-        else if (handicap >= 0 && handicap <= 7) playerLevel = 'amateur_0-7';
-        else if (handicap < 0) playerLevel = 'amateur_negatif';
-        // Si pro, on garde 'pro'
+        if (!isNaN(handicap)) {
+            if (handicap >= 8) playerLevel = 'amateur_8+';
+            else if (handicap >= 0 && handicap <= 7) playerLevel = 'amateur_0-7';
+            else if (handicap < 0) playerLevel = 'amateur_negatif';
+        }
     }
+    
+    console.log('📊 Affichage barèmes:', {sexe, age, ageCategory, niveau, playerLevel});
     
     // Liste des tests avec leurs IDs
     const testsToDisplay = [
