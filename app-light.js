@@ -922,6 +922,13 @@ function loadPlayerData() {
         
         updatePlayerDisplay();
         calculateMirwald();
+        
+        // Afficher les barèmes après chargement du profil
+        setTimeout(() => {
+            if (typeof displayBaremes === 'function') {
+                displayBaremes();
+            }
+        }, 300);
     }
 }
 
