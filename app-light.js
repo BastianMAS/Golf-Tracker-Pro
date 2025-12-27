@@ -1445,7 +1445,91 @@ function displayBaremes() {
         
         baremeDiv.innerHTML = baremeHTML;
         parent.appendChild(baremeDiv);
+        
+        // Ajouter un écouteur pour afficher le badge quand l'utilisateur tape une valeur
+        inputElement.addEventListener('input', function() {
+            updateBadge(test.testKey, inputElement, baremeData, baremeValues, sexe, ageCategory, playerLevel);
+        });
+        
+        // Si le champ a déjà une valeur, afficher le badge
+        if (inputElement.value) {
+            updateBadge(test.testKey, inputElement, baremeData, baremeValues, sexe, ageCategory, playerLevel);
+        }
     });
+}
+
+// ==================== AFFICHAGE DES BADGES ====================
+function updateBadge(testKey, inputElement, baremeData, baremeValues, sexe, ageCategory, playerLevel) {
+    if (!currentPlayer) return;
+    
+    const value = parseFloat(inputElement.value);
+    if (isNaN(value) || value <= 0) {
+        // Supprimer le badge si pas de valeur
+        const existingBadge = inputElement.parentElement.querySelector('.performance-badge');
+        if (existingBadge) existingBadge.remove();
+        return;
+    }
+    
+    // Pour les tests de Force, calculer le ratio
+    let finalValue = value;
+    if (baremeData.unit === 'ratio' && currentPlayer.weight) {
+        finalValue = value / currentPlayer.weight;
+    }
+    
+    // Déterminer le niveau
+    const higherIsBetter = baremeData.higherIsBetter;
+    let level = 0;
+    let levelLabel = 'Faible';
+    let levelColor = '#e74c3c';
+    
+    if (higherIsBetter) {
+        if (finalValue >= baremeValues[3]) {
+            level = 3;
+            levelLabel = 'Élite';
+            levelColor = '#3498db';
+        } else if (finalValue >= baremeValues[2]) {
+            level = 2;
+            levelLabel = 'Bon';
+            levelColor = '#27ae60';
+        } else if (finalValue >= baremeValues[1]) {
+            level = 1;
+            levelLabel = 'Moyen';
+            levelColor = '#f39c12';
+        }
+    } else {
+        // Pour les tests où plus bas = mieux (ex: navette)
+        if (finalValue <= baremeValues[3]) {
+            level = 3;
+            levelLabel = 'Élite';
+            levelColor = '#3498db';
+        } else if (finalValue <= baremeValues[2]) {
+            level = 2;
+            levelLabel = 'Bon';
+            levelColor = '#27ae60';
+        } else if (finalValue <= baremeValues[1]) {
+            level = 1;
+            levelLabel = 'Moyen';
+            levelColor = '#f39c12';
+        }
+    }
+    
+    // Créer ou mettre à jour le badge
+    let badge = inputElement.parentElement.querySelector('.performance-badge');
+    if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'performance-badge';
+        badge.style.cssText = 'margin-left: 0.5rem; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700; color: white;';
+        inputElement.parentElement.appendChild(badge);
+    }
+    
+    badge.style.backgroundColor = levelColor;
+    
+    // Afficher le ratio pour les tests de force
+    if (baremeData.unit === 'ratio' && currentPlayer.weight) {
+        badge.textContent = `${levelLabel} (${finalValue.toFixed(2)})`;
+    } else {
+        badge.textContent = levelLabel;
+    }
 }
 
 // Appeler displayBaremes au chargement si profil existe
