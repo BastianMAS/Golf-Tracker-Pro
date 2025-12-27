@@ -700,10 +700,17 @@ function setupEventListeners() {
     // Niveau de jeu
     document.getElementById('playerLevel')?.addEventListener('change', handleLevelChange);
     
-    // Calcul Mirwald
+    // Calcul Mirwald, IMC et Envergure
     ['playerGender', 'playerAge', 'playerHeight', 'playerSittingHeight', 'playerWeight'].forEach(id => {
         document.getElementById(id)?.addEventListener('input', calculateMirwald);
         document.getElementById(id)?.addEventListener('change', calculateMirwald);
+        document.getElementById(id)?.addEventListener('input', calculateIMC);
+        document.getElementById(id)?.addEventListener('change', calculateIMC);
+    });
+    
+    ['playerHeight', 'playerWingspan'].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', calculateWingspan);
+        document.getElementById(id)?.addEventListener('change', calculateWingspan);
     });
 }
 
@@ -835,6 +842,7 @@ function saveProfile() {
     const weight = parseFloat(document.getElementById('playerWeight').value);
     const height = parseFloat(document.getElementById('playerHeight').value);
     const sittingHeight = parseFloat(document.getElementById('playerSittingHeight').value) || null;
+    const wingspan = parseFloat(document.getElementById('playerWingspan').value) || null;
     const level = document.getElementById('playerLevel').value;
     const handicap = document.getElementById('playerHandicap').value || null;
     const circuit = document.getElementById('playerCircuit').value || null;
@@ -848,12 +856,18 @@ function saveProfile() {
     }
     
     currentPlayer = { 
-        name, gender, age, weight, height, sittingHeight,
+        name, gender, age, weight, height, sittingHeight, wingspan,
         level, handicap, circuit, color, photo
     };
     
     if (sittingHeight) {
         currentPlayer.mirwald = calculateMirwald();
+    }
+    
+    currentPlayer.imc = calculateIMC();
+    
+    if (wingspan) {
+        currentPlayer.wingspanData = calculateWingspan();
     }
     
     localStorage.setItem('currentPlayer', JSON.stringify(currentPlayer));
@@ -898,6 +912,9 @@ function loadPlayerData() {
         document.getElementById('playerWeight').value = currentPlayer.weight;
         document.getElementById('playerHeight').value = currentPlayer.height || '';
         document.getElementById('playerSittingHeight').value = currentPlayer.sittingHeight || '';
+        if (document.getElementById('playerWingspan')) {
+            document.getElementById('playerWingspan').value = currentPlayer.wingspan || '';
+        }
         document.getElementById('playerLevel').value = currentPlayer.level || 'amateur';
         document.getElementById('playerHandicap').value = currentPlayer.handicap || '';
         document.getElementById('playerCircuit').value = currentPlayer.circuit || '';
@@ -922,6 +939,8 @@ function loadPlayerData() {
         
         updatePlayerDisplay();
         calculateMirwald();
+        calculateIMC();
+        calculateWingspan();
         
         // Afficher les barèmes après chargement du profil
         setTimeout(() => {
@@ -1000,12 +1019,13 @@ function handleLevelChange() {
 
 function calculateMirwald() {
     const gender = document.getElementById('playerGender').value;
-    const age = document.getElementById('playerAge').value;
+    const ageValue = document.getElementById('playerAge').value;
     const height = parseFloat(document.getElementById('playerHeight').value);
     const sittingHeight = parseFloat(document.getElementById('playerSittingHeight').value);
     const weight = parseFloat(document.getElementById('playerWeight').value);
     
-    if (!age || age === '17-25' || age === '25-40' || age === '40-50' || age === '50+') {
+    // Mirwald n'est valable que pour les <18 ans
+    if (!ageValue || ageValue === '17-25' || ageValue === '25-40' || ageValue === '40-50' || ageValue === '50+') {
         document.getElementById('mirwaldResult').style.display = 'none';
         return null;
     }
@@ -1015,21 +1035,28 @@ function calculateMirwald() {
         return null;
     }
     
+    // Convertir la catégorie d'âge en âge numérique (milieu de la fourchette)
+    let age;
+    if (ageValue === '<12') age = 10;
+    else if (ageValue === '12-14') age = 13;
+    else if (ageValue === '14-17') age = 15.5;
+    else age = parseInt(ageValue) || 14;
+    
     const legLength = height - sittingHeight;
     let maturityOffset;
     
     if (gender === 'M') {
         maturityOffset = -9.236 + 
                         (0.0002708 * legLength * sittingHeight) + 
-                        (-0.001663 * 14 * legLength) + 
-                        (0.007216 * 14 * sittingHeight) + 
+                        (-0.001663 * age * legLength) + 
+                        (0.007216 * age * sittingHeight) + 
                         (0.02292 * weight / height * 100);
     } else {
         maturityOffset = -9.376 + 
                         (0.0001882 * legLength * sittingHeight) + 
-                        (0.0022 * 14 * legLength) + 
-                        (0.005841 * 14 * sittingHeight) + 
-                        (-0.002658 * 14 * weight) + 
+                        (0.0022 * age * legLength) + 
+                        (0.005841 * age * sittingHeight) + 
+                        (-0.002658 * age * weight) + 
                         (0.07693 * weight / height * 100);
     }
     
@@ -1041,15 +1068,119 @@ function calculateMirwald() {
     if (maturityOffset < -1) {
         displayDiv.innerHTML = `⏳ Pré-pubertaire<br><small>${Math.abs(maturityOffset).toFixed(1)} ans avant le pic de croissance</small>`;
         displayDiv.style.background = '#e3f2fd';
+        displayDiv.style.color = '#1565c0';
     } else if (maturityOffset >= -1 && maturityOffset <= 1) {
         displayDiv.innerHTML = `📈 En plein pic de croissance<br><small>Phase critique de développement</small>`;
         displayDiv.style.background = '#fff3e0';
+        displayDiv.style.color = '#e65100';
     } else {
         displayDiv.innerHTML = `✅ Post-pubertaire<br><small>${maturityOffset.toFixed(1)} ans après le pic de croissance</small>`;
         displayDiv.style.background = '#e8f5e9';
+        displayDiv.style.color = '#2e7d32';
     }
     
     return maturityOffset;
+}
+
+// ==================== CALCUL IMC ====================
+function calculateIMC() {
+    const height = parseFloat(document.getElementById('playerHeight').value);
+    const weight = parseFloat(document.getElementById('playerWeight').value);
+    
+    const resultDiv = document.getElementById('imcResult');
+    
+    if (!height || !weight || height <= 0 || weight <= 0) {
+        if (resultDiv) resultDiv.style.display = 'none';
+        return null;
+    }
+    
+    const imc = weight / Math.pow(height / 100, 2);
+    
+    let category = '';
+    let color = '';
+    
+    if (imc < 18.5) {
+        category = 'Maigreur';
+        color = '#3498db';
+    } else if (imc >= 18.5 && imc < 25) {
+        category = 'Normal';
+        color = '#27ae60';
+    } else if (imc >= 25 && imc < 30) {
+        category = 'Surpoids';
+        color = '#f39c12';
+    } else {
+        category = 'Obésité';
+        color = '#e74c3c';
+    }
+    
+    if (resultDiv) {
+        const displayDiv = resultDiv.querySelector('.imc-display');
+        if (displayDiv) {
+            displayDiv.innerHTML = `<strong>IMC: ${imc.toFixed(1)}</strong> - ${category}`;
+            displayDiv.style.background = color + '20';
+            displayDiv.style.color = color;
+            displayDiv.style.padding = '0.5rem';
+            displayDiv.style.borderRadius = '4px';
+            displayDiv.style.fontWeight = '600';
+        }
+        resultDiv.style.display = 'block';
+    }
+    
+    return imc;
+}
+
+// ==================== CONSEILS ENVERGURE ====================
+function calculateWingspan() {
+    const height = parseFloat(document.getElementById('playerHeight').value);
+    const wingspan = parseFloat(document.getElementById('playerWingspan')?.value);
+    
+    const resultDiv = document.getElementById('wingspanResult');
+    
+    if (!height || !wingspan || height <= 0 || wingspan <= 0) {
+        if (resultDiv) resultDiv.style.display = 'none';
+        return null;
+    }
+    
+    const diff = wingspan - height;
+    const ratio = (wingspan / height).toFixed(3);
+    
+    let advice = '';
+    let clubAdvice = '';
+    let exerciseAdvice = '';
+    
+    if (diff > 5) {
+        clubAdvice = '📏 <strong>Matériel:</strong> Envisager des clubs +0.5" à +1" plus longs';
+        exerciseAdvice = '💪 <strong>Exos recommandés:</strong> Mobilité thoracique, rotation du tronc, étirements chaîne postérieure';
+    } else if (diff < -5) {
+        clubAdvice = '📏 <strong>Matériel:</strong> Envisager des clubs -0.5" à -1" plus courts';
+        exerciseAdvice = '💪 <strong>Exos recommandés:</strong> Renforcement épaules, travail de la posture, stabilité du tronc';
+    } else {
+        clubAdvice = '📏 <strong>Matériel:</strong> Taille standard adaptée';
+        exerciseAdvice = '💪 <strong>Exos recommandés:</strong> Équilibre musculaire, mobilité générale';
+    }
+    
+    if (resultDiv) {
+        const displayDiv = resultDiv.querySelector('.wingspan-display');
+        if (displayDiv) {
+            displayDiv.innerHTML = `
+                <div style="margin-bottom: 0.5rem;">
+                    <strong>Envergure:</strong> ${wingspan} cm (${diff >= 0 ? '+' : ''}${diff.toFixed(1)} cm vs taille)
+                    <br><small>Ratio: ${ratio}</small>
+                </div>
+                <div style="font-size: 0.9rem; line-height: 1.6;">
+                    ${clubAdvice}<br>
+                    ${exerciseAdvice}
+                </div>
+            `;
+            displayDiv.style.background = '#f8f9fa';
+            displayDiv.style.padding = '0.75rem';
+            displayDiv.style.borderRadius = '6px';
+            displayDiv.style.border = '1px solid #dee2e6';
+        }
+        resultDiv.style.display = 'block';
+    }
+    
+    return {wingspan, diff, ratio};
 }
 
 function showMirwaldInfo() {
