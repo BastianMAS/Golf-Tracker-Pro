@@ -1663,9 +1663,124 @@ function updateBadge(testKey, inputElement, baremeData, baremeValues, sexe, ageC
     }
 }
 
+// ==================== CALCUL LSI (LIMB SYMMETRY INDEX) ====================
+function calculateLSI(leftInputId, rightInputId, testName, unit = '') {
+    const leftInput = document.getElementById(leftInputId);
+    const rightInput = document.getElementById(rightInputId);
+    
+    if (!leftInput || !rightInput) return;
+    
+    const leftValue = parseFloat(leftInput.value);
+    const rightValue = parseFloat(rightInput.value);
+    
+    // Supprimer l'ancien LSI s'il existe
+    const parent = leftInput.closest('.bilateral-test, .test-item');
+    if (!parent) return;
+    
+    const oldLSI = parent.querySelector('.lsi-display');
+    if (oldLSI) oldLSI.remove();
+    
+    // Si une des deux valeurs manque, ne rien afficher
+    if (isNaN(leftValue) || isNaN(rightValue) || leftValue <= 0 || rightValue <= 0) {
+        return;
+    }
+    
+    // Calculer le LSI (côté faible / côté fort × 100)
+    const weaker = Math.min(leftValue, rightValue);
+    const stronger = Math.max(leftValue, rightValue);
+    const lsi = (weaker / stronger) * 100;
+    const difference = Math.abs(leftValue - rightValue);
+    const percentDiff = ((difference / stronger) * 100).toFixed(1);
+    
+    // Déterminer quel côté est plus faible
+    const weakerSide = leftValue < rightValue ? 'gauche' : 'droite';
+    
+    // Déterminer l'interprétation
+    let interpretation = '';
+    let color = '';
+    let bgColor = '';
+    let recommendation = '';
+    
+    if (lsi >= 90) {
+        interpretation = '✅ Symétrique';
+        color = '#27ae60';
+        bgColor = '#e8f5e9';
+        recommendation = 'Bon équilibre musculaire. Maintenir le travail bilatéral.';
+    } else if (lsi >= 85) {
+        interpretation = '⚠️ Asymétrie modérée';
+        color = '#f39c12';
+        bgColor = '#fff3e0';
+        recommendation = `Renforcer le côté ${weakerSide}. Ajouter des exercices unilatéraux (2-3 séries supplémentaires côté faible).`;
+    } else {
+        interpretation = '🔴 Asymétrie importante';
+        color = '#e74c3c';
+        bgColor = '#ffebee';
+        recommendation = `PRIORITÉ: Renforcement ${weakerSide}. Risque de blessure accru. Travail unilatéral intensif recommandé.`;
+    }
+    
+    // Créer l'affichage du LSI
+    const lsiDiv = document.createElement('div');
+    lsiDiv.className = 'lsi-display';
+    lsiDiv.style.cssText = `
+        margin-top: 0.5rem;
+        padding: 0.6rem;
+        background: ${bgColor};
+        border-left: 3px solid ${color};
+        border-radius: 4px;
+        font-size: 0.85rem;
+        line-height: 1.5;
+    `;
+    
+    lsiDiv.innerHTML = `
+        <div style="font-weight: 700; color: ${color}; margin-bottom: 0.3rem;">
+            ⚖️ LSI: ${lsi.toFixed(1)}% - ${interpretation} (${percentDiff}% de différence)
+        </div>
+        <div style="color: #555; font-size: 0.8rem;">
+            💪 ${recommendation}
+        </div>
+    `;
+    
+    parent.appendChild(lsiDiv);
+}
+
+// Ajouter les écouteurs pour tous les tests bilatéraux
+function setupLSICalculations() {
+    const bilateralTests = [
+        { left: 'test-wallsit-left', right: 'test-wallsit-right', name: 'Wall Sit', unit: 's' },
+        { left: 'test-cmj-left', right: 'test-cmj-right', name: 'CMJ Unilatéral', unit: 'cm' },
+        { left: 'test-sideplank-left', right: 'test-sideplank-right', name: 'Side Plank', unit: 's' },
+        { left: 'test-thoracic-left', right: 'test-thoracic-right', name: 'Rotation Thoracique', unit: '°' },
+        { left: 'test-hipint-left', right: 'test-hipint-right', name: 'Hip Rotation Interne', unit: '°' },
+        { left: 'test-hipext-left', right: 'test-hipext-right', name: 'Hip Rotation Externe', unit: '°' },
+        { left: 'test-ankle-left', right: 'test-ankle-right', name: 'Dorsiflexion', unit: 'cm' },
+        { left: 'test-shoulder-left', right: 'test-shoulder-right', name: 'Apley Scratch', unit: 'cm' },
+        { left: 'test-balanceopen-left', right: 'test-balanceopen-right', name: 'Équilibre Yeux Ouverts', unit: 's' },
+        { left: 'test-balanceclosed-left', right: 'test-balanceclosed-right', name: 'Équilibre Yeux Fermés', unit: 's' },
+        { left: 'test-medballrotation-left', right: 'test-medballrotation-right', name: 'MedBall Rotation', unit: 'm' }
+    ];
+    
+    bilateralTests.forEach(test => {
+        const leftInput = document.getElementById(test.left);
+        const rightInput = document.getElementById(test.right);
+        
+        if (leftInput && rightInput) {
+            leftInput.addEventListener('input', () => calculateLSI(test.left, test.right, test.name, test.unit));
+            rightInput.addEventListener('input', () => calculateLSI(test.left, test.right, test.name, test.unit));
+            
+            // Calculer immédiatement si les valeurs existent déjà
+            if (leftInput.value && rightInput.value) {
+                calculateLSI(test.left, test.right, test.name, test.unit);
+            }
+        }
+    });
+}
+
 // Appeler displayBaremes au chargement si profil existe
 if (currentPlayer) {
     setTimeout(displayBaremes, 500);
 }
+
+// Initialiser les calculs LSI
+setTimeout(setupLSICalculations, 600);
 
 console.log('✅ Application chargée et prête');
