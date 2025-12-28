@@ -446,6 +446,11 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div style="margin-top: 20px; text-align: center;">
+                                    <button class="btn btn-primary" onclick="saveQualityTests('force')" style="background: #e74c3c; padding: 12px 30px; font-size: 16px; font-weight: 600;">
+                                        💪 Enregistrer Force
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -464,10 +469,7 @@
                                     <label>Driver Speed (mph) <button class="help-btn" data-test="driverspeed">?</button></label>
                                     <input type="number" id="test-driverspeed" step="0.1">
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Endurance -->
+                            <div style="margin-top: 20px; text-align: center;"><button class="btn btn-primary" onclick="saveQualityTests(\'vitesse\')" style="background: #f39c12; padding: 12px 30px; font-size: 16px; font-weight: 600;">⚡ Enregistrer Vitesse</button></div></div></div><!-- Endurance -->
                         <div class="test-category">
                             <button class="category-header">
                                 <span>🔴 ENDURANCE</span>
@@ -541,10 +543,7 @@
                                         <input type="number" id="test-cmj-right" placeholder="Droite" step="0.1">
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Core -->
+                            <div style="margin-top: 20px; text-align: center;"><button class="btn btn-primary" onclick="saveQualityTests(\'explosivite\')" style="background: #9b59b6; padding: 12px 30px; font-size: 16px; font-weight: 600;">🚀 Enregistrer Explosivite</button></div></div></div><!-- Core -->
                         <div class="test-category">
                             <button class="category-header">
                                 <span>🔵 CORE & STABILITÉ</span>
@@ -650,10 +649,7 @@
                                         <input type="number" id="test-balanceclosed-right" placeholder="Droite" step="0.1">
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Tests TPI -->
+                            <div style="margin-top: 20px; text-align: center;"><button class="btn btn-primary" onclick="saveQualityTests(\'equilibre\')" style="background: #34495e; padding: 12px 30px; font-size: 16px; font-weight: 600;">⚖️ Enregistrer Equilibre</button></div></div></div><!-- Tests TPI -->
                         <div class="test-category">
                             <button class="category-header">
                                 <span>🏌️ TESTS TPI (Pass/Fail)</span>
@@ -925,16 +921,7 @@
             <div id="history-tab" class="tab-content">
                 <div class="history-container">
                     <h3>Historique des Tests</h3>
-                    <div class="history-controls">
-                        <select id="historyTestSelect">
-                            <option value="">Sélectionner un test...</option>
-                        </select>
-                        <button class="btn btn-secondary" id="clearHistory">Effacer l'historique</button>
-                    </div>
-                    <div class="history-chart-container">
-                        <canvas id="historyChart"></canvas>
-                    </div>
-                    <div id="historyTable" class="history-table"></div>
+                    <!-- Le contenu sera généré dynamiquement par displayHistory() -->
                 </div>
             </div>
 
