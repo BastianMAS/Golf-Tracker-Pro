@@ -1420,7 +1420,7 @@ function importData(event) {
 }
 
 function generateReport() {
-    alert('Fonction rapport en cours de développement');
+    generateBilanPage1();
 }
 
 // ==================== LOCAL STORAGE ====================
@@ -1784,5 +1784,526 @@ if (currentPlayer) {
 
 // Initialiser les calculs LSI
 setTimeout(setupLSICalculations, 600);
+
+// ==================== SYSTÈME DE BILAN - PAGE 1 ====================
+
+// Calcul de la note /20 pour un test selon sa position dans les barèmes
+function calculateScore20(testKey, value) {
+    if (!currentPlayer || !value || value <= 0) return null;
+    
+    const baremeData = BAREMES[testKey];
+    if (!baremeData) return null;
+    
+    const sexe = currentPlayer.gender || 'M';
+    const ageValue = currentPlayer.age;
+    
+    // Convertir l'âge
+    let age;
+    if (typeof ageValue === 'string') {
+        if (ageValue === '<12') age = 10;
+        else if (ageValue === '12-14') age = 13;
+        else if (ageValue === '14-17') age = 15.5;
+        else if (ageValue.includes('-')) {
+            const [min, max] = ageValue.split('-').map(n => parseInt(n));
+            age = (min + max) / 2;
+        } else {
+            age = parseInt(ageValue) || 25;
+        }
+    } else {
+        age = ageValue;
+    }
+    
+    // Déterminer catégorie d'âge
+    let ageCategory;
+    if (age < 12) ageCategory = '<12';
+    else if (age >= 12 && age < 14) ageCategory = '12-14';
+    else if (age >= 14 && age < 18) ageCategory = '14-17';
+    else ageCategory = '18+';
+    
+    // Déterminer niveau pour 18+
+    let playerLevel = 'pro';
+    if (ageCategory === '18+' && currentPlayer.handicap) {
+        const handicap = parseInt(currentPlayer.handicap);
+        if (!isNaN(handicap)) {
+            if (handicap >= 8) playerLevel = 'amateur_8+';
+            else if (handicap >= 0 && handicap <= 7) playerLevel = 'amateur_0-7';
+            else if (handicap < 0) playerLevel = 'amateur_negatif';
+        }
+    }
+    
+    // Récupérer les barèmes
+    let baremeValues;
+    try {
+        const sexeData = baremeData.levels[sexe];
+        if (!sexeData) return null;
+        
+        if (ageCategory === '18+') {
+            const levelData = sexeData[ageCategory];
+            if (!levelData || !levelData[playerLevel]) return null;
+            baremeValues = levelData[playerLevel];
+        } else {
+            baremeValues = sexeData[ageCategory];
+        }
+        
+        if (!baremeValues || baremeValues.length !== 4) return null;
+    } catch (e) {
+        return null;
+    }
+    
+    // Calculer la valeur finale (ratio si nécessaire)
+    let finalValue = value;
+    if (baremeData.unit === 'ratio' && currentPlayer.weight) {
+        finalValue = value / currentPlayer.weight;
+    }
+    
+    const [faible, moyen, bon, elite] = baremeValues;
+    const higherIsBetter = baremeData.higherIsBetter;
+    
+    let score;
+    
+    if (higherIsBetter) {
+        if (finalValue >= elite) {
+            score = 20;
+        } else if (finalValue >= bon) {
+            score = 15 + 5 * ((finalValue - bon) / (elite - bon));
+        } else if (finalValue >= moyen) {
+            score = 10 + 5 * ((finalValue - moyen) / (bon - moyen));
+        } else if (finalValue >= faible) {
+            score = 5 + 5 * ((finalValue - faible) / (moyen - faible));
+        } else {
+            score = 5 * (finalValue / faible);
+        }
+    } else {
+        // Pour les tests où plus bas = mieux (navette, etc.)
+        if (finalValue <= elite) {
+            score = 20;
+        } else if (finalValue <= bon) {
+            score = 15 + 5 * ((bon - finalValue) / (bon - elite));
+        } else if (finalValue <= moyen) {
+            score = 10 + 5 * ((moyen - finalValue) / (moyen - bon));
+        } else if (finalValue <= faible) {
+            score = 5 + 5 * ((faible - finalValue) / (faible - moyen));
+        } else {
+            score = Math.max(0, 5 * (1 - (finalValue - faible) / faible));
+        }
+    }
+    
+    return Math.max(0, Math.min(20, score));
+}
+
+// Calculer les moyennes par qualité physique
+function calculateQualityScores() {
+    if (!currentPlayer) return null;
+    
+    // Récupérer les valeurs des tests depuis les champs
+    const getTestValue = (id) => {
+        const input = document.getElementById(id);
+        return input ? parseFloat(input.value) : null;
+    };
+    
+    // Moyenne d'un tableau de scores (ignore les nulls)
+    const average = (scores) => {
+        const validScores = scores.filter(s => s !== null && !isNaN(s));
+        return validScores.length > 0 ? validScores.reduce((a, b) => a + b, 0) / validScores.length : null;
+    };
+    
+    // FORCE (4 tests)
+    const forceScores = [
+        calculateScore20('squat', getTestValue('test-squat-1rm')),
+        calculateScore20('deadlift', getTestValue('test-deadlift-1rm')),
+        calculateScore20('bench', getTestValue('test-bench-1rm')),
+        calculateScore20('pullup', getTestValue('test-pullup-1rm'))
+    ];
+    
+    // VITESSE (2 tests)
+    const vitesseScores = [
+        calculateScore20('shuttle', getTestValue('test-shuttle')),
+        calculateScore20('driverspeed', getTestValue('test-driverspeed'))
+    ];
+    
+    // ENDURANCE (4 tests)
+    const enduranceScores = [
+        calculateScore20('vma', getTestValue('test-vma')),
+        calculateScore20('maxpushups', getTestValue('test-maxpushups')),
+        calculateScore20('maxsquats', getTestValue('test-maxsquats')),
+        calculateScore20('wallsit', average([getTestValue('test-wallsit-left'), getTestValue('test-wallsit-right')]))
+    ];
+    
+    // EXPLOSIVITÉ (4 tests)
+    const explosiviteScores = [
+        calculateScore20('vertjump', getTestValue('test-vertjump')),
+        calculateScore20('horizjump', getTestValue('test-horizjump')),
+        calculateScore20('medballchest', getTestValue('test-medballchest')),
+        calculateScore20('medballrotation', average([getTestValue('test-medballrotation-left'), getTestValue('test-medballrotation-right')]))
+    ];
+    
+    // CORE & STABILITÉ (4 tests)
+    const coreScores = [
+        calculateScore20('rkcplank', getTestValue('test-rkcplank')),
+        calculateScore20('sideplank', average([getTestValue('test-sideplank-left'), getTestValue('test-sideplank-right')])),
+        calculateScore20('mcgillflexor', getTestValue('test-mcgillflexor')),
+        calculateScore20('mcgillextensor', getTestValue('test-mcgillextensor'))
+    ];
+    
+    // MOBILITÉ (5 tests)
+    const mobiliteScores = [
+        calculateScore20('standreach', getTestValue('test-standreach')),
+        calculateScore20('thoracic', average([getTestValue('test-thoracic-left'), getTestValue('test-thoracic-right')])),
+        calculateScore20('hipint', average([getTestValue('test-hipint-left'), getTestValue('test-hipint-right')])),
+        calculateScore20('hipext', average([getTestValue('test-hipext-left'), getTestValue('test-hipext-right')])),
+        calculateScore20('ankle', average([getTestValue('test-ankle-left'), getTestValue('test-ankle-right')]))
+    ];
+    
+    // ÉQUILIBRE (2 tests)
+    const equilibreScores = [
+        calculateScore20('balanceopen', average([getTestValue('test-balanceopen-left'), getTestValue('test-balanceopen-right')])),
+        calculateScore20('balanceclosed', average([getTestValue('test-balanceclosed-left'), getTestValue('test-balanceclosed-right')]))
+    ];
+    
+    return {
+        force: average(forceScores),
+        vitesse: average(vitesseScores),
+        endurance: average(enduranceScores),
+        explosivite: average(explosiviteScores),
+        core: average(coreScores),
+        mobilite: average(mobiliteScores),
+        equilibre: average(equilibreScores)
+    };
+}
+
+// Générer le bilan Page 1
+function generateBilanPage1() {
+    if (!currentPlayer) {
+        alert('Veuillez d\'abord enregistrer votre profil !');
+        return;
+    }
+    
+    const scores = calculateQualityScores();
+    if (!scores) {
+        alert('Erreur lors du calcul des scores');
+        return;
+    }
+    
+    // Calculer la moyenne générale
+    const validScores = Object.values(scores).filter(s => s !== null && !isNaN(s));
+    const moyenneGenerale = validScores.length > 0 
+        ? validScores.reduce((a, b) => a + b, 0) / validScores.length 
+        : 0;
+    
+    // Identifier points forts et faibles
+    const qualites = [
+        {name: 'Force', score: scores.force},
+        {name: 'Vitesse', score: scores.vitesse},
+        {name: 'Endurance', score: scores.endurance},
+        {name: 'Explosivité', score: scores.explosivite},
+        {name: 'Core & Stabilité', score: scores.core},
+        {name: 'Mobilité', score: scores.mobilite},
+        {name: 'Équilibre', score: scores.equilibre}
+    ].filter(q => q.score !== null);
+    
+    qualites.sort((a, b) => b.score - a.score);
+    
+    const pointsForts = qualites.slice(0, 2);
+    const pointsFaibles = qualites.slice(-2).reverse();
+    
+    // Créer la page HTML
+    const bilanWindow = window.open('', '_blank');
+    bilanWindow.document.write(`
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilan Performance Golf - ${currentPlayer.name}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { margin: 0; }
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        .page {
+            background: white;
+            max-width: 210mm;
+            min-height: 297mm;
+            margin: 20px auto;
+            padding: 20mm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #1a4d2e;
+        }
+        
+        .header-left h1 {
+            color: #1a4d2e;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .header-left p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .header-right {
+            text-align: right;
+        }
+        
+        .profile-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #1a4d2e;
+        }
+        
+        .radar-container {
+            max-width: 500px;
+            margin: 30px auto;
+        }
+        
+        .summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .summary-box {
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+        
+        .summary-box.strong {
+            background: #e8f5e9;
+            border-color: #27ae60;
+        }
+        
+        .summary-box.weak {
+            background: #fff3e0;
+            border-color: #f39c12;
+        }
+        
+        .summary-box h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .summary-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .summary-box li {
+            padding: 5px 0;
+            font-size: 14px;
+        }
+        
+        .moyenne-generale {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a4d2e 0%, #27ae60 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        
+        .moyenne-generale h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .moyenne-generale .score {
+            font-size: 48px;
+            font-weight: 700;
+        }
+        
+        .actions {
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #1a4d2e;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #27ae60;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <div class="header-left">
+                <h1>BILAN PERFORMANCE GOLF</h1>
+                <p>Évaluation Physique Complète</p>
+            </div>
+            <div class="header-right">
+                <p><strong>${new Date().toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}</strong></p>
+            </div>
+        </div>
+        
+        <div class="profile-info">
+            <div>
+                <div class="info-item">
+                    <span class="info-label">Nom</span>
+                    <span>${currentPlayer.name}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Sexe</span>
+                    <span>${currentPlayer.gender === 'M' ? 'Homme' : 'Femme'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Âge</span>
+                    <span>${currentPlayer.age}</span>
+                </div>
+            </div>
+            <div>
+                <div class="info-item">
+                    <span class="info-label">Poids</span>
+                    <span>${currentPlayer.weight} kg</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Taille</span>
+                    <span>${currentPlayer.height} cm</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Niveau</span>
+                    <span>Handicap ${currentPlayer.handicap || 'N/A'}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="moyenne-generale">
+            <h2>Note Globale</h2>
+            <div class="score">${moyenneGenerale.toFixed(1)}<span style="font-size: 24px;">/20</span></div>
+        </div>
+        
+        <div class="radar-container">
+            <canvas id="radarChart"></canvas>
+        </div>
+        
+        <div class="summary">
+            <div class="summary-box strong">
+                <h3>💪 Points Forts</h3>
+                <ul>
+                    ${pointsForts.map(q => `<li><strong>${q.name}:</strong> ${q.score.toFixed(1)}/20</li>`).join('')}
+                </ul>
+            </div>
+            <div class="summary-box weak">
+                <h3>📈 À Améliorer</h3>
+                <ul>
+                    ${pointsFaibles.map(q => `<li><strong>${q.name}:</strong> ${q.score.toFixed(1)}/20</li>`).join('')}
+                </ul>
+            </div>
+        </div>
+        
+        <div class="actions no-print">
+            <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimer / PDF</button>
+            <button class="btn btn-secondary" onclick="window.close()">✖️ Fermer</button>
+        </div>
+    </div>
+    
+    <script>
+        const ctx = document.getElementById('radarChart');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Force', 'Vitesse', 'Endurance', 'Explosivité', 'Core', 'Mobilité', 'Équilibre'],
+                datasets: [{
+                    label: 'Performance /20',
+                    data: [
+                        ${scores.force?.toFixed(1) || 0},
+                        ${scores.vitesse?.toFixed(1) || 0},
+                        ${scores.endurance?.toFixed(1) || 0},
+                        ${scores.explosivite?.toFixed(1) || 0},
+                        ${scores.core?.toFixed(1) || 0},
+                        ${scores.mobilite?.toFixed(1) || 0},
+                        ${scores.equilibre?.toFixed(1) || 0}
+                    ],
+                    backgroundColor: 'rgba(26, 77, 46, 0.2)',
+                    borderColor: 'rgba(26, 77, 46, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(26, 77, 46, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(26, 77, 46, 1)'
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 20,
+                        ticks: {
+                            stepSize: 5
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+    `);
+    bilanWindow.document.close();
+}
 
 console.log('✅ Application chargée et prête');
