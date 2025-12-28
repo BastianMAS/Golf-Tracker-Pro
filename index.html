@@ -447,7 +447,7 @@
                                     </div>
                                 </div>
                                 <div style="margin-top: 20px; text-align: center;">
-                                    <button class="btn btn-primary" onclick="saveQualityTests('force')" style="background: #e74c3c; padding: 12px 30px; font-size: 16px; font-weight: 600;">
+                                    <button class="btn btn-primary" onclick="saveQualityTests('force')" style="background: #e74c3c; padding: 12px 30px; font-size: 16px; font-weight: 600;; color: white;">
                                         💪 Enregistrer Force
                                     </button>
                                 </div>
@@ -469,7 +469,16 @@
                                     <label>Driver Speed (mph) <button class="help-btn" data-test="driverspeed">?</button></label>
                                     <input type="number" id="test-driverspeed" step="0.1">
                                 </div>
-                            <div style="margin-top: 20px; text-align: center;"><button class="btn btn-primary" onclick="saveQualityTests(\'vitesse\')" style="background: #f39c12; padding: 12px 30px; font-size: 16px; font-weight: 600;">⚡ Enregistrer Vitesse</button></div></div></div><!-- Endurance -->
+                                
+                                <div style="margin-top: 20px; text-align: center;">
+                                    <button class="btn btn-primary" onclick="saveQualityTests('vitesse')" style="background: #f39c12; padding: 12px 30px; font-size: 16px; font-weight: 600; color: white;">
+                                        ⚡ Enregistrer Vitesse
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Endurance -->
                         <div class="test-category">
                             <button class="category-header">
                                 <span>🔴 ENDURANCE</span>
@@ -497,7 +506,7 @@
                                 </div>
                                 
                                 <div style="margin-top: 20px; text-align: center;">
-                                    <button class="btn btn-primary" onclick="saveQualityTests('endurance')" style="background: #3498db; padding: 12px 30px; font-size: 16px; font-weight: 600;">
+                                    <button class="btn btn-primary" onclick="saveQualityTests('endurance')" style="background: #3498db; padding: 12px 30px; font-size: 16px; font-weight: 600;; color: white;">
                                         🏃 Enregistrer Endurance
                                     </button>
                                 </div>
@@ -549,7 +558,16 @@
                                         <input type="number" id="test-cmj-right" placeholder="Droite" step="0.1">
                                     </div>
                                 </div>
-                            <div style="margin-top: 20px; text-align: center;"><button class="btn btn-primary" onclick="saveQualityTests(\'explosivite\')" style="background: #9b59b6; padding: 12px 30px; font-size: 16px; font-weight: 600;">🚀 Enregistrer Explosivite</button></div></div></div><!-- Core -->
+                                
+                                <div style="margin-top: 20px; text-align: center;">
+                                    <button class="btn btn-primary" onclick="saveQualityTests('explosivite')" style="background: #9b59b6; padding: 12px 30px; font-size: 16px; font-weight: 600; color: white;">
+                                        🚀 Enregistrer Explosivité
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Core -->
                         <div class="test-category">
                             <button class="category-header">
                                 <span>🔵 CORE & STABILITÉ</span>
@@ -581,7 +599,7 @@
                                 </div>
                                 
                                 <div style="margin-top: 20px; text-align: center;">
-                                    <button class="btn btn-primary" onclick="saveQualityTests('core')" style="background: #1abc9c; padding: 12px 30px; font-size: 16px; font-weight: 600;">
+                                    <button class="btn btn-primary" onclick="saveQualityTests('core')" style="background: #1abc9c; padding: 12px 30px; font-size: 16px; font-weight: 600;; color: white;">
                                         🎯 Enregistrer Core
                                     </button>
                                 </div>
@@ -639,7 +657,7 @@
                                 </div>
                                 
                                 <div style="margin-top: 20px; text-align: center;">
-                                    <button class="btn btn-primary" onclick="saveQualityTests('mobilite')" style="background: #27ae60; padding: 12px 30px; font-size: 16px; font-weight: 600;">
+                                    <button class="btn btn-primary" onclick="saveQualityTests('mobilite')" style="background: #27ae60; padding: 12px 30px; font-size: 16px; font-weight: 600;; color: white;">
                                         🤸 Enregistrer Mobilité
                                     </button>
                                 </div>
@@ -667,7 +685,16 @@
                                         <input type="number" id="test-balanceclosed-right" placeholder="Droite" step="0.1">
                                     </div>
                                 </div>
-                            <div style="margin-top: 20px; text-align: center;"><button class="btn btn-primary" onclick="saveQualityTests(\'equilibre\')" style="background: #34495e; padding: 12px 30px; font-size: 16px; font-weight: 600;">⚖️ Enregistrer Equilibre</button></div></div></div><!-- Tests TPI -->
+                                
+                                <div style="margin-top: 20px; text-align: center;">
+                                    <button class="btn btn-primary" onclick="saveQualityTests('equilibre')" style="background: #34495e; padding: 12px 30px; font-size: 16px; font-weight: 600; color: white;; color: white;">
+                                        ⚖️ Enregistrer Équilibre
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tests TPI -->
                         <div class="test-category">
                             <button class="category-header">
                                 <span>🏌️ TESTS TPI (Pass/Fail)</span>
@@ -901,6 +928,12 @@
                                             <option value="fail">Fail</option>
                                         </select>
                                     </div>
+                                </div>
+                                
+                                <div style="margin-top: 20px; text-align: center;">
+                                    <button class="btn btn-primary" onclick="saveQualityTests('tpi')" style="background: #e67e22; padding: 12px 30px; font-size: 16px; font-weight: 600; color: white;">
+                                        🏌️ Enregistrer TPI
+                                    </button>
                                 </div>
                             </div>
                         </div>
