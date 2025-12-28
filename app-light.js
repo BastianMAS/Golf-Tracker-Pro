@@ -1420,7 +1420,18 @@ function importData(event) {
 }
 
 function generateReport() {
+    if (!currentPlayer) {
+        alert('Veuillez d\'abord enregistrer votre profil !');
+        return;
+    }
+    
+    // Générer Page 1
     generateBilanPage1();
+    
+    // Générer Page 2 après un petit délai
+    setTimeout(() => {
+        generateBilanPage2();
+    }, 500);
 }
 
 // ==================== LOCAL STORAGE ====================
@@ -2304,6 +2315,343 @@ function generateBilanPage1() {
 </html>
     `);
     bilanWindow.document.close();
+}
+
+// ==================== BILAN PAGE 2 - RÉSULTATS & ASYMÉTRIES ====================
+function generateBilanPage2() {
+    if (!currentPlayer) {
+        alert('Veuillez d\'abord enregistrer votre profil !');
+        return;
+    }
+    
+    // Récupérer tous les tests avec leurs scores
+    const getTestValue = (id) => {
+        const input = document.getElementById(id);
+        return input ? parseFloat(input.value) : null;
+    };
+    
+    const allTestsData = [
+        // FORCE
+        {key: 'squat', name: 'Squat 1RM', value: getTestValue('test-squat-1rm'), unit: 'kg', category: 'Force'},
+        {key: 'deadlift', name: 'Deadlift 1RM', value: getTestValue('test-deadlift-1rm'), unit: 'kg', category: 'Force'},
+        {key: 'bench', name: 'Développé Couché 1RM', value: getTestValue('test-bench-1rm'), unit: 'kg', category: 'Force'},
+        {key: 'pullup', name: 'Tractions 1RM', value: getTestValue('test-pullup-1rm'), unit: 'kg', category: 'Force'},
+        
+        // VITESSE
+        {key: 'shuttle', name: 'Navette 5x10m', value: getTestValue('test-shuttle'), unit: 's', category: 'Vitesse'},
+        {key: 'driverspeed', name: 'Vitesse Driver', value: getTestValue('test-driverspeed'), unit: 'mph', category: 'Vitesse'},
+        
+        // ENDURANCE
+        {key: 'vma', name: 'VMA', value: getTestValue('test-vma'), unit: 'km/h', category: 'Endurance'},
+        {key: 'maxpushups', name: 'Max Pompes 1min', value: getTestValue('test-maxpushups'), unit: 'reps', category: 'Endurance'},
+        {key: 'maxsquats', name: 'Max Squats 1min', value: getTestValue('test-maxsquats'), unit: 'reps', category: 'Endurance'},
+        
+        // EXPLOSIVITÉ
+        {key: 'vertjump', name: 'Détente Verticale', value: getTestValue('test-vertjump'), unit: 'cm', category: 'Explosivité'},
+        {key: 'horizjump', name: 'Détente Horizontale', value: getTestValue('test-horizjump'), unit: 'cm', category: 'Explosivité'},
+        {key: 'medballchest', name: 'MedBall Chest', value: getTestValue('test-medballchest'), unit: 'm', category: 'Explosivité'},
+        
+        // CORE
+        {key: 'rkcplank', name: 'RKC Plank', value: getTestValue('test-rkcplank'), unit: 's', category: 'Core'},
+        {key: 'mcgillflexor', name: 'McGill Flexor', value: getTestValue('test-mcgillflexor'), unit: 's', category: 'Core'},
+        {key: 'mcgillextensor', name: 'McGill Extensor', value: getTestValue('test-mcgillextensor'), unit: 's', category: 'Core'},
+        
+        // MOBILITÉ
+        {key: 'standreach', name: 'Stand & Reach', value: getTestValue('test-standreach'), unit: 'cm', category: 'Mobilité'},
+        {key: 'ankle', name: 'Dorsiflexion', value: getTestValue('test-ankle-left'), unit: 'cm', category: 'Mobilité'}
+    ];
+    
+    // Calculer les scores et filtrer les tests complétés
+    const testsWithScores = allTestsData
+        .filter(t => t.value !== null && !isNaN(t.value))
+        .map(t => ({
+            ...t,
+            score: calculateScore20(t.key, t.value),
+            badge: getBadgeLabel(calculateScore20(t.key, t.value))
+        }))
+        .filter(t => t.score !== null);
+    
+    // Trier par score
+    testsWithScores.sort((a, b) => b.score - a.score);
+    
+    const top5 = testsWithScores.slice(0, 5);
+    const bottom5 = testsWithScores.slice(-5).reverse();
+    
+    // Calculer les asymétries LSI
+    const bilateralTests = [
+        {name: 'Wall Sit', left: getTestValue('test-wallsit-left'), right: getTestValue('test-wallsit-right'), unit: 's'},
+        {name: 'CMJ Unilatéral', left: getTestValue('test-cmj-left'), right: getTestValue('test-cmj-right'), unit: 'cm'},
+        {name: 'Side Plank', left: getTestValue('test-sideplank-left'), right: getTestValue('test-sideplank-right'), unit: 's'},
+        {name: 'Rotation Thoracique', left: getTestValue('test-thoracic-left'), right: getTestValue('test-thoracic-right'), unit: '°'},
+        {name: 'Hip Rotation Int', left: getTestValue('test-hipint-left'), right: getTestValue('test-hipint-right'), unit: '°'},
+        {name: 'Hip Rotation Ext', left: getTestValue('test-hipext-left'), right: getTestValue('test-hipext-right'), unit: '°'},
+        {name: 'Dorsiflexion', left: getTestValue('test-ankle-left'), right: getTestValue('test-ankle-right'), unit: 'cm'},
+        {name: 'Équilibre Y. Ouverts', left: getTestValue('test-balanceopen-left'), right: getTestValue('test-balanceopen-right'), unit: 's'},
+        {name: 'Équilibre Y. Fermés', left: getTestValue('test-balanceclosed-left'), right: getTestValue('test-balanceclosed-right'), unit: 's'}
+    ];
+    
+    const asymmetries = bilateralTests
+        .filter(t => t.left && t.right && !isNaN(t.left) && !isNaN(t.right))
+        .map(t => {
+            const weaker = Math.min(t.left, t.right);
+            const stronger = Math.max(t.left, t.right);
+            const lsi = (weaker / stronger) * 100;
+            const weakerSide = t.left < t.right ? 'G' : 'D';
+            return {...t, lsi, weakerSide};
+        })
+        .filter(t => t.lsi < 90)
+        .sort((a, b) => a.lsi - b.lsi);
+    
+    // Générer la page HTML
+    const bilanWindow = window.open('', '_blank');
+    bilanWindow.document.write(`
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilan Performance - Page 2 - ${currentPlayer.name}</title>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { margin: 0; }
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        .page {
+            background: white;
+            max-width: 210mm;
+            min-height: 297mm;
+            margin: 20px auto;
+            padding: 20mm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #1a4d2e;
+        }
+        
+        .header h1 {
+            color: #1a4d2e;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            color: #1a4d2e;
+            font-size: 20px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        th {
+            background: #1a4d2e;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            display: inline-block;
+        }
+        
+        .badge-elite { background: #3498db; }
+        .badge-bon { background: #27ae60; }
+        .badge-moyen { background: #f39c12; }
+        .badge-faible { background: #e74c3c; }
+        
+        .lsi-box {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid;
+            border-radius: 4px;
+        }
+        
+        .lsi-important {
+            background: #ffebee;
+            border-color: #e74c3c;
+        }
+        
+        .lsi-modere {
+            background: #fff3e0;
+            border-color: #f39c12;
+        }
+        
+        .actions {
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: #1a4d2e;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #e8f5e9;
+            border-left: 4px solid #27ae60;
+            color: #2e7d32;
+        }
+        
+        .alert-warning {
+            background: #fff3e0;
+            border-left: 4px solid #f39c12;
+            color: #e65100;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <h1>RÉSULTATS DÉTAILLÉS & ASYMÉTRIES</h1>
+            <p>${currentPlayer.name} - ${new Date().toLocaleDateString('fr-FR')}</p>
+        </div>
+        
+        <div class="section">
+            <h2>🏆 Top 5 Performances</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Test</th>
+                        <th>Résultat</th>
+                        <th>Note /20</th>
+                        <th>Niveau</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${top5.map(t => `
+                        <tr>
+                            <td><strong>${t.name}</strong></td>
+                            <td>${t.value.toFixed(1)} ${t.unit}</td>
+                            <td><strong>${t.score.toFixed(1)}/20</strong></td>
+                            <td><span class="badge badge-${t.badge.class}">${t.badge.label}</span></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>📈 Top 5 À Améliorer</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Test</th>
+                        <th>Résultat</th>
+                        <th>Note /20</th>
+                        <th>Niveau</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${bottom5.map(t => `
+                        <tr>
+                            <td><strong>${t.name}</strong></td>
+                            <td>${t.value.toFixed(1)} ${t.unit}</td>
+                            <td><strong>${t.score.toFixed(1)}/20</strong></td>
+                            <td><span class="badge badge-${t.badge.class}">${t.badge.label}</span></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>⚖️ Bilan LSI - Asymétries Détectées</h2>
+            ${asymmetries.length === 0 ? `
+                <div class="alert alert-success">
+                    <strong>✅ Excellent !</strong> Aucune asymétrie significative détectée (tous les LSI ≥ 90%)
+                </div>
+            ` : `
+                <div class="alert alert-warning">
+                    <strong>⚠️ ${asymmetries.length} asymétrie(s) détectée(s)</strong>
+                </div>
+                ${asymmetries.map(a => `
+                    <div class="lsi-box ${a.lsi < 85 ? 'lsi-important' : 'lsi-modere'}">
+                        <strong>${a.name}</strong>: 
+                        G ${a.left.toFixed(1)}${a.unit} | D ${a.right.toFixed(1)}${a.unit} 
+                        → LSI: <strong>${a.lsi.toFixed(1)}%</strong>
+                        ${a.lsi < 85 ? '🔴 Asymétrie importante' : '⚠️ Asymétrie modérée'}
+                        - Renforcer côté ${a.weakerSide}
+                    </div>
+                `).join('')}
+            `}
+        </div>
+        
+        <div class="actions no-print">
+            <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimer / PDF</button>
+            <button class="btn btn-secondary" onclick="window.close()">✖️ Fermer</button>
+        </div>
+    </div>
+</body>
+</html>
+    `);
+    bilanWindow.document.close();
+}
+
+// Helper function pour les badges
+function getBadgeLabel(score) {
+    if (score === null) return {label: 'N/A', class: 'faible'};
+    if (score >= 17.5) return {label: 'Élite', class: 'elite'};
+    if (score >= 12.5) return {label: 'Bon', class: 'bon'};
+    if (score >= 7.5) return {label: 'Moyen', class: 'moyen'};
+    return {label: 'Faible', class: 'faible'};
 }
 
 console.log('✅ Application chargée et prête');
