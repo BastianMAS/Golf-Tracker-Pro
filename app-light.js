@@ -1746,6 +1746,8 @@ function calculateLSI(leftInputId, rightInputId, testName, unit = '') {
 // Ajouter les écouteurs pour tous les tests bilatéraux
 function setupLSICalculations() {
     const bilateralTests = [
+        { left: 'test-legext-left', right: 'test-legext-right', name: 'Leg Extension Unilatéral', unit: 'kg' },
+        { left: 'test-press-left', right: 'test-press-right', name: 'Leg Press Unilatéral', unit: 'kg' },
         { left: 'test-wallsit-left', right: 'test-wallsit-right', name: 'Wall Sit', unit: 's' },
         { left: 'test-cmj-left', right: 'test-cmj-right', name: 'CMJ Unilatéral', unit: 'cm' },
         { left: 'test-sideplank-left', right: 'test-sideplank-right', name: 'Side Plank', unit: 's' },
