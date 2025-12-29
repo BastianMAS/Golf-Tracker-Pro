@@ -1464,29 +1464,53 @@ function generateCompleteBilan() {
     const pointsForts = qualites.slice(0, 2);
     const pointsFaibles = qualites.slice(-2).reverse();
     
-    // Préparer les données pour Page 2
-    const getTestValue = (id) => {
-        const input = document.getElementById(id);
-        return input ? parseFloat(input.value) : null;
+    // Récupérer les derniers tests de l'historique
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    
+    // Fonction pour récupérer la dernière valeur d'un test depuis l'historique
+    const getTestValueFromHistory = (testKey, qualityKey) => {
+        // Trouver les tests de cette qualité, triés du plus récent au plus ancien
+        const qualityTests = history
+            .filter(h => h.quality === qualityKey)
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        // Chercher dans chaque test jusqu'à trouver une valeur
+        for (const test of qualityTests) {
+            if (test.tests && test.tests[testKey] !== undefined && test.tests[testKey] !== null) {
+                const value = test.tests[testKey];
+                // Si c'est un test bilatéral, prendre la moyenne
+                if (typeof value === 'object' && (value.left !== null || value.right !== null)) {
+                    const left = value.left || 0;
+                    const right = value.right || 0;
+                    const count = (value.left !== null ? 1 : 0) + (value.right !== null ? 1 : 0);
+                    return count > 0 ? (left + right) / count : null;
+                }
+                return value;
+            }
+        }
+        return null;
     };
     
     const allTestsData = [
-        {key: 'squat', name: 'Squat 1RM', value: getTestValue('test-squat-1rm'), unit: 'kg', category: 'Force'},
-        {key: 'deadlift', name: 'Deadlift 1RM', value: getTestValue('test-deadlift-1rm'), unit: 'kg', category: 'Force'},
-        {key: 'bench', name: 'Développé Couché 1RM', value: getTestValue('test-bench-1rm'), unit: 'kg', category: 'Force'},
-        {key: 'pullup', name: 'Tractions 1RM', value: getTestValue('test-pullup-1rm'), unit: 'kg', category: 'Force'},
-        {key: 'shuttle', name: 'Navette 5x10m', value: getTestValue('test-shuttle'), unit: 's', category: 'Vitesse'},
-        {key: 'driverspeed', name: 'Vitesse Driver', value: getTestValue('test-driverspeed'), unit: 'mph', category: 'Vitesse'},
-        {key: 'vma', name: 'VMA', value: getTestValue('test-vma'), unit: 'km/h', category: 'Endurance'},
-        {key: 'maxpushups', name: 'Max Pompes 1min', value: getTestValue('test-maxpushups'), unit: 'reps', category: 'Endurance'},
-        {key: 'maxsquats', name: 'Max Squats 1min', value: getTestValue('test-maxsquats'), unit: 'reps', category: 'Endurance'},
-        {key: 'vertjump', name: 'Détente Verticale', value: getTestValue('test-vertjump'), unit: 'cm', category: 'Explosivité'},
-        {key: 'horizjump', name: 'Détente Horizontale', value: getTestValue('test-horizjump'), unit: 'cm', category: 'Explosivité'},
-        {key: 'medballchest', name: 'MedBall Chest', value: getTestValue('test-medballchest'), unit: 'm', category: 'Explosivité'},
+        {key: 'squat', name: 'Squat 1RM', value: getTestValueFromHistory('squat', 'force'), unit: 'kg', category: 'Force'},
+        {key: 'deadlift', name: 'Deadlift 1RM', value: getTestValueFromHistory('deadlift', 'force'), unit: 'kg', category: 'Force'},
+        {key: 'bench', name: 'Développé Couché 1RM', value: getTestValueFromHistory('bench', 'force'), unit: 'kg', category: 'Force'},
+        {key: 'pullup', name: 'Tractions 1RM', value: getTestValueFromHistory('pullup', 'force'), unit: 'kg', category: 'Force'},
+        {key: 'shuttle', name: 'Navette 5x10m', value: getTestValueFromHistory('shuttle', 'vitesse'), unit: 's', category: 'Vitesse'},
+        {key: 'driverspeed', name: 'Vitesse Driver', value: getTestValueFromHistory('driverspeed', 'vitesse'), unit: 'mph', category: 'Vitesse'},
+        {key: 'vma', name: 'VMA', value: getTestValueFromHistory('vma', 'endurance'), unit: 'km/h', category: 'Endurance'},
+        {key: 'maxpushups', name: 'Max Pompes 1min', value: getTestValueFromHistory('maxpushups', 'endurance'), unit: 'reps', category: 'Endurance'},
+        {key: 'maxsquats', name: 'Max Squats 1min', value: getTestValueFromHistory('maxsquats', 'endurance'), unit: 'reps', category: 'Endurance'},
+        {key: 'vertjump', name: 'Détente Verticale', value: getTestValueFromHistory('vertjump', 'explosivite'), unit: 'cm', category: 'Explosivité'},
+        {key: 'horizjump', name: 'Détente Horizontale', value: getTestValueFromHistory('horizjump', 'explosivite'), unit: 'cm', category: 'Explosivité'},
+        {key: 'medballchest', name: 'MedBall Chest', value: getTestValueFromHistory('medballchest', 'explosivite'), unit: 'm', category: 'Explosivité'},
         {key: 'rkcplank', name: 'RKC Plank', value: getTestValue('test-rkcplank'), unit: 's', category: 'Core'},
         {key: 'mcgillflexor', name: 'McGill Flexor', value: getTestValue('test-mcgillflexor'), unit: 's', category: 'Core'},
         {key: 'mcgillextensor', name: 'McGill Extensor', value: getTestValue('test-mcgillextensor'), unit: 's', category: 'Core'},
-        {key: 'standreach', name: 'Stand & Reach', value: getTestValue('test-standreach'), unit: 'cm', category: 'Mobilité'}
+        {key: 'rkcplank', name: 'RKC Plank', value: getTestValueFromHistory('rkcplank', 'core'), unit: 's', category: 'Core'},
+        {key: 'mcgillflexor', name: 'McGill Flexor', value: getTestValueFromHistory('mcgillflexor', 'core'), unit: 's', category: 'Core'},
+        {key: 'mcgillextensor', name: 'McGill Extensor', value: getTestValueFromHistory('mcgillextensor', 'core'), unit: 's', category: 'Core'},
+        {key: 'standreach', name: 'Stand & Reach', value: getTestValueFromHistory('standreach', 'mobilite'), unit: 'cm', category: 'Mobilité'}
     ];
     
     const testsWithScores = allTestsData
@@ -1503,17 +1527,37 @@ function generateCompleteBilan() {
     const top5 = testsWithScores.slice(0, 5);
     const bottom5 = testsWithScores.slice(-5).reverse();
     
+    // Fonction pour récupérer valeurs bilatérales de l'historique
+    const getBilateralFromHistory = (testKey, qualityKey) => {
+        const qualityTests = history
+            .filter(h => h.quality === qualityKey)
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        for (const test of qualityTests) {
+            if (test.tests && test.tests[testKey]) {
+                const value = test.tests[testKey];
+                if (typeof value === 'object') {
+                    return {
+                        left: value.left !== null && value.left !== undefined ? value.left : null,
+                        right: value.right !== null && value.right !== undefined ? value.right : null
+                    };
+                }
+            }
+        }
+        return {left: null, right: null};
+    };
+    
     // Calculer asymétries
     const bilateralTests = [
-        {name: 'Wall Sit', left: getTestValue('test-wallsit-left'), right: getTestValue('test-wallsit-right'), unit: 's'},
-        {name: 'CMJ Unilatéral', left: getTestValue('test-cmj-left'), right: getTestValue('test-cmj-right'), unit: 'cm'},
-        {name: 'Side Plank', left: getTestValue('test-sideplank-left'), right: getTestValue('test-sideplank-right'), unit: 's'},
-        {name: 'Rotation Thoracique', left: getTestValue('test-thoracic-left'), right: getTestValue('test-thoracic-right'), unit: '°'},
-        {name: 'Hip Rotation Int', left: getTestValue('test-hipint-left'), right: getTestValue('test-hipint-right'), unit: '°'},
-        {name: 'Hip Rotation Ext', left: getTestValue('test-hipext-left'), right: getTestValue('test-hipext-right'), unit: '°'},
-        {name: 'Dorsiflexion', left: getTestValue('test-ankle-left'), right: getTestValue('test-ankle-right'), unit: 'cm'},
-        {name: 'Équilibre Y. Ouverts', left: getTestValue('test-balanceopen-left'), right: getTestValue('test-balanceopen-right'), unit: 's'},
-        {name: 'Équilibre Y. Fermés', left: getTestValue('test-balanceclosed-left'), right: getTestValue('test-balanceclosed-right'), unit: 's'}
+        {name: 'Wall Sit', ...getBilateralFromHistory('wallsit', 'endurance'), unit: 's'},
+        {name: 'CMJ Unilatéral', ...getBilateralFromHistory('cmjunilateral', 'explosivite'), unit: 'cm'},
+        {name: 'Side Plank', ...getBilateralFromHistory('sideplank', 'core'), unit: 's'},
+        {name: 'Rotation Thoracique', ...getBilateralFromHistory('thoracic', 'mobilite'), unit: '°'},
+        {name: 'Hip Rotation Int', ...getBilateralFromHistory('hipint', 'mobilite'), unit: '°'},
+        {name: 'Hip Rotation Ext', ...getBilateralFromHistory('hipext', 'mobilite'), unit: '°'},
+        {name: 'Dorsiflexion', ...getBilateralFromHistory('ankle', 'mobilite'), unit: 'cm'},
+        {name: 'Équilibre Y. Ouverts', ...getBilateralFromHistory('balanceopen', 'equilibre'), unit: 's'},
+        {name: 'Équilibre Y. Fermés', ...getBilateralFromHistory('balanceclosed', 'equilibre'), unit: 's'}
     ];
     
     const asymmetries = bilateralTests
@@ -2481,10 +2525,29 @@ function calculateScore20(testKey, value) {
 function calculateQualityScores() {
     if (!currentPlayer) return null;
     
-    // Récupérer les valeurs des tests depuis les champs
-    const getTestValue = (id) => {
-        const input = document.getElementById(id);
-        return input ? parseFloat(input.value) : null;
+    // Récupérer l'historique
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    
+    // Fonction pour récupérer la dernière valeur d'un test depuis l'historique
+    const getTestValue = (testKey, qualityKey) => {
+        const qualityTests = history
+            .filter(h => h.quality === qualityKey)
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        for (const test of qualityTests) {
+            if (test.tests && test.tests[testKey] !== undefined && test.tests[testKey] !== null) {
+                const value = test.tests[testKey];
+                // Si c'est un test bilatéral, prendre la moyenne
+                if (typeof value === 'object' && (value.left !== null || value.right !== null)) {
+                    const left = value.left || 0;
+                    const right = value.right || 0;
+                    const count = (value.left !== null ? 1 : 0) + (value.right !== null ? 1 : 0);
+                    return count > 0 ? (left + right) / count : null;
+                }
+                return value;
+            }
+        }
+        return null;
     };
     
     // Moyenne d'un tableau de scores (ignore les nulls)
@@ -2495,55 +2558,55 @@ function calculateQualityScores() {
     
     // FORCE (4 tests)
     const forceScores = [
-        calculateScore20('squat', getTestValue('test-squat-1rm')),
-        calculateScore20('deadlift', getTestValue('test-deadlift-1rm')),
-        calculateScore20('bench', getTestValue('test-bench-1rm')),
-        calculateScore20('pullup', getTestValue('test-pullup-1rm'))
+        calculateScore20('squat', getTestValue('squat', 'force')),
+        calculateScore20('deadlift', getTestValue('deadlift', 'force')),
+        calculateScore20('bench', getTestValue('bench', 'force')),
+        calculateScore20('pullup', getTestValue('pullup', 'force'))
     ];
     
     // VITESSE (2 tests)
     const vitesseScores = [
-        calculateScore20('shuttle', getTestValue('test-shuttle')),
-        calculateScore20('driverspeed', getTestValue('test-driverspeed'))
+        calculateScore20('shuttle', getTestValue('shuttle', 'vitesse')),
+        calculateScore20('driverspeed', getTestValue('driverspeed', 'vitesse'))
     ];
     
     // ENDURANCE (4 tests)
     const enduranceScores = [
-        calculateScore20('vma', getTestValue('test-vma')),
-        calculateScore20('maxpushups', getTestValue('test-maxpushups')),
-        calculateScore20('maxsquats', getTestValue('test-maxsquats')),
-        calculateScore20('wallsit', average([getTestValue('test-wallsit-left'), getTestValue('test-wallsit-right')]))
+        calculateScore20('vma', getTestValue('vma', 'endurance')),
+        calculateScore20('maxpushups', getTestValue('maxpushups', 'endurance')),
+        calculateScore20('maxsquats', getTestValue('maxsquats', 'endurance')),
+        calculateScore20('wallsit', getTestValue('wallsit', 'endurance'))
     ];
     
     // EXPLOSIVITÉ (4 tests)
     const explosiviteScores = [
-        calculateScore20('vertjump', getTestValue('test-vertjump')),
-        calculateScore20('horizjump', getTestValue('test-horizjump')),
-        calculateScore20('medballchest', getTestValue('test-medballchest')),
-        calculateScore20('medballrotation', average([getTestValue('test-medballrotation-left'), getTestValue('test-medballrotation-right')]))
+        calculateScore20('vertjump', getTestValue('vertjump', 'explosivite')),
+        calculateScore20('horizjump', getTestValue('horizjump', 'explosivite')),
+        calculateScore20('medballchest', getTestValue('medballchest', 'explosivite')),
+        calculateScore20('medballrotation', getTestValue('medballrotation', 'explosivite'))
     ];
     
     // CORE & STABILITÉ (4 tests)
     const coreScores = [
-        calculateScore20('rkcplank', getTestValue('test-rkcplank')),
-        calculateScore20('sideplank', average([getTestValue('test-sideplank-left'), getTestValue('test-sideplank-right')])),
-        calculateScore20('mcgillflexor', getTestValue('test-mcgillflexor')),
-        calculateScore20('mcgillextensor', getTestValue('test-mcgillextensor'))
+        calculateScore20('rkcplank', getTestValue('rkcplank', 'core')),
+        calculateScore20('sideplank', getTestValue('sideplank', 'core')),
+        calculateScore20('mcgillflexor', getTestValue('mcgillflexor', 'core')),
+        calculateScore20('mcgillextensor', getTestValue('mcgillextensor', 'core'))
     ];
     
     // MOBILITÉ (5 tests)
     const mobiliteScores = [
-        calculateScore20('standreach', getTestValue('test-standreach')),
-        calculateScore20('thoracic', average([getTestValue('test-thoracic-left'), getTestValue('test-thoracic-right')])),
-        calculateScore20('hipint', average([getTestValue('test-hipint-left'), getTestValue('test-hipint-right')])),
-        calculateScore20('hipext', average([getTestValue('test-hipext-left'), getTestValue('test-hipext-right')])),
-        calculateScore20('ankle', average([getTestValue('test-ankle-left'), getTestValue('test-ankle-right')]))
+        calculateScore20('standreach', getTestValue('standreach', 'mobilite')),
+        calculateScore20('thoracic', getTestValue('thoracic', 'mobilite')),
+        calculateScore20('hipint', getTestValue('hipint', 'mobilite')),
+        calculateScore20('hipext', getTestValue('hipext', 'mobilite')),
+        calculateScore20('ankle', getTestValue('ankle', 'mobilite'))
     ];
     
     // ÉQUILIBRE (2 tests)
     const equilibreScores = [
-        calculateScore20('balanceopen', average([getTestValue('test-balanceopen-left'), getTestValue('test-balanceopen-right')])),
-        calculateScore20('balanceclosed', average([getTestValue('test-balanceclosed-left'), getTestValue('test-balanceclosed-right')]))
+        calculateScore20('balanceopen', getTestValue('balanceopen', 'equilibre')),
+        calculateScore20('balanceclosed', getTestValue('balanceclosed', 'equilibre'))
     ];
     
     return {
