@@ -1992,13 +1992,210 @@ function generateCompleteBilan() {
             `}
         </div>
         
-        <div class="page-number">Page 2/2</div>
+        <div class="page-number">Page 2/3</div>
+    </div>
+    
+    <!-- PAGE 3: RECOMMANDATIONS & PLAN D'ACTION -->
+    <div class="page">
+        <div class="header">
+            <h1>RECOMMANDATIONS & PLAN D'ACTION</h1>
+            <p>${currentPlayer.name} - Page 3/3</p>
+        </div>
+        
+        <div class="section">
+            <h2>🎯 Priorités d'Entraînement</h2>
+            ${pointsFaibles.length > 0 ? `
+                <p style="margin-bottom: 20px; color: #666;">Basé sur votre évaluation, voici les qualités physiques à prioriser pour optimiser vos performances au golf :</p>
+                ${pointsFaibles.map((q, idx) => `
+                    <div style="background: ${idx === 0 ? '#ffebee' : '#fff3e0'}; padding: 15px; margin-bottom: 15px; border-radius: 8px; border-left: 4px solid ${idx === 0 ? '#e74c3c' : '#f39c12'};">
+                        <h3 style="color: #333; margin-bottom: 10px;">
+                            ${idx === 0 ? '🔴 PRIORITÉ HAUTE' : '⚠️ PRIORITÉ MOYENNE'} : ${q.name} (${q.score.toFixed(1)}/20)
+                        </h3>
+                        <p style="margin-bottom: 10px; color: #555;"><strong>Exercices recommandés :</strong></p>
+                        <ul style="margin-left: 20px; color: #555;">
+                            ${getExercisesForQuality(q.name).map(ex => `<li>${ex}</li>`).join('')}
+                        </ul>
+                        <p style="margin-top: 10px; color: #555;"><strong>Fréquence :</strong> ${getFrequencyForQuality(q.name)}</p>
+                    </div>
+                `).join('')}
+            ` : '<p style="color: #27ae60;">✅ Excellent ! Toutes vos qualités physiques sont dans la moyenne ou au-dessus.</p>'}
+        </div>
+        
+        ${asymmetries.length > 0 ? `
+            <div class="section">
+                <h2>⚖️ Correction des Asymétries</h2>
+                <p style="margin-bottom: 20px; color: #666;">Les asymétries détectées doivent être corrigées pour réduire les risques de blessure et optimiser la performance :</p>
+                ${asymmetries.slice(0, 3).map(a => `
+                    <div style="background: #ffebee; padding: 15px; margin-bottom: 15px; border-radius: 8px; border-left: 4px solid #e74c3c;">
+                        <h4 style="color: #333; margin-bottom: 8px;">${a.name} - LSI ${a.lsi.toFixed(1)}%</h4>
+                        <p style="margin: 5px 0; color: #555;"><strong>Déséquilibre :</strong> Gauche ${a.left.toFixed(1)}${a.unit} | Droite ${a.right.toFixed(1)}${a.unit}</p>
+                        <p style="margin: 5px 0; color: #555;"><strong>Action :</strong> Renforcer prioritairement le côté ${a.weakerSide === 'G' ? 'GAUCHE' : 'DROIT'}</p>
+                        <p style="margin: 5px 0; color: #555;"><strong>Exercice :</strong> ${getCorrectionExercise(a.name, a.weakerSide)}</p>
+                    </div>
+                `).join('')}
+            </div>
+        ` : ''}
+        
+        <div class="section">
+            <h2>📅 Programme Structuré 4-8 Semaines</h2>
+            <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
+                <h3 style="color: #1a4d2e; margin-bottom: 15px;">Phase 1 : Fondations (Semaines 1-2)</h3>
+                <ul style="margin-left: 20px; color: #555;">
+                    <li><strong>Focus :</strong> Correction asymétries + Mobilité de base</li>
+                    <li><strong>Volume :</strong> 3-4 séances/semaine (30-40 min)</li>
+                    <li><strong>Intensité :</strong> Modérée (60-70% capacité max)</li>
+                    ${pointsFaibles.length > 0 ? `<li><strong>Priorité :</strong> ${pointsFaibles[0].name} - exercices de base</li>` : ''}
+                </ul>
+            </div>
+            
+            <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
+                <h3 style="color: #1565c0; margin-bottom: 15px;">Phase 2 : Progression (Semaines 3-4)</h3>
+                <ul style="margin-left: 20px; color: #555;">
+                    <li><strong>Focus :</strong> Augmentation intensité + Intégration gestes golf</li>
+                    <li><strong>Volume :</strong> 4-5 séances/semaine (40-50 min)</li>
+                    <li><strong>Intensité :</strong> Moyenne-Haute (70-80% capacité max)</li>
+                    <li><strong>Tests :</strong> Réévaluation partielle fin semaine 4</li>
+                </ul>
+            </div>
+            
+            <div style="background: #fff3e0; padding: 20px; border-radius: 8px;">
+                <h3 style="color: #e65100; margin-bottom: 15px;">Phase 3 : Performance (Semaines 5-8) - Optionnel</h3>
+                <ul style="margin-left: 20px; color: #555;">
+                    <li><strong>Focus :</strong> Optimisation + Spécificité golf</li>
+                    <li><strong>Volume :</strong> 4 séances/semaine (45-60 min)</li>
+                    <li><strong>Intensité :</strong> Haute (80-90% capacité max)</li>
+                    <li><strong>Tests :</strong> Réévaluation complète fin semaine 8</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🎯 Objectifs Chiffrés (8 semaines)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Qualité</th>
+                        <th>Actuel</th>
+                        <th>Objectif</th>
+                        <th>Progression</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${pointsFaibles.map(q => {
+                        const current = q.score;
+                        const target = Math.min(20, current + (current < 10 ? 3 : 2));
+                        const progress = ((target - current) / current * 100).toFixed(0);
+                        return `
+                            <tr>
+                                <td><strong>${q.name}</strong></td>
+                                <td>${current.toFixed(1)}/20</td>
+                                <td>${target.toFixed(1)}/20</td>
+                                <td style="color: #27ae60;"><strong>+${progress}%</strong></td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>
+        
+        <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; margin-top: 20px;">
+            <h3 style="color: #1a4d2e; margin-bottom: 10px;">💡 Conseils Généraux</h3>
+            <ul style="margin-left: 20px; color: #555;">
+                <li><strong>Échauffement :</strong> 10 min minimum avant chaque séance (mobilité dynamique)</li>
+                <li><strong>Récupération :</strong> Au moins 1 jour de repos complet par semaine</li>
+                <li><strong>Hydratation :</strong> 2-3L d'eau par jour, plus pendant l'effort</li>
+                <li><strong>Sommeil :</strong> 7-9h par nuit pour optimiser la récupération</li>
+                <li><strong>Nutrition :</strong> Protéines 1.6-2g/kg/jour pour la récupération musculaire</li>
+                <li><strong>Suivi :</strong> Réévaluer tous les tests après 4 et 8 semaines</li>
+            </ul>
+        </div>
+        
+        <div class="page-number">Page 3/3</div>
     </div>
     
     <div class="actions no-print">
         <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimer / Sauvegarder PDF</button>
         <button class="btn btn-secondary" onclick="window.close()">✖️ Fermer</button>
     </div>
+    
+    <script>
+        // Fonctions pour générer les recommandations
+        function getExercisesForQuality(quality) {
+            const exercises = {
+                'Force': [
+                    'Squats (3x8-12 reps, 70-80% 1RM)',
+                    'Deadlifts roumains (3x8-10 reps)',
+                    'Développé couché (3x8-12 reps)',
+                    'Tractions assistées (3x max reps)'
+                ],
+                'Vitesse': [
+                    'Sprints 10-20m (6-8 reps)',
+                    'Navette 5x10m (4-6 séries)',
+                    'Drills vitesse driver (10-15 swings/séance)',
+                    'Pliométrie légère (box jumps 3x5)'
+                ],
+                'Endurance': [
+                    'Course continue 20-30min (70% FCmax)',
+                    'Interval training 30-30 (10-15 séries)',
+                    'Circuit training 3x (pompes/squats/burpees)',
+                    'VMA courte (8x30s à 90-95% VMA)'
+                ],
+                'Explosivité': [
+                    'Box jumps (4x5 reps)',
+                    'Med ball throws (4x6 reps)',
+                    'Broad jumps (5x3 reps)',
+                    'Kettlebell swings (3x15 reps)'
+                ],
+                'Core & Stabilité': [
+                    'Plank variations (3x30-60s)',
+                    'Dead bugs (3x12 reps/côté)',
+                    'Pallof press (3x10 reps/côté)',
+                    'Bird dogs (3x10 reps/côté)'
+                ],
+                'Mobilité': [
+                    'Yoga golf-spécifique (20-30 min)',
+                    'Foam rolling routine (10-15 min)',
+                    'Étirements dynamiques (10 min)',
+                    'Rotation thoracique (3x10 reps/côté)'
+                ],
+                'Équilibre': [
+                    'Single leg stance (3x30s/côté)',
+                    'BOSU exercises (3x45s)',
+                    'Proprioception drills (15 min)',
+                    'Yoga balance poses (10-15 min)'
+                ]
+            };
+            return exercises[quality] || ['Consulter un préparateur physique'];
+        }
+        
+        function getFrequencyForQuality(quality) {
+            const frequencies = {
+                'Force': '3-4x/semaine (jours non consécutifs)',
+                'Vitesse': '2-3x/semaine (repos 48h entre séances)',
+                'Endurance': '3-5x/semaine (varie intensité)',
+                'Explosivité': '2-3x/semaine (haute récupération)',
+                'Core & Stabilité': '4-6x/semaine (peut être quotidien)',
+                'Mobilité': 'Quotidien (10-15 min minimum)',
+                'Équilibre': '3-4x/semaine (intégrer dans routine)'
+            };
+            return frequencies[quality] || '3x/semaine';
+        }
+        
+        function getCorrectionExercise(testName, weakerSide) {
+            const exercises = {
+                'Wall Sit': 'Wall sit unilatéral côté faible (3x20-30s) + progression bilatéral',
+                'CMJ Unilatéral': 'Single leg jumps côté faible (4x5 reps) + Bulgarian squats',
+                'Side Plank': 'Side plank progressif côté faible (3x30-45s)',
+                'Rotation Thoracique': 'Open book stretch côté limité (3x10 reps) + Foam roller',
+                'Hip Rotation Int': 'Pigeon pose + 90/90 stretch côté limité (3x30s)',
+                'Hip Rotation Ext': 'Frog stretch + band distraction côté limité',
+                'Dorsiflexion': 'Ankle mobilité wall drill côté limité (3x10 reps)',
+                'Équilibre Y. Ouverts': 'Single leg stance yeux ouverts côté faible (4x30s)',
+                'Équilibre Y. Fermés': 'Progression: ouverts → semi-fermés → fermés côté faible'
+            };
+            return exercises[testName] || 'Travail unilatéral côté faible (consulter coach)';
+        }
+    </script>
     
     <script>
         const ctx = document.getElementById('radarChart');
