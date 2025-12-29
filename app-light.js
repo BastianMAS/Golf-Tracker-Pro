@@ -2819,18 +2819,49 @@ function saveQualityTests(qualityKey) {
     
     // Récupérer l'historique existant
     let history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
-    history.push(testData);
-    localStorage.setItem('testsHistory', JSON.stringify(history));
     
-    alert(`✅ Tests de ${quality.name} enregistrés !`);
+    // Si on est en mode édition, remplacer le test existant
+    if (window.editingTestId) {
+        const index = history.findIndex(t => t.id === window.editingTestId);
+        if (index !== -1) {
+            // Garder l'ID et la date d'origine
+            testData.id = window.editingTestId;
+            testData.date = history[index].date;
+            testData.modifiedDate = new Date().toISOString();
+            
+            history[index] = testData;
+            alert(`✅ Test de ${quality.name} modifié !`);
+        } else {
+            history.push(testData);
+            alert(`✅ Tests de ${quality.name} enregistrés !`);
+        }
+        
+        // Réinitialiser le mode édition
+        window.editingTestId = null;
+    } else {
+        // Mode création normal
+        history.push(testData);
+        alert(`✅ Tests de ${quality.name} enregistrés !`);
+    }
+    
+    localStorage.setItem('testsHistory', JSON.stringify(history));
     
     // Vider les champs après sauvegarde
     quality.tests.forEach(test => {
         if (test.bilateral) {
-            document.getElementById(test.inputs[0]).value = '';
-            document.getElementById(test.inputs[1]).value = '';
+            const leftEl = document.getElementById(test.inputs[0]);
+            const rightEl = document.getElementById(test.inputs[1]);
+            if (leftEl) leftEl.value = '';
+            if (rightEl) rightEl.value = '';
         } else {
-            document.getElementById(test.input).value = '';
+            const el = document.getElementById(test.input);
+            if (el) {
+                if (el.tagName === 'SELECT') {
+                    el.value = '';
+                } else {
+                    el.value = '';
+                }
+            }
         }
     });
 }
@@ -2884,9 +2915,14 @@ function displayHistory() {
                             <strong style="font-size: 16px;">📅 ${date.toLocaleDateString('fr-FR')} à ${date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</strong>
                             <div style="color: #666; font-size: 14px;">${Object.keys(test.tests).length} test${Object.keys(test.tests).length > 1 ? 's' : ''} complété${Object.keys(test.tests).length > 1 ? 's' : ''}</div>
                         </div>
-                        <button onclick="deleteTest(${test.id})" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-                            🗑️ Supprimer
-                        </button>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="editTest(${test.id})" style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                                ✏️ Modifier
+                            </button>
+                            <button onclick="deleteTest(${test.id})" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                                🗑️ Supprimer
+                            </button>
+                        </div>
                     </div>
                     <div class="test-results">
             `;
@@ -2968,6 +3004,96 @@ function displayHistory() {
     html += '</div>';
     
     document.querySelector('.history-container').innerHTML = html;
+}
+
+// Supprimer un test
+// Modifier un test
+function editTest(testId) {
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    const test = history.find(t => t.id === testId);
+    
+    if (!test) {
+        alert('Test introuvable !');
+        return;
+    }
+    
+    const quality = QUALITY_TESTS[test.quality];
+    if (!quality) return;
+    
+    // Charger les valeurs dans les champs
+    quality.tests.forEach(testDef => {
+        const testResult = test.tests[testDef.key];
+        if (!testResult) return;
+        
+        if (testDef.bilateral) {
+            const leftEl = document.getElementById(testDef.inputs[0]);
+            const rightEl = document.getElementById(testDef.inputs[1]);
+            
+            if (leftEl) {
+                if (leftEl.tagName === 'SELECT') {
+                    leftEl.value = testResult.left || '';
+                } else {
+                    leftEl.value = testResult.left || '';
+                }
+            }
+            
+            if (rightEl) {
+                if (rightEl.tagName === 'SELECT') {
+                    rightEl.value = testResult.right || '';
+                } else {
+                    rightEl.value = testResult.right || '';
+                }
+            }
+        } else {
+            const el = document.getElementById(testDef.input);
+            if (el) {
+                if (el.tagName === 'SELECT') {
+                    el.value = testResult || '';
+                } else {
+                    el.value = testResult || '';
+                }
+            }
+        }
+    });
+    
+    // Stocker l'ID du test en cours d'édition
+    window.editingTestId = testId;
+    
+    // Aller à l'onglet Tests
+    switchTab('tests');
+    
+    // Ouvrir l'accordéon correspondant
+    const accordionMap = {
+        'force': '🟢 FORCE',
+        'vitesse': '🟡 VITESSE',
+        'endurance': '🔴 ENDURANCE',
+        'explosivite': '🟣 EXPLOSIVITÉ',
+        'core': '🔵 CORE',
+        'mobilite': '🟠 MOBILITÉ',
+        'equilibre': '⚪ ÉQUILIBRE',
+        'tpi': '🏌️ TESTS TPI'
+    };
+    
+    const sectionTitle = accordionMap[test.quality];
+    if (sectionTitle) {
+        // Trouver et ouvrir l'accordéon
+        const headers = document.querySelectorAll('.category-header');
+        headers.forEach(header => {
+            const span = header.querySelector('span');
+            if (span && span.textContent.includes(sectionTitle)) {
+                const content = header.nextElementSibling;
+                if (content && !content.classList.contains('active')) {
+                    header.click();
+                }
+                // Scroller jusqu'à la section
+                setTimeout(() => {
+                    header.scrollIntoView({behavior: 'smooth', block: 'center'});
+                }, 300);
+            }
+        });
+    }
+    
+    alert(`✏️ Les valeurs ont été chargées. Modifiez-les puis cliquez sur "${quality.icon} Enregistrer ${quality.name}" pour sauvegarder.`);
 }
 
 // Supprimer un test
