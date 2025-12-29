@@ -606,14 +606,7 @@ const TEST_NAMES = {
 
 
 // ==================== INITIALISATION ====================
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Initialisation de l\'application...');
-    initializeApp();
-    setupEventListeners();
-    loadPlayerData();
-    setupMobileMenu();
-    setupRMCalculators();
-});
+// L'initialisation se fait à la fin du fichier pour gérer le cas où le DOM est déjà chargé
 
 function initializeApp() {
     // Initialiser la date à aujourd'hui
@@ -4332,3 +4325,24 @@ function deleteTest(testId) {
 }
 
 console.log('✅ Application chargée et prête');
+
+// Appel immédiat au cas où DOMContentLoaded est déjà passé
+if (document.readyState === 'loading') {
+    // Le DOM n'est pas encore chargé, on attend
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 DOMContentLoaded - Initialisation...');
+        initializeApp();
+        setupEventListeners();
+        loadPlayerData();
+        setupMobileMenu();
+        setupRMCalculators();
+    });
+} else {
+    // Le DOM est déjà chargé (script defer), on exécute directement
+    console.log('🚀 DOM déjà prêt - Initialisation immédiate...');
+    initializeApp();
+    setupEventListeners();
+    loadPlayerData();
+    setupMobileMenu();
+    setupRMCalculators();
+}
