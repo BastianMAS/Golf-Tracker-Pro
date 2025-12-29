@@ -8,6 +8,177 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a4d2e">
+    
+    <style>
+        /* Dashboard Styles */
+        .overview-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .overview-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .overview-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .card-icon {
+            font-size: 48px;
+        }
+        
+        .card-content {
+            flex: 1;
+        }
+        
+        .card-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .card-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a4d2e;
+            line-height: 1;
+        }
+        
+        .card-sublabel {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+        
+        .dashboard-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .chart-card h4 {
+            margin: 0 0 15px 0;
+            color: #1a4d2e;
+            font-size: 18px;
+        }
+        
+        .chart-card canvas {
+            max-height: 300px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .dashboard-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .dashboard-card h4 {
+            margin: 0 0 15px 0;
+            color: #1a4d2e;
+            font-size: 16px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        
+        .record-item, .alert-item, .recent-test-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            background: #f8f9fa;
+            font-size: 14px;
+        }
+        
+        .record-item {
+            border-left: 4px solid #27ae60;
+        }
+        
+        .alert-item {
+            border-left: 4px solid #f39c12;
+        }
+        
+        .alert-item.critical {
+            border-left-color: #e74c3c;
+            background: #ffebee;
+        }
+        
+        .recent-test-item {
+            border-left: 4px solid #3498db;
+        }
+        
+        .objectives-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .objectives-section h4 {
+            margin: 0 0 15px 0;
+            color: #1a4d2e;
+            font-size: 18px;
+        }
+        
+        .objective-progress {
+            margin-bottom: 15px;
+        }
+        
+        .objective-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1a4d2e, #27ae60);
+            transition: width 0.5s ease;
+        }
+        
+        @media (max-width: 1024px) {
+            .dashboard-charts {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
@@ -949,22 +1120,91 @@
             <!-- Onglet Dashboard -->
             <div id="dashboard-tab" class="tab-content">
                 <div class="dashboard-container">
+                    <!-- Header avec infos joueur -->
                     <div class="dashboard-header">
-                        <h3>Dashboard Performance</h3>
+                        <h3>📊 Dashboard Performance</h3>
                         <div class="player-info-display" id="playerInfoDisplay"></div>
                     </div>
 
-                    <!-- Alertes Asymétries -->
-                    <div id="asymmetryAlerts" class="asymmetry-alerts"></div>
-
-                    <!-- Graphique Radar -->
-                    <div class="radar-container">
-                        <h4>Profil Performance (Radar)</h4>
-                        <canvas id="radarChart"></canvas>
+                    <!-- Section 1: Vue d'ensemble (3 cartes) -->
+                    <div class="overview-cards">
+                        <div class="overview-card">
+                            <div class="card-icon">🎯</div>
+                            <div class="card-content">
+                                <div class="card-label">Note Globale</div>
+                                <div class="card-value" id="globalScoreCard">--</div>
+                                <div class="card-sublabel">/20</div>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-card">
+                            <div class="card-icon">📅</div>
+                            <div class="card-content">
+                                <div class="card-label">Dernière Évaluation</div>
+                                <div class="card-value" id="lastTestDate">--</div>
+                                <div class="card-sublabel" id="lastTestQuality">--</div>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-card">
+                            <div class="card-icon">🔥</div>
+                            <div class="card-content">
+                                <div class="card-label">Tests Enregistrés</div>
+                                <div class="card-value" id="totalTests">--</div>
+                                <div class="card-sublabel">au total</div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Scores Détaillés par Catégorie -->
-                    <div id="detailedScores" class="detailed-scores"></div>
+                    <!-- Section 2: Graphiques (2 colonnes) -->
+                    <div class="dashboard-charts">
+                        <!-- Colonne gauche: Radar -->
+                        <div class="chart-card">
+                            <h4>📊 Profil des 7 Qualités</h4>
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                        
+                        <!-- Colonne droite: Progression -->
+                        <div class="chart-card">
+                            <h4>📈 Évolution (Derniers Tests)</h4>
+                            <canvas id="progressionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Grille 3 colonnes -->
+                    <div class="dashboard-grid">
+                        <!-- Colonne 1: Records -->
+                        <div class="dashboard-card">
+                            <h4>🏆 Records Personnels</h4>
+                            <div id="personalRecords">
+                                <p style="color: #999; text-align: center; padding: 20px;">Aucun test enregistré</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Colonne 2: Alertes -->
+                        <div class="dashboard-card">
+                            <h4>⚠️ Alertes & Priorités</h4>
+                            <div id="alertsSection">
+                                <p style="color: #999; text-align: center; padding: 20px;">Aucune alerte</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Colonne 3: Derniers tests -->
+                        <div class="dashboard-card">
+                            <h4>📋 Derniers Tests</h4>
+                            <div id="recentTestsList">
+                                <p style="color: #999; text-align: center; padding: 20px;">Aucun test</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Objectifs (pleine largeur) -->
+                    <div class="objectives-section">
+                        <h4>🎯 Objectifs & Progression</h4>
+                        <div id="objectivesContent">
+                            <p style="color: #999; text-align: center; padding: 20px;">Définissez vos objectifs dans le rapport</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 

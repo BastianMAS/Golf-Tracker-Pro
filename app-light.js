@@ -753,6 +753,399 @@ function setupAccordions() {
 }
 
 // ==================== NAVIGATION ====================
+// ==================== UPDATE DASHBOARD ====================
+function updateDashboard() {
+    if (!currentPlayer) {
+        document.getElementById('globalScoreCard').textContent = '--';
+        document.getElementById('lastTestDate').textContent = '--';
+        document.getElementById('totalTests').textContent = '--';
+        return;
+    }
+    
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    const scores = calculateQualityScores();
+    
+    // 1. CARTES VUE D'ENSEMBLE
+    // Note globale
+    if (scores) {
+        const validScores = Object.values(scores).filter(s => s !== null && !isNaN(s));
+        const moyenneGenerale = validScores.length > 0 
+            ? validScores.reduce((a, b) => a + b, 0) / validScores.length 
+            : 0;
+        document.getElementById('globalScoreCard').textContent = moyenneGenerale.toFixed(1);
+    }
+    
+    // Dernier test
+    if (history.length > 0) {
+        const sortedHistory = history.sort((a, b) => new Date(b.date) - new Date(a.date));
+        const lastTest = sortedHistory[0];
+        const date = new Date(lastTest.date);
+        document.getElementById('lastTestDate').textContent = date.toLocaleDateString('fr-FR', {day: '2-digit', month: 'short'});
+        const qualityName = QUALITY_TESTS[lastTest.quality]?.name || lastTest.quality;
+        document.getElementById('lastTestQuality').textContent = qualityName;
+    }
+    
+    // Total tests
+    document.getElementById('totalTests').textContent = history.length;
+    
+    // 2. RADAR CHART
+    updateRadarChart(scores);
+    
+    // 3. GRAPHIQUE PROGRESSION
+    updateProgressionChart(history);
+    
+    // 4. RECORDS PERSONNELS
+    updatePersonalRecords(history);
+    
+    // 5. ALERTES & PRIORITÉS
+    updateAlerts(scores, history);
+    
+    // 6. DERNIERS TESTS
+    updateRecentTests(history);
+    
+    // 7. OBJECTIFS
+    updateObjectives(scores);
+}
+
+function updateRadarChart(scores) {
+    const canvas = document.getElementById('radarChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Détruire l'ancien chart s'il existe
+    if (window.dashboardRadarChart) {
+        window.dashboardRadarChart.destroy();
+    }
+    
+    window.dashboardRadarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['Force', 'Vitesse', 'Endurance', 'Explosivité', 'Core', 'Mobilité', 'Équilibre'],
+            datasets: [{
+                label: 'Performance /20',
+                data: [
+                    scores?.force || 0,
+                    scores?.vitesse || 0,
+                    scores?.endurance || 0,
+                    scores?.explosivite || 0,
+                    scores?.core || 0,
+                    scores?.mobilite || 0,
+                    scores?.equilibre || 0
+                ],
+                backgroundColor: 'rgba(26, 77, 46, 0.2)',
+                borderColor: 'rgba(26, 77, 46, 1)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(26, 77, 46, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(26, 77, 46, 1)'
+            }]
+        },
+        options: {
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 20,
+                    ticks: {
+                        stepSize: 5
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+function updateProgressionChart(history) {
+    const canvas = document.getElementById('progressionChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Détruire l'ancien chart
+    if (window.dashboardProgressionChart) {
+        window.dashboardProgressionChart.destroy();
+    }
+    
+    // Organiser par qualité et prendre les 5 derniers
+    const qualitiesData = {};
+    Object.keys(QUALITY_TESTS).forEach(key => {
+        const tests = history
+            .filter(h => h.quality === key)
+            .sort((a, b) => new Date(a.date) - new Date(b.date))
+            .slice(-5);
+        
+        if (tests.length > 0) {
+            qualitiesData[key] = tests.map(t => {
+                const scores = Object.values(t.tests).filter(v => v !== null && v !== undefined);
+                return scores.length;
+            });
+        }
+    });
+    
+    // Prendre les 3 qualités avec le plus de données
+    const topQualities = Object.entries(qualitiesData)
+        .sort((a, b) => b[1].length - a[1].length)
+        .slice(0, 3);
+    
+    const colors = {
+        'force': '#e74c3c',
+        'vitesse': '#f39c12',
+        'endurance': '#3498db',
+        'explosivite': '#9b59b6',
+        'core': '#1abc9c',
+        'mobilite': '#27ae60',
+        'equilibre': '#34495e'
+    };
+    
+    window.dashboardProgressionChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['T-4', 'T-3', 'T-2', 'T-1', 'Actuel'],
+            datasets: topQualities.map(([key, data]) => ({
+                label: QUALITY_TESTS[key].name,
+                data: data,
+                borderColor: colors[key],
+                backgroundColor: colors[key] + '20',
+                tension: 0.4
+            }))
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Nombre de tests'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updatePersonalRecords(history) {
+    const container = document.getElementById('personalRecords');
+    if (!container) return;
+    
+    if (history.length === 0) {
+        container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Aucun test enregistré</p>';
+        return;
+    }
+    
+    // Calculer les meilleurs scores par test
+    const allTests = {};
+    
+    history.forEach(record => {
+        Object.entries(record.tests).forEach(([testKey, value]) => {
+            if (value !== null && value !== undefined) {
+                const numValue = typeof value === 'object' ? 
+                    ((value.left || 0) + (value.right || 0)) / 2 : value;
+                
+                if (!allTests[testKey] || numValue > allTests[testKey].value) {
+                    allTests[testKey] = {
+                        value: numValue,
+                        date: record.date,
+                        quality: record.quality
+                    };
+                }
+            }
+        });
+    });
+    
+    // Prendre les 5 meilleurs
+    const topRecords = Object.entries(allTests)
+        .sort((a, b) => {
+            const scoreA = calculateScore20(a[0], a[1].value) || 0;
+            const scoreB = calculateScore20(b[0], b[1].value) || 0;
+            return scoreB - scoreA;
+        })
+        .slice(0, 5);
+    
+    if (topRecords.length === 0) {
+        container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Pas encore de records</p>';
+        return;
+    }
+    
+    container.innerHTML = topRecords.map(([testKey, data]) => {
+        const testDef = Object.values(QUALITY_TESTS)
+            .flatMap(q => q.tests)
+            .find(t => t.key === testKey);
+        
+        const score = calculateScore20(testKey, data.value);
+        const badge = getBadgeLabel(score);
+        
+        return `
+            <div class="record-item">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong>${testDef?.name || testKey}</strong>
+                    <span class="badge badge-${badge.class}">${badge.label}</span>
+                </div>
+                <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                    ${data.value.toFixed(1)} ${testDef?.unit || ''} - ${new Date(data.date).toLocaleDateString('fr-FR')}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function updateAlerts(scores, history) {
+    const container = document.getElementById('alertsSection');
+    if (!container) return;
+    
+    const alerts = [];
+    
+    // Alertes qualités faibles
+    if (scores) {
+        const qualites = [
+            {name: 'Force', score: scores.force},
+            {name: 'Vitesse', score: scores.vitesse},
+            {name: 'Endurance', score: scores.endurance},
+            {name: 'Explosivité', score: scores.explosivite},
+            {name: 'Core & Stabilité', score: scores.core},
+            {name: 'Mobilité', score: scores.mobilite},
+            {name: 'Équilibre', score: scores.equilibre}
+        ].filter(q => q.score !== null && q.score < 10);
+        
+        qualites.forEach(q => {
+            alerts.push({
+                type: q.score < 7 ? 'critical' : 'warning',
+                message: `${q.name} : ${q.score.toFixed(1)}/20`,
+                action: 'À prioriser'
+            });
+        });
+    }
+    
+    // Alertes asymétries
+    const getTestValueFromHistory = (testKey, qualityKey) => {
+        const qualityTests = history
+            .filter(h => h.quality === qualityKey)
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        for (const test of qualityTests) {
+            if (test.tests && test.tests[testKey]) {
+                return test.tests[testKey];
+            }
+        }
+        return null;
+    };
+    
+    const asymmetryTests = [
+        {key: 'sideplank', quality: 'core', name: 'Side Plank'},
+        {key: 'balanceopen', quality: 'equilibre', name: 'Équilibre Y.O.'}
+    ];
+    
+    asymmetryTests.forEach(t => {
+        const value = getTestValueFromHistory(t.key, t.quality);
+        if (value && typeof value === 'object' && value.left && value.right) {
+            const lsi = (Math.min(value.left, value.right) / Math.max(value.left, value.right)) * 100;
+            if (lsi < 90) {
+                alerts.push({
+                    type: lsi < 85 ? 'critical' : 'warning',
+                    message: `${t.name} LSI ${lsi.toFixed(0)}%`,
+                    action: 'Asymétrie détectée'
+                });
+            }
+        }
+    });
+    
+    if (alerts.length === 0) {
+        container.innerHTML = '<p style="color: #27ae60; text-align: center; padding: 20px;">✅ Aucune alerte</p>';
+        return;
+    }
+    
+    container.innerHTML = alerts.slice(0, 5).map(alert => `
+        <div class="alert-item ${alert.type}">
+            <div style="font-weight: 600;">${alert.message}</div>
+            <div style="font-size: 12px; color: #666; margin-top: 3px;">${alert.action}</div>
+        </div>
+    `).join('');
+}
+
+function updateRecentTests(history) {
+    const container = document.getElementById('recentTestsList');
+    if (!container) return;
+    
+    if (history.length === 0) {
+        container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Aucun test</p>';
+        return;
+    }
+    
+    const recent = history
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 5);
+    
+    container.innerHTML = recent.map(test => {
+        const date = new Date(test.date);
+        const quality = QUALITY_TESTS[test.quality];
+        const numTests = Object.keys(test.tests).length;
+        
+        return `
+            <div class="recent-test-item">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 600;">${quality?.icon || ''} ${quality?.name || test.quality}</span>
+                    <span style="font-size: 12px; color: #666;">${date.toLocaleDateString('fr-FR', {day: '2-digit', month: 'short'})}</span>
+                </div>
+                <div style="font-size: 12px; color: #666; margin-top: 3px;">
+                    ${numTests} test${numTests > 1 ? 's' : ''} enregistré${numTests > 1 ? 's' : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function updateObjectives(scores) {
+    const container = document.getElementById('objectivesContent');
+    if (!container) return;
+    
+    if (!scores) {
+        container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Complétez des tests pour voir vos objectifs</p>';
+        return;
+    }
+    
+    const qualites = [
+        {name: 'Force', score: scores.force},
+        {name: 'Vitesse', score: scores.vitesse},
+        {name: 'Endurance', score: scores.endurance},
+        {name: 'Explosivité', score: scores.explosivite},
+        {name: 'Core', score: scores.core},
+        {name: 'Mobilité', score: scores.mobilite},
+        {name: 'Équilibre', score: scores.equilibre}
+    ].filter(q => q.score !== null)
+     .sort((a, b) => a.score - b.score)
+     .slice(0, 3);
+    
+    container.innerHTML = qualites.map(q => {
+        const current = q.score;
+        const target = Math.min(20, current + (current < 10 ? 3 : 2));
+        const progress = ((current / target) * 100).toFixed(0);
+        
+        return `
+            <div class="objective-progress">
+                <div class="objective-label">
+                    <span><strong>${q.name}</strong></span>
+                    <span>${current.toFixed(1)}/20 → ${target.toFixed(1)}/20</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${progress}%"></div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
 function switchTab(tabName) {
     console.log('Switching to tab:', tabName);
     
