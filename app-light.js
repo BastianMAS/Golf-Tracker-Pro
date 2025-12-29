@@ -1425,13 +1425,588 @@ function generateReport() {
         return;
     }
     
-    // Générer Page 1
-    generateBilanPage1();
+    // Générer le bilan complet (toutes les pages dans une seule fenêtre)
+    generateCompleteBilan();
+}
+
+// ==================== BILAN COMPLET - TOUTES LES PAGES ====================
+function generateCompleteBilan() {
+    if (!currentPlayer) {
+        alert('Veuillez d\'abord enregistrer votre profil !');
+        return;
+    }
     
-    // Générer Page 2 après un petit délai
-    setTimeout(() => {
-        generateBilanPage2();
-    }, 500);
+    const scores = calculateQualityScores();
+    if (!scores) {
+        alert('Erreur lors du calcul des scores');
+        return;
+    }
+    
+    // Calculer la moyenne générale
+    const validScores = Object.values(scores).filter(s => s !== null && !isNaN(s));
+    const moyenneGenerale = validScores.length > 0 
+        ? validScores.reduce((a, b) => a + b, 0) / validScores.length 
+        : 0;
+    
+    // Identifier points forts et faibles
+    const qualites = [
+        {name: 'Force', score: scores.force},
+        {name: 'Vitesse', score: scores.vitesse},
+        {name: 'Endurance', score: scores.endurance},
+        {name: 'Explosivité', score: scores.explosivite},
+        {name: 'Core & Stabilité', score: scores.core},
+        {name: 'Mobilité', score: scores.mobilite},
+        {name: 'Équilibre', score: scores.equilibre}
+    ].filter(q => q.score !== null);
+    
+    qualites.sort((a, b) => b.score - a.score);
+    
+    const pointsForts = qualites.slice(0, 2);
+    const pointsFaibles = qualites.slice(-2).reverse();
+    
+    // Préparer les données pour Page 2
+    const getTestValue = (id) => {
+        const input = document.getElementById(id);
+        return input ? parseFloat(input.value) : null;
+    };
+    
+    const allTestsData = [
+        {key: 'squat', name: 'Squat 1RM', value: getTestValue('test-squat-1rm'), unit: 'kg', category: 'Force'},
+        {key: 'deadlift', name: 'Deadlift 1RM', value: getTestValue('test-deadlift-1rm'), unit: 'kg', category: 'Force'},
+        {key: 'bench', name: 'Développé Couché 1RM', value: getTestValue('test-bench-1rm'), unit: 'kg', category: 'Force'},
+        {key: 'pullup', name: 'Tractions 1RM', value: getTestValue('test-pullup-1rm'), unit: 'kg', category: 'Force'},
+        {key: 'shuttle', name: 'Navette 5x10m', value: getTestValue('test-shuttle'), unit: 's', category: 'Vitesse'},
+        {key: 'driverspeed', name: 'Vitesse Driver', value: getTestValue('test-driverspeed'), unit: 'mph', category: 'Vitesse'},
+        {key: 'vma', name: 'VMA', value: getTestValue('test-vma'), unit: 'km/h', category: 'Endurance'},
+        {key: 'maxpushups', name: 'Max Pompes 1min', value: getTestValue('test-maxpushups'), unit: 'reps', category: 'Endurance'},
+        {key: 'maxsquats', name: 'Max Squats 1min', value: getTestValue('test-maxsquats'), unit: 'reps', category: 'Endurance'},
+        {key: 'vertjump', name: 'Détente Verticale', value: getTestValue('test-vertjump'), unit: 'cm', category: 'Explosivité'},
+        {key: 'horizjump', name: 'Détente Horizontale', value: getTestValue('test-horizjump'), unit: 'cm', category: 'Explosivité'},
+        {key: 'medballchest', name: 'MedBall Chest', value: getTestValue('test-medballchest'), unit: 'm', category: 'Explosivité'},
+        {key: 'rkcplank', name: 'RKC Plank', value: getTestValue('test-rkcplank'), unit: 's', category: 'Core'},
+        {key: 'mcgillflexor', name: 'McGill Flexor', value: getTestValue('test-mcgillflexor'), unit: 's', category: 'Core'},
+        {key: 'mcgillextensor', name: 'McGill Extensor', value: getTestValue('test-mcgillextensor'), unit: 's', category: 'Core'},
+        {key: 'standreach', name: 'Stand & Reach', value: getTestValue('test-standreach'), unit: 'cm', category: 'Mobilité'}
+    ];
+    
+    const testsWithScores = allTestsData
+        .filter(t => t.value !== null && !isNaN(t.value))
+        .map(t => ({
+            ...t,
+            score: calculateScore20(t.key, t.value),
+            badge: getBadgeLabel(calculateScore20(t.key, t.value))
+        }))
+        .filter(t => t.score !== null);
+    
+    testsWithScores.sort((a, b) => b.score - a.score);
+    
+    const top5 = testsWithScores.slice(0, 5);
+    const bottom5 = testsWithScores.slice(-5).reverse();
+    
+    // Calculer asymétries
+    const bilateralTests = [
+        {name: 'Wall Sit', left: getTestValue('test-wallsit-left'), right: getTestValue('test-wallsit-right'), unit: 's'},
+        {name: 'CMJ Unilatéral', left: getTestValue('test-cmj-left'), right: getTestValue('test-cmj-right'), unit: 'cm'},
+        {name: 'Side Plank', left: getTestValue('test-sideplank-left'), right: getTestValue('test-sideplank-right'), unit: 's'},
+        {name: 'Rotation Thoracique', left: getTestValue('test-thoracic-left'), right: getTestValue('test-thoracic-right'), unit: '°'},
+        {name: 'Hip Rotation Int', left: getTestValue('test-hipint-left'), right: getTestValue('test-hipint-right'), unit: '°'},
+        {name: 'Hip Rotation Ext', left: getTestValue('test-hipext-left'), right: getTestValue('test-hipext-right'), unit: '°'},
+        {name: 'Dorsiflexion', left: getTestValue('test-ankle-left'), right: getTestValue('test-ankle-right'), unit: 'cm'},
+        {name: 'Équilibre Y. Ouverts', left: getTestValue('test-balanceopen-left'), right: getTestValue('test-balanceopen-right'), unit: 's'},
+        {name: 'Équilibre Y. Fermés', left: getTestValue('test-balanceclosed-left'), right: getTestValue('test-balanceclosed-right'), unit: 's'}
+    ];
+    
+    const asymmetries = bilateralTests
+        .filter(t => t.left && t.right && !isNaN(t.left) && !isNaN(t.right))
+        .map(t => {
+            const weaker = Math.min(t.left, t.right);
+            const stronger = Math.max(t.left, t.right);
+            const lsi = (weaker / stronger) * 100;
+            const weakerSide = t.left < t.right ? 'G' : 'D';
+            return {...t, lsi, weakerSide};
+        })
+        .filter(t => t.lsi < 90)
+        .sort((a, b) => a.lsi - b.lsi);
+    
+    // Générer le document HTML complet
+    const bilanWindow = window.open('', '_blank');
+    bilanWindow.document.write(`
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilan Performance Golf Complet - ${currentPlayer.name}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { margin: 0; }
+            .page { page-break-after: always; }
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        .page {
+            background: white;
+            max-width: 210mm;
+            min-height: 297mm;
+            margin: 20px auto;
+            padding: 20mm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #1a4d2e;
+        }
+        
+        .header-left h1 {
+            color: #1a4d2e;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .header-left p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .header-right {
+            text-align: right;
+        }
+        
+        .profile-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #1a4d2e;
+        }
+        
+        .radar-container {
+            max-width: 500px;
+            margin: 30px auto;
+        }
+        
+        .summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .summary-box {
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+        
+        .summary-box.strong {
+            background: #e8f5e9;
+            border-color: #27ae60;
+        }
+        
+        .summary-box.weak {
+            background: #fff3e0;
+            border-color: #f39c12;
+        }
+        
+        .summary-box h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .summary-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .summary-box li {
+            padding: 5px 0;
+            font-size: 14px;
+        }
+        
+        .moyenne-generale {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a4d2e 0%, #27ae60 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        
+        .moyenne-generale h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .moyenne-generale .score {
+            font-size: 48px;
+            font-weight: 700;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            color: #1a4d2e;
+            font-size: 20px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        th {
+            background: #1a4d2e;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            display: inline-block;
+        }
+        
+        .badge-elite { background: #3498db; }
+        .badge-bon { background: #27ae60; }
+        .badge-moyen { background: #f39c12; }
+        .badge-faible { background: #e74c3c; }
+        
+        .lsi-box {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid;
+            border-radius: 4px;
+        }
+        
+        .lsi-important {
+            background: #ffebee;
+            border-color: #e74c3c;
+        }
+        
+        .lsi-modere {
+            background: #fff3e0;
+            border-color: #f39c12;
+        }
+        
+        .actions {
+            margin-top: 30px;
+            text-align: center;
+            position: sticky;
+            bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #1a4d2e;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #27ae60;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #e8f5e9;
+            border-left: 4px solid #27ae60;
+            color: #2e7d32;
+        }
+        
+        .alert-warning {
+            background: #fff3e0;
+            border-left: 4px solid #f39c12;
+            color: #e65100;
+        }
+        
+        .page-number {
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- PAGE 1: VUE D'ENSEMBLE -->
+    <div class="page">
+        <div class="header">
+            <div class="header-left">
+                <h1>BILAN PERFORMANCE GOLF</h1>
+                <p>Évaluation Physique Complète - Page 1/2</p>
+            </div>
+            <div class="header-right">
+                <p><strong>${new Date().toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'})}</strong></p>
+            </div>
+        </div>
+        
+        <div class="profile-info">
+            <div>
+                <div class="info-item">
+                    <span class="info-label">Nom</span>
+                    <span>${currentPlayer.name}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Sexe</span>
+                    <span>${currentPlayer.gender === 'M' ? 'Homme' : 'Femme'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Âge</span>
+                    <span>${currentPlayer.age}</span>
+                </div>
+            </div>
+            <div>
+                <div class="info-item">
+                    <span class="info-label">Poids</span>
+                    <span>${currentPlayer.weight} kg</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Taille</span>
+                    <span>${currentPlayer.height} cm</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Niveau</span>
+                    <span>Handicap ${currentPlayer.handicap || 'N/A'}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="moyenne-generale">
+            <h2>Note Globale</h2>
+            <div class="score">${moyenneGenerale.toFixed(1)}<span style="font-size: 24px;">/20</span></div>
+        </div>
+        
+        <div class="radar-container">
+            <canvas id="radarChart"></canvas>
+        </div>
+        
+        <div class="summary">
+            <div class="summary-box strong">
+                <h3>💪 Points Forts</h3>
+                <ul>
+                    ${pointsForts.map(q => `<li><strong>${q.name}:</strong> ${q.score.toFixed(1)}/20</li>`).join('')}
+                </ul>
+            </div>
+            <div class="summary-box weak">
+                <h3>📈 À Améliorer</h3>
+                <ul>
+                    ${pointsFaibles.map(q => `<li><strong>${q.name}:</strong> ${q.score.toFixed(1)}/20</li>`).join('')}
+                </ul>
+            </div>
+        </div>
+        
+        <div class="page-number">Page 1/2</div>
+    </div>
+    
+    <!-- PAGE 2: RÉSULTATS DÉTAILLÉS -->
+    <div class="page">
+        <div class="header">
+            <h1>RÉSULTATS DÉTAILLÉS & ASYMÉTRIES</h1>
+            <p>${currentPlayer.name} - Page 2/2</p>
+        </div>
+        
+        <div class="section">
+            <h2>🏆 Top 5 Performances</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Test</th>
+                        <th>Résultat</th>
+                        <th>Note /20</th>
+                        <th>Niveau</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${top5.length > 0 ? top5.map(t => `
+                        <tr>
+                            <td><strong>${t.name}</strong></td>
+                            <td>${t.value.toFixed(1)} ${t.unit}</td>
+                            <td><strong>${t.score.toFixed(1)}/20</strong></td>
+                            <td><span class="badge badge-${t.badge.class}">${t.badge.label}</span></td>
+                        </tr>
+                    `).join('') : '<tr><td colspan="4" style="text-align: center; color: #999;">Aucun test complété</td></tr>'}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>📈 Top 5 À Améliorer</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Test</th>
+                        <th>Résultat</th>
+                        <th>Note /20</th>
+                        <th>Niveau</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${bottom5.length > 0 ? bottom5.map(t => `
+                        <tr>
+                            <td><strong>${t.name}</strong></td>
+                            <td>${t.value.toFixed(1)} ${t.unit}</td>
+                            <td><strong>${t.score.toFixed(1)}/20</strong></td>
+                            <td><span class="badge badge-${t.badge.class}">${t.badge.label}</span></td>
+                        </tr>
+                    `).join('') : '<tr><td colspan="4" style="text-align: center; color: #999;">Aucun test complété</td></tr>'}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>⚖️ Bilan LSI - Asymétries Détectées</h2>
+            ${asymmetries.length === 0 ? `
+                <div class="alert alert-success">
+                    <strong>✅ Excellent !</strong> Aucune asymétrie significative détectée (tous les LSI ≥ 90%)
+                </div>
+            ` : `
+                <div class="alert alert-warning">
+                    <strong>⚠️ ${asymmetries.length} asymétrie(s) détectée(s)</strong>
+                </div>
+                ${asymmetries.map(a => `
+                    <div class="lsi-box ${a.lsi < 85 ? 'lsi-important' : 'lsi-modere'}">
+                        <strong>${a.name}</strong>: 
+                        G ${a.left.toFixed(1)}${a.unit} | D ${a.right.toFixed(1)}${a.unit} 
+                        → LSI: <strong>${a.lsi.toFixed(1)}%</strong>
+                        ${a.lsi < 85 ? '🔴 Asymétrie importante' : '⚠️ Asymétrie modérée'}
+                        - Renforcer côté ${a.weakerSide}
+                    </div>
+                `).join('')}
+            `}
+        </div>
+        
+        <div class="page-number">Page 2/2</div>
+    </div>
+    
+    <div class="actions no-print">
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimer / Sauvegarder PDF</button>
+        <button class="btn btn-secondary" onclick="window.close()">✖️ Fermer</button>
+    </div>
+    
+    <script>
+        const ctx = document.getElementById('radarChart');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Force', 'Vitesse', 'Endurance', 'Explosivité', 'Core', 'Mobilité', 'Équilibre'],
+                datasets: [{
+                    label: 'Performance /20',
+                    data: [
+                        ${scores.force?.toFixed(1) || 0},
+                        ${scores.vitesse?.toFixed(1) || 0},
+                        ${scores.endurance?.toFixed(1) || 0},
+                        ${scores.explosivite?.toFixed(1) || 0},
+                        ${scores.core?.toFixed(1) || 0},
+                        ${scores.mobilite?.toFixed(1) || 0},
+                        ${scores.equilibre?.toFixed(1) || 0}
+                    ],
+                    backgroundColor: 'rgba(26, 77, 46, 0.2)',
+                    borderColor: 'rgba(26, 77, 46, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(26, 77, 46, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(26, 77, 46, 1)'
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 20,
+                        ticks: {
+                            stepSize: 5
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+    `);
+    bilanWindow.document.close();
 }
 
 // ==================== LOCAL STORAGE ====================
