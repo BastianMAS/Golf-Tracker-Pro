@@ -1464,6 +1464,83 @@ function generateCompleteBilan() {
     const pointsForts = qualites.slice(0, 2);
     const pointsFaibles = qualites.slice(-2).reverse();
     
+    // Fonctions helper pour les recommandations
+    const getExercisesForQuality = (quality) => {
+        const exercises = {
+            'Force': [
+                'Squats (3x8-12 reps, 70-80% 1RM)',
+                'Deadlifts roumains (3x8-10 reps)',
+                'Développé couché (3x8-12 reps)',
+                'Tractions assistées (3x max reps)'
+            ],
+            'Vitesse': [
+                'Sprints 10-20m (6-8 reps)',
+                'Navette 5x10m (4-6 séries)',
+                'Drills vitesse driver (10-15 swings/séance)',
+                'Pliométrie légère (box jumps 3x5)'
+            ],
+            'Endurance': [
+                'Course continue 20-30min (70% FCmax)',
+                'Interval training 30-30 (10-15 séries)',
+                'Circuit training 3x (pompes/squats/burpees)',
+                'VMA courte (8x30s à 90-95% VMA)'
+            ],
+            'Explosivité': [
+                'Box jumps (4x5 reps)',
+                'Med ball throws (4x6 reps)',
+                'Broad jumps (5x3 reps)',
+                'Kettlebell swings (3x15 reps)'
+            ],
+            'Core & Stabilité': [
+                'Plank variations (3x30-60s)',
+                'Dead bugs (3x12 reps/côté)',
+                'Pallof press (3x10 reps/côté)',
+                'Bird dogs (3x10 reps/côté)'
+            ],
+            'Mobilité': [
+                'Yoga golf-spécifique (20-30 min)',
+                'Foam rolling routine (10-15 min)',
+                'Étirements dynamiques (10 min)',
+                'Rotation thoracique (3x10 reps/côté)'
+            ],
+            'Équilibre': [
+                'Single leg stance (3x30s/côté)',
+                'BOSU exercises (3x45s)',
+                'Proprioception drills (15 min)',
+                'Yoga balance poses (10-15 min)'
+            ]
+        };
+        return exercises[quality] || ['Consulter un préparateur physique'];
+    };
+    
+    const getFrequencyForQuality = (quality) => {
+        const frequencies = {
+            'Force': '3-4x/semaine (jours non consécutifs)',
+            'Vitesse': '2-3x/semaine (repos 48h entre séances)',
+            'Endurance': '3-5x/semaine (varie intensité)',
+            'Explosivité': '2-3x/semaine (haute récupération)',
+            'Core & Stabilité': '4-6x/semaine (peut être quotidien)',
+            'Mobilité': 'Quotidien (10-15 min minimum)',
+            'Équilibre': '3-4x/semaine (intégrer dans routine)'
+        };
+        return frequencies[quality] || '3x/semaine';
+    };
+    
+    const getCorrectionExercise = (testName, weakerSide) => {
+        const exercises = {
+            'Wall Sit': 'Wall sit unilatéral côté faible (3x20-30s) + progression bilatéral',
+            'CMJ Unilatéral': 'Single leg jumps côté faible (4x5 reps) + Bulgarian squats',
+            'Side Plank': 'Side plank progressif côté faible (3x30-45s)',
+            'Rotation Thoracique': 'Open book stretch côté limité (3x10 reps) + Foam roller',
+            'Hip Rotation Int': 'Pigeon pose + 90/90 stretch côté limité (3x30s)',
+            'Hip Rotation Ext': 'Frog stretch + band distraction côté limité',
+            'Dorsiflexion': 'Ankle mobilité wall drill côté limité (3x10 reps)',
+            'Équilibre Y. Ouverts': 'Single leg stance yeux ouverts côté faible (4x30s)',
+            'Équilibre Y. Fermés': 'Progression: ouverts → semi-fermés → fermés côté faible'
+        };
+        return exercises[testName] || 'Travail unilatéral côté faible (consulter coach)';
+    };
+    
     // Récupérer les derniers tests de l'historique
     const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
     
@@ -2117,85 +2194,6 @@ function generateCompleteBilan() {
         <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimer / Sauvegarder PDF</button>
         <button class="btn btn-secondary" onclick="window.close()">✖️ Fermer</button>
     </div>
-    
-    <script>
-        // Fonctions pour générer les recommandations
-        function getExercisesForQuality(quality) {
-            const exercises = {
-                'Force': [
-                    'Squats (3x8-12 reps, 70-80% 1RM)',
-                    'Deadlifts roumains (3x8-10 reps)',
-                    'Développé couché (3x8-12 reps)',
-                    'Tractions assistées (3x max reps)'
-                ],
-                'Vitesse': [
-                    'Sprints 10-20m (6-8 reps)',
-                    'Navette 5x10m (4-6 séries)',
-                    'Drills vitesse driver (10-15 swings/séance)',
-                    'Pliométrie légère (box jumps 3x5)'
-                ],
-                'Endurance': [
-                    'Course continue 20-30min (70% FCmax)',
-                    'Interval training 30-30 (10-15 séries)',
-                    'Circuit training 3x (pompes/squats/burpees)',
-                    'VMA courte (8x30s à 90-95% VMA)'
-                ],
-                'Explosivité': [
-                    'Box jumps (4x5 reps)',
-                    'Med ball throws (4x6 reps)',
-                    'Broad jumps (5x3 reps)',
-                    'Kettlebell swings (3x15 reps)'
-                ],
-                'Core & Stabilité': [
-                    'Plank variations (3x30-60s)',
-                    'Dead bugs (3x12 reps/côté)',
-                    'Pallof press (3x10 reps/côté)',
-                    'Bird dogs (3x10 reps/côté)'
-                ],
-                'Mobilité': [
-                    'Yoga golf-spécifique (20-30 min)',
-                    'Foam rolling routine (10-15 min)',
-                    'Étirements dynamiques (10 min)',
-                    'Rotation thoracique (3x10 reps/côté)'
-                ],
-                'Équilibre': [
-                    'Single leg stance (3x30s/côté)',
-                    'BOSU exercises (3x45s)',
-                    'Proprioception drills (15 min)',
-                    'Yoga balance poses (10-15 min)'
-                ]
-            };
-            return exercises[quality] || ['Consulter un préparateur physique'];
-        }
-        
-        function getFrequencyForQuality(quality) {
-            const frequencies = {
-                'Force': '3-4x/semaine (jours non consécutifs)',
-                'Vitesse': '2-3x/semaine (repos 48h entre séances)',
-                'Endurance': '3-5x/semaine (varie intensité)',
-                'Explosivité': '2-3x/semaine (haute récupération)',
-                'Core & Stabilité': '4-6x/semaine (peut être quotidien)',
-                'Mobilité': 'Quotidien (10-15 min minimum)',
-                'Équilibre': '3-4x/semaine (intégrer dans routine)'
-            };
-            return frequencies[quality] || '3x/semaine';
-        }
-        
-        function getCorrectionExercise(testName, weakerSide) {
-            const exercises = {
-                'Wall Sit': 'Wall sit unilatéral côté faible (3x20-30s) + progression bilatéral',
-                'CMJ Unilatéral': 'Single leg jumps côté faible (4x5 reps) + Bulgarian squats',
-                'Side Plank': 'Side plank progressif côté faible (3x30-45s)',
-                'Rotation Thoracique': 'Open book stretch côté limité (3x10 reps) + Foam roller',
-                'Hip Rotation Int': 'Pigeon pose + 90/90 stretch côté limité (3x30s)',
-                'Hip Rotation Ext': 'Frog stretch + band distraction côté limité',
-                'Dorsiflexion': 'Ankle mobilité wall drill côté limité (3x10 reps)',
-                'Équilibre Y. Ouverts': 'Single leg stance yeux ouverts côté faible (4x30s)',
-                'Équilibre Y. Fermés': 'Progression: ouverts → semi-fermés → fermés côté faible'
-            };
-            return exercises[testName] || 'Travail unilatéral côté faible (consulter coach)';
-        }
-    </script>
     
     <script>
         const ctx = document.getElementById('radarChart');
