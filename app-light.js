@@ -628,6 +628,109 @@ function initializeApp() {
 }
 
 // ==================== EVENT LISTENERS ====================
+// ==================== EXPORT / IMPORT DONNÉES ====================
+function exportData() {
+    const data = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        currentPlayer: JSON.parse(localStorage.getItem('currentPlayer') || 'null'),
+        testsHistory: JSON.parse(localStorage.getItem('testsHistory') || '[]')
+    };
+    
+    if (!data.currentPlayer && data.testsHistory.length === 0) {
+        alert('⚠️ Aucune donnée à exporter. Créez d\'abord un profil et enregistrez des tests.');
+        return;
+    }
+    
+    const dataStr = JSON.stringify(data, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    
+    const today = new Date().toISOString().split('T')[0];
+    const filename = `golf-tracker-backup-${today}.json`;
+    
+    const downloadLink = document.createElement('a');
+    downloadLink.href = URL.createObjectURL(dataBlob);
+    downloadLink.download = filename;
+    downloadLink.click();
+    
+    alert(`✅ Données exportées avec succès !\n\nFichier: ${filename}\n\nProfil: ${data.currentPlayer ? data.currentPlayer.name : 'Aucun'}\nTests: ${data.testsHistory.length}`);
+}
+
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            
+            // Validation
+            if (!data.version || (!data.currentPlayer && (!data.testsHistory || data.testsHistory.length === 0))) {
+                throw new Error('Fichier invalide');
+            }
+            
+            // Demander confirmation
+            const playerInfo = data.currentPlayer ? `Profil: ${data.currentPlayer.name}` : 'Aucun profil';
+            const testsInfo = `Tests: ${data.testsHistory ? data.testsHistory.length : 0}`;
+            
+            const confirmMsg = `⚠️ ATTENTION !\n\nCette action va REMPLACER toutes vos données actuelles par :\n\n${playerInfo}\n${testsInfo}\n\nÊtes-vous sûr ?`;
+            
+            if (!confirm(confirmMsg)) {
+                event.target.value = ''; // Reset file input
+                return;
+            }
+            
+            // Sauvegarder les données
+            if (data.currentPlayer) {
+                localStorage.setItem('currentPlayer', JSON.stringify(data.currentPlayer));
+                window.currentPlayer = data.currentPlayer;
+            }
+            
+            if (data.testsHistory) {
+                localStorage.setItem('testsHistory', JSON.stringify(data.testsHistory));
+            }
+            
+            alert(`✅ Données importées avec succès !\n\n${playerInfo}\n${testsInfo}\n\nLa page va se recharger...`);
+            
+            // Recharger la page
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+            
+        } catch (error) {
+            alert('❌ Erreur lors de l\'import !\n\nLe fichier semble corrompu ou invalide.\n\nErreur: ' + error.message);
+            event.target.value = ''; // Reset file input
+        }
+    };
+    
+    reader.onerror = function() {
+        alert('❌ Erreur lors de la lecture du fichier !');
+        event.target.value = '';
+    };
+    
+    reader.readAsText(file);
+}
+
+// Sauvegarde automatique à chaque modification
+function autoBackup() {
+    const data = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        currentPlayer: JSON.parse(localStorage.getItem('currentPlayer') || 'null'),
+        testsHistory: JSON.parse(localStorage.getItem('testsHistory') || '[]')
+    };
+    
+    // Sauvegarder dans un localStorage séparé pour backup automatique
+    localStorage.setItem('autoBackup', JSON.stringify(data));
+    console.log('💾 Sauvegarde automatique effectuée');
+}
+
+// Appeler autoBackup après chaque sauvegarde
+const originalSaveProfile = saveProfile;
+const originalSaveQualityTests = saveQualityTests;
+
+// ==================== SETUP EVENT LISTENERS ====================
 function setupEventListeners() {
     // Navigation entre onglets
     document.querySelectorAll('.tracker-tab').forEach(tab => {
@@ -1259,6 +1362,9 @@ function saveProfile() {
     localStorage.setItem('currentPlayer', JSON.stringify(currentPlayer));
     document.documentElement.style.setProperty('--primary-color', color);
     
+    // Sauvegarde automatique
+    autoBackup();
+    
     alert(`Profil de ${name} enregistré !`);
     updatePlayerDisplay();
     
@@ -1759,20 +1865,52 @@ function clearHistory() {
 }
 
 // ==================== IMPORT/EXPORT ====================
+// ==================== BACKUP AUTOMATIQUE ====================
+function autoBackup() {
+    // Sauvegarder automatiquement toutes les 5 sauvegardes de tests
+    const backupCount = parseInt(localStorage.getItem('backupCount') || '0');
+    
+    if (backupCount >= 5) {
+        // Créer un backup silencieux
+        const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+        const data = {
+            player: currentPlayer,
+            testsHistory: history,
+            exportDate: new Date().toISOString(),
+            version: '2.0',
+            autoBackup: true
+        };
+        
+        // Sauvegarder dans localStorage comme backup de secours
+        localStorage.setItem('lastAutoBackup', JSON.stringify(data));
+        localStorage.setItem('lastAutoBackupDate', new Date().toISOString());
+        localStorage.setItem('backupCount', '0');
+        
+        console.log('💾 Backup automatique créé');
+    } else {
+        localStorage.setItem('backupCount', (backupCount + 1).toString());
+    }
+}
+
+// ==================== EXPORT / IMPORT ====================
 function exportData() {
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    
     const data = {
         player: currentPlayer,
-        tests: allTests,
-        exportDate: new Date().toISOString()
+        testsHistory: history,
+        exportDate: new Date().toISOString(),
+        version: '2.0'
     };
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `golf-tracker-${currentPlayer?.name || 'data'}-${new Date().toISOString().split('T')[0]}.json`;
+    const fileName = `golf-tracker-${currentPlayer?.name || 'backup'}-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = fileName;
     link.click();
     
-    alert('Données exportées !');
+    alert(`✅ Données exportées !\n\n📁 Fichier: ${fileName}\n👤 Profil: ${currentPlayer?.name || 'N/A'}\n📊 Tests: ${history.length}`);
 }
 
 function importData(event) {
@@ -1784,19 +1922,37 @@ function importData(event) {
         try {
             const data = JSON.parse(e.target.result);
             
+            // Importer le profil
             if (data.player) {
                 currentPlayer = data.player;
                 localStorage.setItem('currentPlayer', JSON.stringify(currentPlayer));
                 loadPlayerData();
             }
             
-            if (data.tests) {
-                allTests = data.tests;
-                localStorage.setItem('allTests', JSON.stringify(allTests));
+            // Importer l'historique des tests
+            if (data.testsHistory) {
+                localStorage.setItem('testsHistory', JSON.stringify(data.testsHistory));
+            }
+            // Support de l'ancien format (allTests)
+            else if (data.tests) {
+                // Convertir ancien format vers nouveau
+                const convertedHistory = data.tests.map((test, index) => ({
+                    id: Date.now() + index,
+                    date: test.date || new Date().toISOString(),
+                    quality: 'force', // Par défaut, à ajuster
+                    player: data.player?.name || 'Unknown',
+                    tests: test
+                }));
+                localStorage.setItem('testsHistory', JSON.stringify(convertedHistory));
             }
             
-            alert('Données importées !');
+            const importedTests = data.testsHistory?.length || data.tests?.length || 0;
+            
+            alert(`✅ Données importées avec succès !\n\n👤 Profil: ${data.player?.name || 'N/A'}\n📊 Tests: ${importedTests}\n📅 Date export: ${data.exportDate ? new Date(data.exportDate).toLocaleDateString('fr-FR') : 'N/A'}`);
+            
+            // Rafraîchir l'affichage
             switchTab('dashboard');
+            updateDashboard();
         } catch (error) {
             alert('Erreur lors de l\'import');
         }
@@ -4061,6 +4217,9 @@ function saveQualityTests(qualityKey) {
     }
     
     localStorage.setItem('testsHistory', JSON.stringify(history));
+    
+    // BACKUP AUTOMATIQUE (sauvegarde silencieuse en arrière-plan)
+    autoBackup();
     
     // Vider les champs après sauvegarde
     quality.tests.forEach(test => {
