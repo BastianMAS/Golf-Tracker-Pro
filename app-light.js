@@ -1408,32 +1408,6 @@ function clearTestInputs() {
 }
 
 // ==================== DASHBOARD (Version simplifiée) ====================
-function updateDashboard() {
-    if (!currentPlayer) {
-        document.querySelector('.dashboard-container').innerHTML = `
-            <div class="alert warning">
-                <div class="alert-title">⚠️ Aucun profil</div>
-                <p>Veuillez d'abord créer un profil joueur.</p>
-            </div>
-        `;
-        return;
-    }
-    
-    const latestTest = allTests[allTests.length - 1];
-    if (!latestTest) {
-        document.querySelector('.dashboard-container').innerHTML = `
-            <div class="alert warning">
-                <div class="alert-title">⚠️ Aucun test</div>
-                <p>Aucun test enregistré.</p>
-            </div>
-        `;
-        return;
-    }
-    
-    updatePlayerDisplay();
-    alert('Dashboard chargé !');
-}
-
 // ==================== PROTOCOLES ====================
 function showProtocol(testKey) {
     const protocol = PROTOCOLS[testKey];
