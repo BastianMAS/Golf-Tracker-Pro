@@ -849,397 +849,233 @@ function setupAccordions() {
 }
 
 // ==================== NAVIGATION ====================
-// ==================== UPDATE DASHBOARD ====================
+// ==================== UPDATE DASHBOARD SIMPLE ====================
 function updateDashboard() {
-    if (!currentPlayer) {
-        document.getElementById('globalScoreCard').textContent = '--';
-        document.getElementById('lastTestDate').textContent = '--';
-        document.getElementById('totalTests').textContent = '--';
-        return;
-    }
+    // 1. CITATION MOTIVANTE ALÉATOIRE
+    const quotes = [
+        {
+            en: "The talent without work is nothing.",
+            fr: "Le talent sans travail n'est rien.",
+            author: "Cristiano Ronaldo"
+        },
+        {
+            en: "Champions are made when no one is watching.",
+            fr: "Les champions se forgent quand personne ne regarde.",
+            author: "Unknown"
+        },
+        {
+            en: "Discipline is doing what needs to be done, even when you don't want to do it.",
+            fr: "La discipline, c'est faire ce qui doit être fait, même quand on n'en a pas envie.",
+            author: "Unknown"
+        },
+        {
+            en: "Hard work beats talent when talent doesn't work hard.",
+            fr: "Le travail acharné bat le talent quand le talent ne travaille pas dur.",
+            author: "Tim Notke"
+        },
+        {
+            en: "The only way to prove you are a good sport is to lose.",
+            fr: "La seule façon de prouver que vous êtes un bon sportif est de perdre.",
+            author: "Ernie Banks"
+        },
+        {
+            en: "You miss 100% of the shots you don't take.",
+            fr: "Vous ratez 100% des coups que vous ne tentez pas.",
+            author: "Wayne Gretzky"
+        },
+        {
+            en: "The difference between the impossible and the possible lies in determination.",
+            fr: "La différence entre l'impossible et le possible réside dans la détermination.",
+            author: "Tommy Lasorda"
+        },
+        {
+            en: "Pain is temporary. Quitting lasts forever.",
+            fr: "La douleur est temporaire. Abandonner dure toujours.",
+            author: "Lance Armstrong"
+        },
+        {
+            en: "It's not whether you get knocked down, it's whether you get up.",
+            fr: "Ce n'est pas de savoir si vous tombez, mais si vous vous relevez.",
+            author: "Vince Lombardi"
+        },
+        {
+            en: "The more difficult the victory, the greater the happiness in winning.",
+            fr: "Plus la victoire est difficile, plus grand est le bonheur de gagner.",
+            author: "Pelé"
+        }
+    ];
     
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    document.getElementById('quoteText').textContent = `"${randomQuote.en}"`;
+    document.getElementById('quoteTranslation').textContent = `"${randomQuote.fr}"`;
+    document.getElementById('quoteAuthor').textContent = `— ${randomQuote.author}`;
+    
+    // 2. RÉCUPÉRER LES DONNÉES
     const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
     const scores = calculateQualityScores();
     
-    // 1. CARTES VUE D'ENSEMBLE
-    // Note globale
+    // 3. NOTE GLOBALE
     if (scores) {
         const validScores = Object.values(scores).filter(s => s !== null && !isNaN(s));
-        const moyenneGenerale = validScores.length > 0 
-            ? validScores.reduce((a, b) => a + b, 0) / validScores.length 
-            : 0;
-        document.getElementById('globalScoreCard').textContent = moyenneGenerale.toFixed(1);
+        if (validScores.length > 0) {
+            const moyenne = validScores.reduce((a, b) => a + b, 0) / validScores.length;
+            document.getElementById('dashGlobalScore').textContent = moyenne.toFixed(1);
+        }
     }
     
-    // Dernier test
+    // 4. DERNIER TEST
     if (history.length > 0) {
-        const sortedHistory = history.sort((a, b) => new Date(b.date) - new Date(a.date));
+        const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
         const lastTest = sortedHistory[0];
+        const quality = QUALITY_TESTS[lastTest.quality];
         const date = new Date(lastTest.date);
-        document.getElementById('lastTestDate').textContent = date.toLocaleDateString('fr-FR', {day: '2-digit', month: 'short'});
-        const qualityName = QUALITY_TESTS[lastTest.quality]?.name || lastTest.quality;
-        document.getElementById('lastTestQuality').textContent = qualityName;
-    }
-    
-    // Total tests
-    document.getElementById('totalTests').textContent = history.length;
-    
-    // 2. RADAR CHART
-    updateRadarChart(scores);
-    
-    // 3. GRAPHIQUE PROGRESSION
-    updateProgressionChart(history);
-    
-    // 4. RECORDS PERSONNELS
-    updatePersonalRecords(history);
-    
-    // 5. ALERTES & PRIORITÉS
-    updateAlerts(scores, history);
-    
-    // 6. DERNIERS TESTS
-    updateRecentTests(history);
-    
-    // 7. OBJECTIFS
-    updateObjectives(scores);
-}
-
-function updateRadarChart(scores) {
-    const canvas = document.getElementById('radarChart');
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    
-    // Détruire l'ancien chart s'il existe
-    if (window.dashboardRadarChart) {
-        window.dashboardRadarChart.destroy();
-    }
-    
-    window.dashboardRadarChart = new Chart(ctx, {
-        type: 'radar',
-        data: {
-            labels: ['Force', 'Vitesse', 'Endurance', 'Explosivité', 'Core', 'Mobilité', 'Équilibre'],
-            datasets: [{
-                label: 'Performance /20',
-                data: [
-                    scores?.force || 0,
-                    scores?.vitesse || 0,
-                    scores?.endurance || 0,
-                    scores?.explosivite || 0,
-                    scores?.core || 0,
-                    scores?.mobilite || 0,
-                    scores?.equilibre || 0
-                ],
-                backgroundColor: 'rgba(26, 77, 46, 0.2)',
-                borderColor: 'rgba(26, 77, 46, 1)',
-                borderWidth: 2,
-                pointBackgroundColor: 'rgba(26, 77, 46, 1)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(26, 77, 46, 1)'
-            }]
-        },
-        options: {
-            scales: {
-                r: {
-                    beginAtZero: true,
-                    max: 20,
-                    ticks: {
-                        stepSize: 5
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                }
-            }
-        }
-    });
-}
-
-function updateProgressionChart(history) {
-    const canvas = document.getElementById('progressionChart');
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    
-    // Détruire l'ancien chart
-    if (window.dashboardProgressionChart) {
-        window.dashboardProgressionChart.destroy();
-    }
-    
-    // Organiser par qualité et prendre les 5 derniers
-    const qualitiesData = {};
-    Object.keys(QUALITY_TESTS).forEach(key => {
-        const tests = history
-            .filter(h => h.quality === key)
-            .sort((a, b) => new Date(a.date) - new Date(b.date))
-            .slice(-5);
+        const daysAgo = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
         
-        if (tests.length > 0) {
-            qualitiesData[key] = tests.map(t => {
-                const scores = Object.values(t.tests).filter(v => v !== null && v !== undefined);
-                return scores.length;
-            });
-        }
-    });
-    
-    // Prendre les 3 qualités avec le plus de données
-    const topQualities = Object.entries(qualitiesData)
-        .sort((a, b) => b[1].length - a[1].length)
-        .slice(0, 3);
-    
-    const colors = {
-        'force': '#e74c3c',
-        'vitesse': '#f39c12',
-        'endurance': '#3498db',
-        'explosivite': '#9b59b6',
-        'core': '#1abc9c',
-        'mobilite': '#27ae60',
-        'equilibre': '#34495e'
-    };
-    
-    window.dashboardProgressionChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['T-4', 'T-3', 'T-2', 'T-1', 'Actuel'],
-            datasets: topQualities.map(([key, data]) => ({
-                label: QUALITY_TESTS[key].name,
-                data: data,
-                borderColor: colors[key],
-                backgroundColor: colors[key] + '20',
-                tension: 0.4
-            }))
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'bottom'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Nombre de tests'
-                    }
-                }
-            }
-        }
-    });
-}
-
-function updatePersonalRecords(history) {
-    const container = document.getElementById('personalRecords');
-    if (!container) return;
-    
-    if (history.length === 0) {
-        container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Aucun test enregistré</p>';
-        return;
+        document.getElementById('dashLastTest').textContent = quality?.name || lastTest.quality;
+        document.getElementById('dashLastTestDate').textContent = daysAgo === 0 ? "Aujourd'hui" : `Il y a ${daysAgo} jour${daysAgo > 1 ? 's' : ''}`;
+    } else {
+        document.getElementById('dashLastTest').textContent = 'Aucun';
+        document.getElementById('dashLastTestDate').textContent = '--';
     }
     
-    // Calculer les meilleurs scores par test
-    const allTests = {};
+    // 5. TOTAL TESTS
+    document.getElementById('dashTotalTests').textContent = history.length;
     
-    history.forEach(record => {
-        Object.entries(record.tests).forEach(([testKey, value]) => {
-            if (value !== null && value !== undefined) {
-                const numValue = typeof value === 'object' ? 
-                    ((value.left || 0) + (value.right || 0)) / 2 : value;
-                
-                if (!allTests[testKey] || numValue > allTests[testKey].value) {
-                    allTests[testKey] = {
-                        value: numValue,
-                        date: record.date,
-                        quality: record.quality
-                    };
-                }
-            }
-        });
-    });
-    
-    // Prendre les 5 meilleurs
-    const topRecords = Object.entries(allTests)
-        .sort((a, b) => {
-            const scoreA = calculateScore20(a[0], a[1].value) || 0;
-            const scoreB = calculateScore20(b[0], b[1].value) || 0;
-            return scoreB - scoreA;
-        })
-        .slice(0, 5);
-    
-    if (topRecords.length === 0) {
-        container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Pas encore de records</p>';
-        return;
-    }
-    
-    container.innerHTML = topRecords.map(([testKey, data]) => {
-        const testDef = Object.values(QUALITY_TESTS)
-            .flatMap(q => q.tests)
-            .find(t => t.key === testKey);
-        
-        const score = calculateScore20(testKey, data.value);
-        const badge = getBadgeLabel(score);
-        
-        return `
-            <div class="record-item">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <strong>${testDef?.name || testKey}</strong>
-                    <span class="badge badge-${badge.class}">${badge.label}</span>
-                </div>
-                <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                    ${data.value.toFixed(1)} ${testDef?.unit || ''} - ${new Date(data.date).toLocaleDateString('fr-FR')}
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-function updateAlerts(scores, history) {
-    const container = document.getElementById('alertsSection');
-    if (!container) return;
-    
-    const alerts = [];
-    
-    // Alertes qualités faibles
+    // 6. MEILLEUR SCORE
     if (scores) {
         const qualites = [
             {name: 'Force', score: scores.force},
             {name: 'Vitesse', score: scores.vitesse},
             {name: 'Endurance', score: scores.endurance},
             {name: 'Explosivité', score: scores.explosivite},
-            {name: 'Core & Stabilité', score: scores.core},
+            {name: 'Core', score: scores.core},
             {name: 'Mobilité', score: scores.mobilite},
             {name: 'Équilibre', score: scores.equilibre}
-        ].filter(q => q.score !== null && q.score < 10);
+        ].filter(q => q.score !== null).sort((a, b) => b.score - a.score);
         
-        qualites.forEach(q => {
-            alerts.push({
-                type: q.score < 7 ? 'critical' : 'warning',
-                message: `${q.name} : ${q.score.toFixed(1)}/20`,
-                action: 'À prioriser'
-            });
-        });
+        if (qualites.length > 0) {
+            const best = qualites[0];
+            document.getElementById('dashBestScore').textContent = best.score.toFixed(1);
+            document.getElementById('dashBestQuality').textContent = best.name;
+        }
     }
     
-    // Alertes asymétries
-    const getTestValueFromHistory = (testKey, qualityKey) => {
-        const qualityTests = history
-            .filter(h => h.quality === qualityKey)
-            .sort((a, b) => new Date(b.date) - new Date(a.date));
+    // 7. QUALITÉS NON TESTÉES
+    const missingContainer = document.getElementById('dashMissingTests');
+    if (scores) {
+        const missing = [
+            {name: 'Force', score: scores.force},
+            {name: 'Vitesse', score: scores.vitesse},
+            {name: 'Endurance', score: scores.endurance},
+            {name: 'Explosivité', score: scores.explosivite},
+            {name: 'Core', score: scores.core},
+            {name: 'Mobilité', score: scores.mobilite},
+            {name: 'Équilibre', score: scores.equilibre}
+        ].filter(q => q.score === null);
         
-        for (const test of qualityTests) {
-            if (test.tests && test.tests[testKey]) {
-                return test.tests[testKey];
-            }
+        if (missing.length === 0) {
+            missingContainer.innerHTML = '<p style="color: #27ae60; font-weight: 600;">✅ Toutes les qualités ont été testées !</p>';
+        } else {
+            missingContainer.innerHTML = missing.map(q => 
+                `<span class="missing-test-badge">❌ ${q.name}</span>`
+            ).join('');
         }
-        return null;
-    };
-    
-    const asymmetryTests = [
-        {key: 'sideplank', quality: 'core', name: 'Side Plank'},
-        {key: 'balanceopen', quality: 'equilibre', name: 'Équilibre Y.O.'}
-    ];
-    
-    asymmetryTests.forEach(t => {
-        const value = getTestValueFromHistory(t.key, t.quality);
-        if (value && typeof value === 'object' && value.left && value.right) {
-            const lsi = (Math.min(value.left, value.right) / Math.max(value.left, value.right)) * 100;
-            if (lsi < 90) {
-                alerts.push({
-                    type: lsi < 85 ? 'critical' : 'warning',
-                    message: `${t.name} LSI ${lsi.toFixed(0)}%`,
-                    action: 'Asymétrie détectée'
-                });
-            }
-        }
-    });
-    
-    if (alerts.length === 0) {
-        container.innerHTML = '<p style="color: #27ae60; text-align: center; padding: 20px;">✅ Aucune alerte</p>';
-        return;
     }
     
-    container.innerHTML = alerts.slice(0, 5).map(alert => `
-        <div class="alert-item ${alert.type}">
-            <div style="font-weight: 600;">${alert.message}</div>
-            <div style="font-size: 12px; color: #666; margin-top: 3px;">${alert.action}</div>
-        </div>
-    `).join('');
-}
-
-function updateRecentTests(history) {
-    const container = document.getElementById('recentTestsList');
-    if (!container) return;
+    // 8. SUGGESTION DU JOUR
+    const suggestionContainer = document.getElementById('dashSuggestion');
+    const suggestions = [];
+    
+    // Suggestions basées sur les qualités manquantes
+    if (scores) {
+        const missing = [
+            {name: 'Force', score: scores.force, icon: '💪'},
+            {name: 'Vitesse', score: scores.vitesse, icon: '⚡'},
+            {name: 'Endurance', score: scores.endurance, icon: '🏃'},
+            {name: 'Explosivité', score: scores.explosivite, icon: '🚀'},
+            {name: 'Core', score: scores.core, icon: '🎯'},
+            {name: 'Mobilité', score: scores.mobilite, icon: '🤸'},
+            {name: 'Équilibre', score: scores.equilibre, icon: '⚖️'}
+        ].filter(q => q.score === null);
+        
+        if (missing.length > 0) {
+            const randomMissing = missing[Math.floor(Math.random() * missing.length)];
+            suggestions.push(`${randomMissing.icon} <strong>Testez votre ${randomMissing.name} cette semaine !</strong> C'est la seule qualité que vous n'avez pas encore évaluée.`);
+        }
+        
+        // Suggestions basées sur les scores faibles
+        const weak = [
+            {name: 'Force', score: scores.force},
+            {name: 'Vitesse', score: scores.vitesse},
+            {name: 'Endurance', score: scores.endurance},
+            {name: 'Explosivité', score: scores.explosivite},
+            {name: 'Core', score: scores.core},
+            {name: 'Mobilité', score: scores.mobilite},
+            {name: 'Équilibre', score: scores.equilibre}
+        ].filter(q => q.score !== null && q.score < 12).sort((a, b) => a.score - b.score);
+        
+        if (weak.length > 0) {
+            suggestions.push(`⚠️ <strong>Votre ${weak[0].name} nécessite attention</strong> (${weak[0].score.toFixed(1)}/20). Consultez le rapport pour un plan d'action personnalisé.`);
+        }
+    }
+    
+    // Suggestion générale si aucune donnée
+    if (suggestions.length === 0) {
+        suggestions.push('🎯 <strong>Complétez tous les tests</strong> pour obtenir un bilan complet et des recommandations personnalisées !');
+    }
+    
+    const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
+    suggestionContainer.innerHTML = `<p>${randomSuggestion}</p>`;
+    
+    // 9. RECORD PERSONNEL
+    const recordContainer = document.getElementById('dashRecord');
     
     if (history.length === 0) {
-        container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Aucun test</p>';
-        return;
-    }
-    
-    const recent = history
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .slice(0, 5);
-    
-    container.innerHTML = recent.map(test => {
-        const date = new Date(test.date);
-        const quality = QUALITY_TESTS[test.quality];
-        const numTests = Object.keys(test.tests).length;
+        recordContainer.innerHTML = '<p style="color: #999;">Complétez des tests pour voir vos records !</p>';
+    } else {
+        // Trouver le meilleur test
+        const allTestResults = [];
+        history.forEach(record => {
+            Object.entries(record.tests).forEach(([testKey, value]) => {
+                if (value !== null && value !== undefined) {
+                    const numValue = typeof value === 'object' ? 
+                        ((value.left || 0) + (value.right || 0)) / 2 : value;
+                    
+                    const testDef = Object.values(QUALITY_TESTS)
+                        .flatMap(q => q.tests)
+                        .find(t => t.key === testKey);
+                    
+                    if (testDef) {
+                        const score = calculateScore20(testKey, numValue);
+                        if (score !== null) {
+                            allTestResults.push({
+                                name: testDef.name,
+                                value: numValue,
+                                unit: testDef.unit,
+                                score: score,
+                                badge: getBadgeLabel(score)
+                            });
+                        }
+                    }
+                }
+            });
+        });
         
-        return `
-            <div class="recent-test-item">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-weight: 600;">${quality?.icon || ''} ${quality?.name || test.quality}</span>
-                    <span style="font-size: 12px; color: #666;">${date.toLocaleDateString('fr-FR', {day: '2-digit', month: 'short'})}</span>
+        if (allTestResults.length > 0) {
+            allTestResults.sort((a, b) => b.score - a.score);
+            const best = allTestResults[0];
+            
+            recordContainer.innerHTML = `
+                <div class="record-box">
+                    <div class="record-info">
+                        <div class="record-test-name">${best.name}</div>
+                        <div class="record-value">${best.value.toFixed(1)} ${best.unit} — ${best.score.toFixed(1)}/20</div>
+                    </div>
+                    <span class="record-badge badge-${best.badge.class}">${best.badge.label}</span>
                 </div>
-                <div style="font-size: 12px; color: #666; margin-top: 3px;">
-                    ${numTests} test${numTests > 1 ? 's' : ''} enregistré${numTests > 1 ? 's' : ''}
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-function updateObjectives(scores) {
-    const container = document.getElementById('objectivesContent');
-    if (!container) return;
-    
-    if (!scores) {
-        container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Complétez des tests pour voir vos objectifs</p>';
-        return;
+            `;
+        }
     }
-    
-    const qualites = [
-        {name: 'Force', score: scores.force},
-        {name: 'Vitesse', score: scores.vitesse},
-        {name: 'Endurance', score: scores.endurance},
-        {name: 'Explosivité', score: scores.explosivite},
-        {name: 'Core', score: scores.core},
-        {name: 'Mobilité', score: scores.mobilite},
-        {name: 'Équilibre', score: scores.equilibre}
-    ].filter(q => q.score !== null)
-     .sort((a, b) => a.score - b.score)
-     .slice(0, 3);
-    
-    container.innerHTML = qualites.map(q => {
-        const current = q.score;
-        const target = Math.min(20, current + (current < 10 ? 3 : 2));
-        const progress = ((current / target) * 100).toFixed(0);
-        
-        return `
-            <div class="objective-progress">
-                <div class="objective-label">
-                    <span><strong>${q.name}</strong></span>
-                    <span>${current.toFixed(1)}/20 → ${target.toFixed(1)}/20</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${progress}%"></div>
-                </div>
-            </div>
-        `;
-    }).join('');
 }
 
 function switchTab(tabName) {
