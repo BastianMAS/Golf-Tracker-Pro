@@ -849,10 +849,204 @@ function setupAccordions() {
 }
 
 // ==================== NAVIGATION ====================
-// ==================== UPDATE DASHBOARD (EN CONSTRUCTION) ====================
+// ==================== UPDATE DASHBOARD ====================
 function updateDashboard() {
-    // Dashboard en construction - sera développé progressivement
-    console.log('📊 Dashboard chargé (version minimaliste)');
+    console.log('📊 Dashboard chargé');
+    
+    // 1. CITATION ALÉATOIRE
+    const quotes = [
+        {en: "The talent without work is nothing.", fr: "Le talent sans travail n'est rien.", author: "Cristiano Ronaldo"},
+        {en: "Champions are made when no one is watching.", fr: "Les champions se forgent quand personne ne regarde.", author: "Unknown"},
+        {en: "Discipline is doing what needs to be done, even when you don't want to do it.", fr: "La discipline, c'est faire ce qui doit être fait, même quand on n'en a pas envie.", author: "Unknown"},
+        {en: "Hard work beats talent when talent doesn't work hard.", fr: "Le travail acharné bat le talent quand le talent ne travaille pas dur.", author: "Tim Notke"},
+        {en: "You miss 100% of the shots you don't take.", fr: "Vous ratez 100% des coups que vous ne tentez pas.", author: "Wayne Gretzky"},
+        {en: "The difference between the impossible and the possible lies in determination.", fr: "La différence entre l'impossible et le possible réside dans la détermination.", author: "Tommy Lasorda"},
+        {en: "Pain is temporary. Quitting lasts forever.", fr: "La douleur est temporaire. Abandonner dure toujours.", author: "Lance Armstrong"},
+        {en: "It's not whether you get knocked down, it's whether you get up.", fr: "Ce n'est pas de savoir si vous tombez, mais si vous vous relevez.", author: "Vince Lombardi"},
+        {en: "The more difficult the victory, the greater the happiness in winning.", fr: "Plus la victoire est difficile, plus grand est le bonheur de gagner.", author: "Pelé"}
+    ];
+    
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    const quoteEl = document.getElementById('dashQuote');
+    if (quoteEl) {
+        quoteEl.innerHTML = `
+            <p style="font-size: 20px; font-style: italic; margin: 0 0 10px 0;">"${randomQuote.en}"</p>
+            <p style="font-size: 16px; font-style: italic; margin: 0 0 10px 0; opacity: 0.9;">"${randomQuote.fr}"</p>
+            <p style="font-size: 14px; text-align: right; margin: 0; opacity: 0.8;">— ${randomQuote.author}</p>
+        `;
+    }
+    
+    // 2. RÉCUPÉRER LES DONNÉES
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    const scores = calculateQualityScores();
+    
+    // 3. NOTE GLOBALE
+    if (scores) {
+        const validScores = Object.values(scores).filter(s => s !== null && !isNaN(s));
+        if (validScores.length > 0) {
+            const moyenne = validScores.reduce((a, b) => a + b, 0) / validScores.length;
+            document.getElementById('dashGlobalScore').textContent = moyenne.toFixed(1);
+        } else {
+            document.getElementById('dashGlobalScore').textContent = '--';
+        }
+    }
+    
+    // 4. DERNIER TEST
+    if (history.length > 0) {
+        const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const lastTest = sortedHistory[0];
+        const quality = QUALITY_TESTS[lastTest.quality];
+        const date = new Date(lastTest.date);
+        const daysAgo = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+        
+        document.getElementById('dashLastTest').textContent = quality?.name || lastTest.quality;
+        document.getElementById('dashLastTestDate').textContent = daysAgo === 0 ? "Aujourd'hui" : `Il y a ${daysAgo} jour${daysAgo > 1 ? 's' : ''}`;
+    } else {
+        document.getElementById('dashLastTest').textContent = 'Aucun';
+        document.getElementById('dashLastTestDate').textContent = '--';
+    }
+    
+    // 5. TOTAL TESTS
+    document.getElementById('dashTotalTests').textContent = history.length;
+    
+    // 6. MEILLEUR SCORE
+    if (scores) {
+        const qualites = [
+            {name: 'Force', score: scores.force},
+            {name: 'Vitesse', score: scores.vitesse},
+            {name: 'Endurance', score: scores.endurance},
+            {name: 'Explosivité', score: scores.explosivite},
+            {name: 'Core', score: scores.core},
+            {name: 'Mobilité', score: scores.mobilite},
+            {name: 'Équilibre', score: scores.equilibre}
+        ].filter(q => q.score !== null).sort((a, b) => b.score - a.score);
+        
+        if (qualites.length > 0) {
+            const best = qualites[0];
+            document.getElementById('dashBestScore').textContent = best.score.toFixed(1) + '/20';
+            document.getElementById('dashBestQuality').textContent = best.name;
+        } else {
+            document.getElementById('dashBestScore').textContent = '--';
+            document.getElementById('dashBestQuality').textContent = 'Aucune qualité testée';
+        }
+    }
+    
+    // 7. QUALITÉS NON TESTÉES
+    const missingEl = document.getElementById('dashMissing');
+    if (scores) {
+        const missing = [
+            {name: 'Force', score: scores.force},
+            {name: 'Vitesse', score: scores.vitesse},
+            {name: 'Endurance', score: scores.endurance},
+            {name: 'Explosivité', score: scores.explosivite},
+            {name: 'Core', score: scores.core},
+            {name: 'Mobilité', score: scores.mobilite},
+            {name: 'Équilibre', score: scores.equilibre}
+        ].filter(q => q.score === null);
+        
+        if (missing.length === 0) {
+            missingEl.innerHTML = '<p style="color: #27ae60; font-weight: 600; margin: 0;">✅ Toutes les qualités ont été testées !</p>';
+        } else {
+            missingEl.innerHTML = '<div style="display: flex; flex-wrap: wrap; gap: 10px;">' + 
+                missing.map(q => `<span style="background: #ffebee; color: #c62828; padding: 8px 15px; border-radius: 20px; font-size: 14px; font-weight: 600;">❌ ${q.name}</span>`).join('') +
+                '</div>';
+        }
+    } else {
+        missingEl.innerHTML = '<p style="color: #999; margin: 0;">Complétez des tests pour voir cette section</p>';
+    }
+    
+    // 8. CONSEIL DU JOUR
+    const adviceEl = document.getElementById('dashAdvice');
+    const advices = [];
+    
+    if (scores) {
+        const missing = [
+            {name: 'Force', score: scores.force, icon: '💪'},
+            {name: 'Vitesse', score: scores.vitesse, icon: '⚡'},
+            {name: 'Endurance', score: scores.endurance, icon: '🏃'},
+            {name: 'Explosivité', score: scores.explosivite, icon: '🚀'},
+            {name: 'Core', score: scores.core, icon: '🎯'},
+            {name: 'Mobilité', score: scores.mobilite, icon: '🤸'},
+            {name: 'Équilibre', score: scores.equilibre, icon: '⚖️'}
+        ].filter(q => q.score === null);
+        
+        if (missing.length > 0) {
+            const randomMissing = missing[Math.floor(Math.random() * missing.length)];
+            advices.push(`${randomMissing.icon} <strong>Testez votre ${randomMissing.name} cette semaine !</strong> Vous n'avez pas encore évalué cette qualité.`);
+        }
+        
+        const weak = [
+            {name: 'Force', score: scores.force},
+            {name: 'Vitesse', score: scores.vitesse},
+            {name: 'Endurance', score: scores.endurance},
+            {name: 'Explosivité', score: scores.explosivite},
+            {name: 'Core', score: scores.core},
+            {name: 'Mobilité', score: scores.mobilite},
+            {name: 'Équilibre', score: scores.equilibre}
+        ].filter(q => q.score !== null && q.score < 12).sort((a, b) => a.score - b.score);
+        
+        if (weak.length > 0) {
+            advices.push(`⚠️ <strong>Votre ${weak[0].name} nécessite attention</strong> (${weak[0].score.toFixed(1)}/20). Consultez le rapport pour un plan d'action personnalisé.`);
+        }
+    }
+    
+    if (advices.length === 0) {
+        advices.push('🎯 <strong>Complétez tous les tests</strong> pour obtenir un bilan complet et des recommandations personnalisées !');
+    }
+    
+    const randomAdvice = advices[Math.floor(Math.random() * advices.length)];
+    adviceEl.innerHTML = `<p style="margin: 0;">${randomAdvice}</p>`;
+    
+    // 9. RECORD PERSONNEL
+    const recordEl = document.getElementById('dashRecord');
+    
+    if (history.length === 0) {
+        recordEl.innerHTML = '<p style="color: #999; margin: 0;">Complétez des tests pour voir vos records !</p>';
+    } else {
+        const allTestResults = [];
+        history.forEach(record => {
+            Object.entries(record.tests).forEach(([testKey, value]) => {
+                if (value !== null && value !== undefined) {
+                    const numValue = typeof value === 'object' ? 
+                        ((value.left || 0) + (value.right || 0)) / 2 : value;
+                    
+                    const testDef = Object.values(QUALITY_TESTS)
+                        .flatMap(q => q.tests)
+                        .find(t => t.key === testKey);
+                    
+                    if (testDef) {
+                        const score = calculateScore20(testKey, numValue);
+                        if (score !== null) {
+                            allTestResults.push({
+                                name: testDef.name,
+                                value: numValue,
+                                unit: testDef.unit,
+                                score: score,
+                                badge: getBadgeLabel(score)
+                            });
+                        }
+                    }
+                }
+            });
+        });
+        
+        if (allTestResults.length > 0) {
+            allTestResults.sort((a, b) => b.score - a.score);
+            const best = allTestResults[0];
+            
+            recordEl.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid #27ae60;">
+                    <div>
+                        <div style="font-size: 18px; font-weight: 700; color: #1a4d2e; margin-bottom: 5px;">${best.name}</div>
+                        <div style="font-size: 14px; color: #666;">${best.value.toFixed(1)} ${best.unit} — ${best.score.toFixed(1)}/20</div>
+                    </div>
+                    <span class="badge badge-${best.badge.class}">${best.badge.label}</span>
+                </div>
+            `;
+        } else {
+            recordEl.innerHTML = '<p style="color: #999; margin: 0;">Aucun test avec score calculé</p>';
+        }
+    }
 }
 
 function switchTab(tabName) {

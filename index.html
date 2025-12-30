@@ -951,8 +951,8 @@
                 <div class="dashboard-container">
                     <h3>📊 Dashboard</h3>
                     
-                    <!-- Citation statique pour test -->
-                    <div style="background: linear-gradient(135deg, #1a4d2e 0%, #27ae60 100%); color: white; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+                    <!-- Citation Motivante -->
+                    <div id="dashQuote" style="background: linear-gradient(135deg, #1a4d2e 0%, #27ae60 100%); color: white; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
                         <p style="font-size: 20px; font-style: italic; margin: 0 0 10px 0;">
                             "The talent without work is nothing."
                         </p>
@@ -964,7 +964,62 @@
                         </p>
                     </div>
                     
-                    <p style="color: #666;">Dashboard en cours de développement... 🚧</p>
+                    <!-- 4 Cartes de Bilan -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                        <!-- Carte 1: Note Globale -->
+                        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="text-align: center;">
+                                <div style="font-size: 14px; color: #666; margin-bottom: 10px;">🎯 Note Globale</div>
+                                <div id="dashGlobalScore" style="font-size: 36px; font-weight: 700; color: #1a4d2e;">--</div>
+                                <div style="font-size: 12px; color: #999;">/20</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Carte 2: Dernier Test -->
+                        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="text-align: center;">
+                                <div style="font-size: 14px; color: #666; margin-bottom: 10px;">📅 Dernier Test</div>
+                                <div id="dashLastTest" style="font-size: 18px; font-weight: 700; color: #1a4d2e; margin-bottom: 5px;">--</div>
+                                <div id="dashLastTestDate" style="font-size: 12px; color: #999;">--</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Carte 3: Total Tests -->
+                        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="text-align: center;">
+                                <div style="font-size: 14px; color: #666; margin-bottom: 10px;">📊 Tests Complétés</div>
+                                <div id="dashTotalTests" style="font-size: 36px; font-weight: 700; color: #1a4d2e;">--</div>
+                                <div style="font-size: 12px; color: #999;">enregistrements</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Carte 4: Meilleur Score -->
+                        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="text-align: center;">
+                                <div style="font-size: 14px; color: #666; margin-bottom: 10px;">🏆 Meilleur Score</div>
+                                <div id="dashBestScore" style="font-size: 18px; font-weight: 700; color: #1a4d2e; margin-bottom: 5px;">--</div>
+                                <div id="dashBestQuality" style="font-size: 12px; color: #999;">--</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Qualités Non Testées -->
+                    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 15px 0; color: #1a4d2e; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">⚠️ Qualités Non Testées</h4>
+                        <div id="dashMissing"></div>
+                    </div>
+                    
+                    <!-- Conseil du Jour -->
+                    <div style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 15px 0; color: #1a4d2e; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">💡 Conseil du Jour</h4>
+                        <div id="dashAdvice" style="font-size: 16px; line-height: 1.6;"></div>
+                    </div>
+                    
+                    <!-- Record Personnel -->
+                    <div style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <h4 style="margin: 0 0 15px 0; color: #1a4d2e; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">🎖️ Votre Record Personnel</h4>
+                        <div id="dashRecord"></div>
+                    </div>
                 </div>
             </div>
 
