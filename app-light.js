@@ -1074,7 +1074,7 @@ function switchTab(tabName) {
     if (tabName === 'dashboard') {
         updateDashboard();
     } else if (tabName === 'history') {
-        displayHistory();
+        displayHistoryAdvanced();
     }
 }
 
@@ -4022,7 +4022,11 @@ function saveQualityTests(qualityKey) {
     });
 }
 
-// Afficher l'historique
+// =============================================================================
+// ANCIENNE FONCTION displayHistory - DÉSACTIVÉE
+// Remplacée par displayHistoryAdvanced() dans history-advanced.js
+// =============================================================================
+/*
 function displayHistory() {
     const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
     
@@ -4161,6 +4165,8 @@ function displayHistory() {
     
     document.querySelector('.history-container').innerHTML = html;
 }
+*/
+// =============================================================================
 
 // Supprimer un test
 // Modifier un test
@@ -4261,7 +4267,7 @@ function deleteTest(testId) {
     localStorage.setItem('testsHistory', JSON.stringify(history));
     
     alert('✅ Test supprimé !');
-    displayHistory();
+    displayHistoryAdvanced();
 }
 
 console.log('✅ Application chargée et prête');
