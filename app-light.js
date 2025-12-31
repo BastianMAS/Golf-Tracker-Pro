@@ -4025,233 +4025,130 @@ function saveQualityTests(qualityKey) {
 // Afficher l'historique
 function displayHistory() {
     const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
-    const scores = calculateQualityScores();
-    
-    // 1. RADAR CHART
-    updateHistoryRadar(scores);
-    
-    // 2. INITIALISER LES FILTRES
-    document.getElementById('historyTotalCount').textContent = history.length;
-    updateTestFilterOptions('all');
-    
-    // 3. AFFICHER LA TIMELINE
-    displayHistoryTimeline(history, 'all', 'all');
-    
-    // 4. ÉVÉNEMENTS DES FILTRES
-    const qualityFilter = document.getElementById('historyQualityFilter');
-    const testFilter = document.getElementById('historyTestFilter');
-    
-    // Enlever les anciens listeners si ils existent
-    const newQualityFilter = qualityFilter.cloneNode(true);
-    const newTestFilter = testFilter.cloneNode(true);
-    qualityFilter.parentNode.replaceChild(newQualityFilter, qualityFilter);
-    testFilter.parentNode.replaceChild(newTestFilter, testFilter);
-    
-    document.getElementById('historyQualityFilter').addEventListener('change', function() {
-        const quality = this.value;
-        const test = document.getElementById('historyTestFilter').value;
-        displayHistoryTimeline(history, quality, test);
-        updateTestFilterOptions(quality);
-        
-        if (test !== 'all') {
-            displayEvolutionChart(history, test);
-        } else {
-            document.getElementById('evolutionChartContainer').style.display = 'none';
-        }
-    });
-    
-    document.getElementById('historyTestFilter').addEventListener('change', function() {
-        const quality = document.getElementById('historyQualityFilter').value;
-        const test = this.value;
-        displayHistoryTimeline(history, quality, test);
-        
-        if (test !== 'all') {
-            displayEvolutionChart(history, test);
-        } else {
-            document.getElementById('evolutionChartContainer').style.display = 'none';
-        }
-    });
-}
-
-function updateHistoryRadar(scores) {
-    const canvas = document.getElementById('historyRadarChart');
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    
-    if (window.historyRadarChartInstance) {
-        window.historyRadarChartInstance.destroy();
-    }
-    
-    window.historyRadarChartInstance = new Chart(ctx, {
-        type: 'radar',
-        data: {
-            labels: ['Force', 'Vitesse', 'Endurance', 'Explosivité', 'Core', 'Mobilité', 'Équilibre'],
-            datasets: [{
-                label: 'Performance /20',
-                data: [
-                    scores?.force || 0,
-                    scores?.vitesse || 0,
-                    scores?.endurance || 0,
-                    scores?.explosivite || 0,
-                    scores?.core || 0,
-                    scores?.mobilite || 0,
-                    scores?.equilibre || 0
-                ],
-                backgroundColor: 'rgba(26, 77, 46, 0.2)',
-                borderColor: 'rgba(26, 77, 46, 1)',
-                borderWidth: 2,
-                pointBackgroundColor: 'rgba(26, 77, 46, 1)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(26, 77, 46, 1)'
-            }]
-        },
-        options: {
-            scales: {
-                r: {
-                    beginAtZero: true,
-                    max: 20,
-                    ticks: {
-                        stepSize: 5
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                }
-            }
-        }
-    });
-}
-
-function updateTestFilterOptions(quality) {
-    const select = document.getElementById('historyTestFilter');
-    select.innerHTML = '<option value="all">Tous les tests</option>';
-    
-    if (quality === 'all') return;
-    
-    const qualityTests = QUALITY_TESTS[quality];
-    if (!qualityTests) return;
-    
-    qualityTests.tests.forEach(test => {
-        const option = document.createElement('option');
-        option.value = test.key;
-        option.textContent = test.name;
-        select.appendChild(option);
-    });
-}
-
-function displayHistoryTimeline(history, qualityFilter, testFilter) {
-    const container = document.getElementById('historyTimeline');
     
     if (history.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">Aucun test enregistré</p>';
+        document.querySelector('.history-container').innerHTML = `
+            <div class="alert warning">
+                <div class="alert-title">📋 Aucun test enregistré</div>
+                <p>Commencez par enregistrer vos premiers tests !</p>
+            </div>
+        `;
         return;
     }
     
-    let filtered = history;
-    if (qualityFilter !== 'all') {
-        filtered = filtered.filter(h => h.quality === qualityFilter);
-    }
+    // Organiser par qualité
+    const byQuality = {};
+    Object.keys(QUALITY_TESTS).forEach(key => {
+        byQuality[key] = history.filter(h => h.quality === key).reverse(); // Plus récent en premier
+    });
     
-    if (filtered.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">Aucun test pour cette sélection</p>';
-        return;
-    }
+    let html = '<div class="history-by-quality">';
     
-    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    let html = '';
-    
-    filtered.forEach((test, index) => {
-        const date = new Date(test.date);
-        const quality = QUALITY_TESTS[test.quality];
-        const previousTest = filtered[index + 1];
+    Object.keys(QUALITY_TESTS).forEach(qualityKey => {
+        const quality = QUALITY_TESTS[qualityKey];
+        const tests = byQuality[qualityKey];
+        
+        if (tests.length === 0) return;
         
         html += `
-            <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; border-left: 4px solid ${quality.color};">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
-                    <div>
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-                            <span style="font-size: 24px;">${quality.icon}</span>
-                            <h4 style="margin: 0; color: ${quality.color}; font-size: 18px;">${quality.name}</h4>
-                        </div>
-                        <div style="color: #666; font-size: 14px;">📅 ${date.toLocaleDateString('fr-FR', {day: '2-digit', month: 'short', year: 'numeric'})} à ${date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</div>
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button onclick="editTest(${test.id})" style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">
-                            ✏️ Modifier
-                        </button>
-                        <button onclick="deleteTest(${test.id})" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">
-                            🗑️ Supprimer
-                        </button>
-                    </div>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+            <div class="quality-history-section" style="margin-bottom: 30px;">
+                <h3 style="color: ${quality.color}; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 24px;">${quality.icon}</span>
+                    ${quality.name}
+                    <span style="font-size: 14px; color: #666;">(${tests.length} enregistrement${tests.length > 1 ? 's' : ''})</span>
+                </h3>
+                <div class="tests-list">
         `;
         
-        quality.tests.forEach(testDef => {
-            const testResult = test.tests[testDef.key];
-            if (!testResult && testResult !== 0) return;
+        tests.forEach((test, index) => {
+            const date = new Date(test.date);
+            const previousTest = tests[index + 1]; // Test précédent (plus ancien)
             
-            let progression = null;
-            if (previousTest && previousTest.tests[testDef.key]) {
-                const prevValue = testDef.bilateral 
-                    ? ((previousTest.tests[testDef.key].left || 0) + (previousTest.tests[testDef.key].right || 0)) / 2
-                    : previousTest.tests[testDef.key];
-                const currValue = testDef.bilateral
-                    ? ((testResult.left || 0) + (testResult.right || 0)) / 2
-                    : testResult;
-                
-                const diff = currValue - prevValue;
-                progression = {
-                    value: Math.abs(diff),
-                    positive: diff > 0,
-                    unit: testDef.unit
-                };
-            }
-            
-            if (testDef.bilateral) {
-                const left = testResult.left;
-                const right = testResult.right;
-                const lsi = (left && right) ? (Math.min(left, right) / Math.max(left, right) * 100) : null;
-                
-                html += `
-                    <div style="background: #f8f9fa; padding: 12px; border-radius: 8px;">
-                        <div style="font-weight: 600; font-size: 13px; color: #666; margin-bottom: 8px;">${testDef.name}</div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                            <span style="font-size: 14px;">G: <strong>${left !== null ? left : '--'}${testDef.unit}</strong></span>
-                            <span style="font-size: 14px;">D: <strong>${right !== null ? right : '--'}${testDef.unit}</strong></span>
+            html += `
+                <div class="test-card" style="background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; border-left: 4px solid ${quality.color};">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div>
+                            <strong style="font-size: 16px;">📅 ${date.toLocaleDateString('fr-FR')} à ${date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</strong>
+                            <div style="color: #666; font-size: 14px;">${Object.keys(test.tests).length} test${Object.keys(test.tests).length > 1 ? 's' : ''} complété${Object.keys(test.tests).length > 1 ? 's' : ''}</div>
                         </div>
-                        ${lsi ? `<div style="font-size: 12px; color: ${lsi < 85 ? '#e74c3c' : lsi < 90 ? '#f39c12' : '#27ae60'};">LSI: ${lsi.toFixed(0)}%</div>` : ''}
-                        ${progression ? `
-                            <div style="margin-top: 8px; padding: 5px 10px; background: ${progression.positive ? '#e8f5e9' : '#ffebee'}; border-radius: 5px; font-size: 12px; font-weight: 600; color: ${progression.positive ? '#27ae60' : '#e74c3c'};">
-                                ${progression.positive ? '🔺' : '🔻'} ${progression.positive ? '+' : '-'}${progression.value.toFixed(1)}${progression.unit}
-                            </div>
-                        ` : ''}
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="editTest(${test.id})" style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                                ✏️ Modifier
+                            </button>
+                            <button onclick="deleteTest(${test.id})" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: 600;">
+                                🗑️ Supprimer
+                            </button>
+                        </div>
                     </div>
-                `;
-            } else {
-                const score = calculateScore20(testDef.key, testResult);
-                const badge = score !== null ? getBadgeLabel(score) : null;
+                    <div class="test-results">
+            `;
+            
+            // Afficher les résultats
+            quality.tests.forEach(testDef => {
+                const testResult = test.tests[testDef.key];
+                if (!testResult) return;
                 
-                html += `
-                    <div style="background: #f8f9fa; padding: 12px; border-radius: 8px;">
-                        <div style="font-weight: 600; font-size: 13px; color: #666; margin-bottom: 8px;">${testDef.name}</div>
-                        <div style="font-size: 20px; font-weight: 700; color: #1a4d2e; margin-bottom: 5px;">${testResult}${testDef.unit}</div>
-                        ${badge ? `<span class="badge badge-${badge.class}" style="font-size: 11px;">${badge.label}</span>` : ''}
-                        ${score !== null ? `<div style="font-size: 12px; color: #666; margin-top: 5px;">${score.toFixed(1)}/20</div>` : ''}
-                        ${progression ? `
-                            <div style="margin-top: 8px; padding: 5px 10px; background: ${progression.positive ? '#e8f5e9' : '#ffebee'}; border-radius: 5px; font-size: 12px; font-weight: 600; color: ${progression.positive ? '#27ae60' : '#e74c3c'};">
-                                ${progression.positive ? '🔺' : '🔻'} ${progression.positive ? '+' : '-'}${progression.value.toFixed(1)}${progression.unit}
-                            </div>
-                        ` : ''}
+                if (testDef.bilateral) {
+                    const left = testResult.left;
+                    const right = testResult.right;
+                    
+                    if (left !== null || right !== null) {
+                        html += `<div style="padding: 8px 0; border-bottom: 1px solid #eee;">`;
+                        html += `<strong>${testDef.name}:</strong> `;
+                        
+                        if (left !== null) html += `G: ${left}${testDef.unit} `;
+                        if (right !== null) html += `D: ${right}${testDef.unit}`;
+                        
+                        // LSI si les deux côtés
+                        if (left !== null && right !== null) {
+                            const lsi = ((Math.min(left, right) / Math.max(left, right)) * 100).toFixed(1);
+                            const lsiColor = lsi >= 90 ? '#27ae60' : lsi >= 85 ? '#f39c12' : '#e74c3c';
+                            html += ` | <span style="color: ${lsiColor}; font-weight: 600;">LSI: ${lsi}%</span>`;
+                        }
+                        
+                        // Progression
+                        if (previousTest && previousTest.tests[testDef.key]) {
+                            const prevLeft = previousTest.tests[testDef.key].left;
+                            const prevRight = previousTest.tests[testDef.key].right;
+                            
+                            if (left !== null && prevLeft !== null) {
+                                const diff = left - prevLeft;
+                                if (diff !== 0) {
+                                    html += ` <span style="color: ${diff > 0 ? '#27ae60' : '#e74c3c'};">${diff > 0 ? '⬆️' : '⬇️'} ${Math.abs(diff).toFixed(1)}${testDef.unit} (G)</span>`;
+                                }
+                            }
+                        }
+                        
+                        html += `</div>`;
+                    }
+                } else {
+                    html += `<div style="padding: 8px 0; border-bottom: 1px solid #eee;">`;
+                    html += `<strong>${testDef.name}:</strong> ${testResult}${testDef.unit}`;
+                    
+                    // Badge
+                    const score = calculateScore20(testDef.key, testResult);
+                    if (score !== null) {
+                        const badge = getBadgeLabel(score);
+                        html += ` <span style="background: ${quality.color}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 600;">${badge.label}</span>`;
+                    }
+                    
+                    // Progression
+                    if (previousTest && previousTest.tests[testDef.key] !== undefined) {
+                        const prev = previousTest.tests[testDef.key];
+                        const diff = testResult - prev;
+                        if (diff !== 0) {
+                            html += ` <span style="color: ${diff > 0 ? '#27ae60' : '#e74c3c'};">${diff > 0 ? '⬆️' : '⬇️'} ${Math.abs(diff).toFixed(1)}${testDef.unit}</span>`;
+                        }
+                    }
+                    
+                    html += `</div>`;
+                }
+            });
+            
+            html += `
                     </div>
-                `;
-            }
+                </div>
+            `;
         });
         
         html += `
@@ -4260,93 +4157,13 @@ function displayHistoryTimeline(history, qualityFilter, testFilter) {
         `;
     });
     
-    container.innerHTML = html;
+    html += '</div>';
+    
+    document.querySelector('.history-container').innerHTML = html;
 }
 
-function displayEvolutionChart(history, testKey) {
-    const container = document.getElementById('evolutionChartContainer');
-    const canvas = document.getElementById('evolutionChart');
-    
-    if (!canvas) return;
-    
-    let testDef = null;
-    let qualityKey = null;
-    
-    Object.entries(QUALITY_TESTS).forEach(([qKey, quality]) => {
-        const found = quality.tests.find(t => t.key === testKey);
-        if (found) {
-            testDef = found;
-            qualityKey = qKey;
-        }
-    });
-    
-    if (!testDef) {
-        container.style.display = 'none';
-        return;
-    }
-    
-    const relevantTests = history
-        .filter(h => h.quality === qualityKey && h.tests[testKey])
-        .sort((a, b) => new Date(a.date) - new Date(b.date));
-    
-    if (relevantTests.length === 0) {
-        container.style.display = 'none';
-        return;
-    }
-    
-    container.style.display = 'block';
-    
-    const ctx = canvas.getContext('2d');
-    
-    if (window.evolutionChartInstance) {
-        window.evolutionChartInstance.destroy();
-    }
-    
-    const labels = relevantTests.map(t => new Date(t.date).toLocaleDateString('fr-FR', {day: '2-digit', month: 'short'}));
-    const data = relevantTests.map(t => {
-        const value = t.tests[testKey];
-        if (testDef.bilateral) {
-            return ((value.left || 0) + (value.right || 0)) / 2;
-        }
-        return value;
-    });
-    
-    window.evolutionChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: testDef.name + ' (' + testDef.unit + ')',
-                data: data,
-                borderColor: QUALITY_TESTS[qualityKey].color,
-                backgroundColor: QUALITY_TESTS[qualityKey].color + '20',
-                tension: 0.3,
-                fill: true,
-                pointRadius: 5,
-                pointHoverRadius: 7
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    title: {
-                        display: true,
-                        text: testDef.name + ' (' + testDef.unit + ')'
-                    }
-                }
-            }
-        }
-    });
-}
-
+// Supprimer un test
+// Modifier un test
 function editTest(testId) {
     const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
     const test = history.find(t => t.id === testId);
