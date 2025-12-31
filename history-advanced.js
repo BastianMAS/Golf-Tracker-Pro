@@ -125,16 +125,33 @@ function displayHistoryAdvanced() {
     
     container.innerHTML = html;
     
-    // Initialiser les graphiques
-    initRadarChart(sortedHistory);
-    populateTestFilter();
-    displayTimeline(sortedHistory);
+    // Attendre que le DOM soit mis à jour avant d'initialiser les graphiques
+    setTimeout(() => {
+        initRadarChart(sortedHistory);
+        populateTestFilter();
+        displayTimeline(sortedHistory);
+    }, 100);
 }
 
 // Initialiser le graphique radar
 function initRadarChart(history) {
     const canvas = document.getElementById('radarHistoryChart');
-    if (!canvas) return;
+    if (!canvas) {
+        console.error('Canvas radarHistoryChart introuvable');
+        return;
+    }
+    
+    // Vérifier que Chart.js est chargé
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js n\'est pas chargé !');
+        return;
+    }
+    
+    // Vérifier que QUALITY_TESTS existe
+    if (typeof QUALITY_TESTS === 'undefined') {
+        console.error('QUALITY_TESTS n\'est pas défini ! Vérifier l\'ordre de chargement des scripts.');
+        return;
+    }
     
     // Détruire l'ancien graphique s'il existe
     if (radarHistoryChart) {
@@ -143,7 +160,7 @@ function initRadarChart(history) {
     
     // Calculer les scores moyens par qualité
     const latestTest = history[0]; // Le plus récent
-    const scores = calculateQualityScores(latestTest);
+    const scores = calculateQualityScoresForHistory(latestTest);
     
     const ctx = canvas.getContext('2d');
     radarHistoryChart = new Chart(ctx, {
@@ -196,8 +213,20 @@ function initRadarChart(history) {
 }
 
 // Calculer les scores par qualité pour un test
-function calculateQualityScores(test) {
+function calculateQualityScoresForHistory(test) {
     const scores = {};
+    
+    // Vérifier que QUALITY_TESTS existe
+    if (typeof QUALITY_TESTS === 'undefined') {
+        console.error('QUALITY_TESTS non défini dans calculateQualityScores');
+        return scores;
+    }
+    
+    // Vérifier que test existe et a la propriété tests
+    if (!test || !test.tests) {
+        console.error('Test invalide ou test.tests non défini:', test);
+        return scores;
+    }
     
     // Pour chaque qualité
     Object.keys(QUALITY_TESTS).forEach(qualityKey => {
