@@ -3970,6 +3970,14 @@ function saveQualityTests(qualityKey) {
         return;
     }
     
+    // Récupérer les notes du coach (si la fonction existe)
+    if (typeof getCoachNotes !== 'undefined') {
+        const coachNotes = getCoachNotes(qualityKey);
+        if (coachNotes) {
+            testData.coachNotes = coachNotes;
+        }
+    }
+    
     // Récupérer l'historique existant
     let history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
     
@@ -4253,6 +4261,11 @@ function editTest(testId) {
                 }, 300);
             }
         });
+    }
+    
+    // Charger les notes du coach si elles existent
+    if (test.coachNotes && typeof loadCoachNotes !== 'undefined') {
+        loadCoachNotes(test.quality, test.coachNotes);
     }
     
     alert(`✏️ Les valeurs ont été chargées. Modifiez-les puis cliquez sur "${quality.icon} Enregistrer ${quality.name}" pour sauvegarder.`);

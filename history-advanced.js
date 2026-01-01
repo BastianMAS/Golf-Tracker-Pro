@@ -380,7 +380,8 @@ function groupTestsByQualityAndDate(history) {
             quality: test.quality,
             date: test.date,
             testId: test.id,
-            tests: test.tests
+            tests: test.tests,
+            coachNotes: test.coachNotes  // Ajouter les notes
         });
     });
     
@@ -420,6 +421,11 @@ function renderTestResults(group, history) {
             html += renderNormalTest(testDef, testResult, previousTest, group.quality);
         }
     });
+    
+    // Ajouter les notes du coach si elles existent
+    if (group.coachNotes && typeof renderCoachNotes !== 'undefined') {
+        html += renderCoachNotes(group.coachNotes);
+    }
     
     return html;
 }
