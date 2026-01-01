@@ -234,15 +234,31 @@ function displayAlerts() {
     
     const analysis = analyzeProgressions(history);
     
-    if (!analysis) return;
+    if (!analysis) {
+        console.log('⚠️ Pas assez de données pour l\'analyse (besoin de 2+ tests)');
+        return;
+    }
+    
+    console.log('📊 Analyse terminée:', analysis);
     
     // Trouver le conteneur d'alertes (ou le créer)
     let alertsContainer = document.getElementById('alerts-container');
     
     if (!alertsContainer) {
-        // Créer le conteneur au début de l'historique
-        const historySection = document.getElementById('historique-tab');
-        if (!historySection) return;
+        // Essayer de trouver le conteneur historique de plusieurs façons
+        const historySection = document.getElementById('historique-tab') || 
+                               document.getElementById('historique') ||
+                               document.querySelector('[id*="historique"]') ||
+                               document.querySelector('.tab-content.active') ||
+                               document.querySelector('#testsTimeline')?.parentElement;
+        
+        if (!historySection) {
+            console.error('❌ Impossible de trouver le conteneur historique');
+            console.log('Éléments disponibles:', document.querySelectorAll('[id]'));
+            return;
+        }
+        
+        console.log('✅ Conteneur historique trouvé:', historySection.id || historySection.className);
         
         alertsContainer = document.createElement('div');
         alertsContainer.id = 'alerts-container';
