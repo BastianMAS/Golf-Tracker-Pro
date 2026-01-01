@@ -1580,40 +1580,6 @@
     <script src="export-module.js"></script>
     <script src="alerts-module.js"></script>
     
-    <!-- Auto-chargement de l'historique -->
-    <script>
-        // S'assurer que l'historique se charge automatiquement
-        document.addEventListener('DOMContentLoaded', function() {
-            // Observer les changements d'onglets
-            const tabButtons = document.querySelectorAll('.tab-btn');
-            
-            tabButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const tabName = this.textContent.trim();
-                    
-                    // Si on clique sur l'onglet Historique
-                    if (tabName.includes('Historique')) {
-                        setTimeout(() => {
-                            if (typeof displayHistoryAdvanced === 'function') {
-                                displayHistoryAdvanced();
-                            }
-                        }, 100);
-                    }
-                });
-            });
-            
-            // Charger l'historique si on est déjà sur cet onglet au chargement
-            setTimeout(() => {
-                const activeTab = document.querySelector('.tab-content.active');
-                if (activeTab && activeTab.id && activeTab.id.includes('historique')) {
-                    if (typeof displayHistoryAdvanced === 'function') {
-                        displayHistoryAdvanced();
-                    }
-                }
-            }, 500);
-        });
-    </script>
-    
     <!-- PWA Installation -->
     <script src="pwa-install.js"></script>
 </body>
