@@ -139,6 +139,11 @@ function displayHistoryAdvanced() {
         initRadarChart(sortedHistory);
         populateTestFilter();
         displayTimeline(sortedHistory);
+        
+        // Afficher les alertes
+        if (typeof displayAlerts !== 'undefined') {
+            displayAlerts();
+        }
     }, 100);
 }
 
