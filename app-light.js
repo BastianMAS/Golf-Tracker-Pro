@@ -1074,7 +1074,7 @@ function switchTab(tabName) {
     if (tabName === 'dashboard') {
         updateDashboard();
     } else if (tabName === 'history') {
-        displayHistoryAdvanced();
+        displayHistory();
     }
 }
 
@@ -3922,9 +3922,13 @@ function saveQualityTests(qualityKey) {
     const quality = QUALITY_TESTS[qualityKey];
     if (!quality) return;
     
+    // CORRECTION: Lire la date du champ testDate
+    const testDateInput = document.getElementById('testDate');
+    const testDate = testDateInput?.value || new Date().toISOString().split('T')[0];
+    
     const testData = {
         id: Date.now(),
-        date: new Date().toISOString(),
+        date: new Date(testDate).toISOString(),
         quality: qualityKey,
         player: currentPlayer.name,
         tests: {}
@@ -3968,14 +3972,6 @@ function saveQualityTests(qualityKey) {
     if (!hasData) {
         alert(`Aucun test de ${quality.name} n'a été saisi.`);
         return;
-    }
-    
-    // Récupérer les notes du coach (si la fonction existe)
-    if (typeof getCoachNotes !== 'undefined') {
-        const coachNotes = getCoachNotes(qualityKey);
-        if (coachNotes) {
-            testData.coachNotes = coachNotes;
-        }
     }
     
     // Récupérer l'historique existant
@@ -4030,11 +4026,7 @@ function saveQualityTests(qualityKey) {
     });
 }
 
-// =============================================================================
-// ANCIENNE FONCTION displayHistory - DÉSACTIVÉE
-// Remplacée par displayHistoryAdvanced() dans history-advanced.js
-// =============================================================================
-/*
+// Afficher l'historique
 function displayHistory() {
     const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
     
@@ -4173,8 +4165,6 @@ function displayHistory() {
     
     document.querySelector('.history-container').innerHTML = html;
 }
-*/
-// =============================================================================
 
 // Supprimer un test
 // Modifier un test
@@ -4263,11 +4253,6 @@ function editTest(testId) {
         });
     }
     
-    // Charger les notes du coach si elles existent
-    if (test.coachNotes && typeof loadCoachNotes !== 'undefined') {
-        loadCoachNotes(test.quality, test.coachNotes);
-    }
-    
     alert(`✏️ Les valeurs ont été chargées. Modifiez-les puis cliquez sur "${quality.icon} Enregistrer ${quality.name}" pour sauvegarder.`);
 }
 
@@ -4280,7 +4265,7 @@ function deleteTest(testId) {
     localStorage.setItem('testsHistory', JSON.stringify(history));
     
     alert('✅ Test supprimé !');
-    displayHistoryAdvanced();
+    displayHistory();
 }
 
 console.log('✅ Application chargée et prête');
