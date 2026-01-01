@@ -1074,7 +1074,14 @@ function switchTab(tabName) {
     if (tabName === 'dashboard') {
         updateDashboard();
     } else if (tabName === 'history') {
-        displayHistory();
+        // Appeler displayHistoryAdvanced si disponible, sinon displayHistory
+        if (typeof displayHistoryAdvanced === 'function') {
+            console.log('📈 Chargement de l\'historique avancé...');
+            displayHistoryAdvanced();
+        } else {
+            console.log('⚠️ displayHistoryAdvanced non disponible, utilisation de displayHistory');
+            displayHistory();
+        }
     }
 }
 
