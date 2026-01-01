@@ -5,10 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Golf Performance Tracker - Bastian MAS, Préparateur Physique Spécialisé Golf">
     <title>Golf Performance Tracker - Bastian MAS</title>
+    
+    <!-- Chart.js pour les graphiques -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="pwa-mobile-styles.css">
+    
+    <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
+    
+    <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#1a4d2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Golf Tracker">
+    <link rel="apple-touch-icon" href="logo_bastian.png">
+    <meta name="msapplication-TileColor" content="#1a4d2e">
+    <meta name="msapplication-TileImage" content="logo_bastian.png">
 </head>
 <body>
     <!-- Navigation -->
@@ -1490,10 +1505,15 @@
                 </div>
             </div>
         </div>
+    </div>
     
+    <!-- Scripts -->
     <script src="baremes.js"></script>
     <script src="app-light.js"></script>
     <script src="history-advanced.js"></script>
     <script src="coach-notes.js"></script>
+    
+    <!-- PWA Installation -->
+    <script src="pwa-install.js"></script>
 </body>
 </html>
