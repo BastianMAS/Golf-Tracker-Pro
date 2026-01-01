@@ -10,6 +10,15 @@ let currentFilter = {
     test: 'all'
 };
 
+// Fonction pour obtenir le badge et emoji selon le score
+function getBadgeLabel(score) {
+    if (score === null) return {label: 'N/A', emoji: '⚪', class: 'faible'};
+    if (score >= 17.5) return {label: 'ELITE', emoji: '🔵', class: 'elite'};
+    if (score >= 12.5) return {label: 'BON', emoji: '🟢', class: 'bon'};
+    if (score >= 7.5) return {label: 'MOYEN', emoji: '🟠', class: 'moyen'};
+    return {label: 'FAIBLE', emoji: '🔴', class: 'faible'};
+}
+
 // Couleurs par qualité
 const QUALITY_COLORS = {
     force: '#e74c3c',
