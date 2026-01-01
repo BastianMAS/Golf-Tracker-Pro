@@ -133,6 +133,29 @@ function displayHistoryAdvanced() {
     }, 100);
 }
 
+// Fusionner tous les tests pour obtenir le test le plus récent de chaque qualité
+function mergeAllTests(history) {
+    const merged = {
+        tests: {}
+    };
+    
+    // Pour chaque qualité, prendre le test le plus récent
+    const qualitiesSeen = {};
+    
+    history.forEach(test => {
+        if (!qualitiesSeen[test.quality]) {
+            qualitiesSeen[test.quality] = true;
+            
+            // Copier tous les tests de cette qualité
+            Object.keys(test.tests).forEach(testKey => {
+                merged.tests[testKey] = test.tests[testKey];
+            });
+        }
+    });
+    
+    return merged;
+}
+
 // Initialiser le graphique radar
 function initRadarChart(history) {
     const canvas = document.getElementById('radarHistoryChart');
@@ -158,9 +181,9 @@ function initRadarChart(history) {
         radarHistoryChart.destroy();
     }
     
-    // Calculer les scores moyens par qualité
-    const latestTest = history[0]; // Le plus récent
-    const scores = calculateQualityScoresForHistory(latestTest);
+    // Fusionner tous les tests pour obtenir les données les plus récentes de chaque qualité
+    const mergedTest = mergeAllTests(history);
+    const scores = calculateQualityScoresForHistory(mergedTest);
     
     const ctx = canvas.getContext('2d');
     radarHistoryChart = new Chart(ctx, {
