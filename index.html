@@ -1422,6 +1422,71 @@
                             <button class="btn btn-primary" id="generateReport">Générer Rapport</button>
                         </div>
                     </div>
+                    
+                    <!-- Export CSV & Excel -->
+                    <div style="margin: 30px 0; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border-left: 4px solid #1a4d2e;">
+                        <h3 style="color: #1a4d2e; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 24px;">📥</span>
+                            Exporter les données
+                        </h3>
+                        <p style="font-size: 14px; color: #666; margin-bottom: 20px;">
+                            Exportez toutes vos données de tests pour les analyser dans Excel, Google Sheets ou archiver.
+                        </p>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                            
+                            <!-- Export CSV -->
+                            <div style="padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <span style="font-size: 32px;">📊</span>
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 16px; color: #333;">Export CSV</div>
+                                        <div style="font-size: 12px; color: #666;">Format universel</div>
+                                    </div>
+                                </div>
+                                <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                                    Fichier CSV compatible avec Excel, Google Sheets, Numbers. Idéal pour analyses et graphiques personnalisés.
+                                </p>
+                                <button 
+                                    onclick="exportToCSV()" 
+                                    style="width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;"
+                                >
+                                    📥 Télécharger CSV
+                                </button>
+                            </div>
+                            
+                            <!-- Export Excel -->
+                            <div style="padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <span style="font-size: 32px;">📗</span>
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 16px; color: #333;">Export Excel</div>
+                                        <div style="font-size: 12px; color: #666;">Avec onglets par qualité</div>
+                                    </div>
+                                </div>
+                                <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                                    Fichier Excel avec un onglet par qualité physique. Couleurs et mise en forme incluses.
+                                </p>
+                                <button 
+                                    onclick="exportToExcel()" 
+                                    style="width: 100%; padding: 12px; background: #1a4d2e; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;"
+                                >
+                                    📥 Télécharger Excel
+                                </button>
+                            </div>
+                            
+                        </div>
+                        
+                        <div style="margin-top: 15px; padding: 12px; background: #e3f2fd; border-radius: 8px; border-left: 3px solid #2196f3;">
+                            <div style="display: flex; align-items: start; gap: 10px;">
+                                <span style="font-size: 18px;">💡</span>
+                                <div style="font-size: 13px; color: #333;">
+                                    <strong>Astuce :</strong> Les exports incluent vos notes du coach, les scores sur 20, et les niveaux de performance pour chaque test.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -1512,6 +1577,7 @@
     <script src="app-light.js"></script>
     <script src="history-advanced.js"></script>
     <script src="coach-notes.js"></script>
+    <script src="export-module.js"></script>
     
     <!-- PWA Installation -->
     <script src="pwa-install.js"></script>
