@@ -37,7 +37,11 @@ function analyzeProgressions(history) {
                 if (currentValue.left && previousValue.left) {
                     const change = ((currentValue.left - previousValue.left) / previousValue.left) * 100;
                     
-                    if (change < -10) {
+                    // Tenir compte de higherIsBetter
+                    const isActuallyRegression = testDef.higherIsBetter ? (change < -10) : (change > 10);
+                    const isActuallyProgression = testDef.higherIsBetter ? (change > 10) : (change < -10);
+                    
+                    if (isActuallyRegression) {
                         analysis.regressions.push({
                             test: `${testDef.name} (Gauche)`,
                             quality: quality.name,
@@ -51,9 +55,9 @@ function analyzeProgressions(history) {
                         analysis.alerts.push({
                             type: 'regression',
                             severity: 'high',
-                            message: `⚠️ Régression importante : ${testDef.name} (Gauche) -${Math.abs(change).toFixed(1)}%`
+                            message: `⚠️ Régression importante : ${testDef.name} (Gauche) ${Math.abs(change).toFixed(1)}%`
                         });
-                    } else if (change > 10) {
+                    } else if (isActuallyProgression) {
                         analysis.progressions.push({
                             test: `${testDef.name} (Gauche)`,
                             quality: quality.name,
@@ -70,7 +74,11 @@ function analyzeProgressions(history) {
                 if (currentValue.right && previousValue.right) {
                     const change = ((currentValue.right - previousValue.right) / previousValue.right) * 100;
                     
-                    if (change < -10) {
+                    // Tenir compte de higherIsBetter
+                    const isActuallyRegression = testDef.higherIsBetter ? (change < -10) : (change > 10);
+                    const isActuallyProgression = testDef.higherIsBetter ? (change > 10) : (change < -10);
+                    
+                    if (isActuallyRegression) {
                         analysis.regressions.push({
                             test: `${testDef.name} (Droite)`,
                             quality: quality.name,
@@ -84,9 +92,9 @@ function analyzeProgressions(history) {
                         analysis.alerts.push({
                             type: 'regression',
                             severity: 'high',
-                            message: `⚠️ Régression importante : ${testDef.name} (Droite) -${Math.abs(change).toFixed(1)}%`
+                            message: `⚠️ Régression importante : ${testDef.name} (Droite) ${Math.abs(change).toFixed(1)}%`
                         });
-                    } else if (change > 10) {
+                    } else if (isActuallyProgression) {
                         analysis.progressions.push({
                             test: `${testDef.name} (Droite)`,
                             quality: quality.name,
@@ -132,7 +140,11 @@ function analyzeProgressions(history) {
                 if (typeof currentValue === 'number' && typeof previousValue === 'number') {
                     const change = ((currentValue - previousValue) / previousValue) * 100;
                     
-                    if (change < -10) {
+                    // Tenir compte de higherIsBetter
+                    const isActuallyRegression = testDef.higherIsBetter ? (change < -10) : (change > 10);
+                    const isActuallyProgression = testDef.higherIsBetter ? (change > 10) : (change < -10);
+                    
+                    if (isActuallyRegression) {
                         analysis.regressions.push({
                             test: testDef.name,
                             quality: quality.name,
@@ -146,9 +158,9 @@ function analyzeProgressions(history) {
                         analysis.alerts.push({
                             type: 'regression',
                             severity: 'high',
-                            message: `⚠️ Régression importante : ${testDef.name} -${Math.abs(change).toFixed(1)}%`
+                            message: `⚠️ Régression importante : ${testDef.name} ${Math.abs(change).toFixed(1)}%`
                         });
-                    } else if (change > 10) {
+                    } else if (isActuallyProgression) {
                         analysis.progressions.push({
                             test: testDef.name,
                             quality: quality.name,
