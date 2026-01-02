@@ -426,6 +426,14 @@ function renderTestResults(test, previousTest, quality) {
                         }
                     }
                 }
+                
+                // Bouton pour voir l'évolution
+                html += `
+                    <button onclick="showEvolutionChart('${testDef.key}', '${testDef.name}', '${test.quality}', '${testDef.unit}', true)" 
+                            style="margin-top: 8px; width: 100%; background: #3498db; color: white; border: none; padding: 4px 8px; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: 600;">
+                        📊 Voir évolution (moyenne)
+                    </button>
+                `;
             }
         } else {
             // Tests normaux
@@ -454,6 +462,14 @@ function renderTestResults(test, previousTest, quality) {
                     `;
                 }
             }
+            
+            // Bouton pour voir l'évolution
+            html += `
+                <button onclick="showEvolutionChart('${testDef.key}', '${testDef.name}', '${test.quality}', '${testDef.unit}', false)" 
+                        style="margin-top: 8px; width: 100%; background: #3498db; color: white; border: none; padding: 4px 8px; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: 600;">
+                    📊 Voir évolution
+                </button>
+            `;
         }
         
         html += '</div>';
