@@ -37,12 +37,14 @@ function analyzeProgressions(history) {
                 if (currentValue.left && previousValue.left) {
                     const change = ((currentValue.left - previousValue.left) / previousValue.left) * 100;
                     
-                    // Tenir compte de higherIsBetter (par défaut true si non défini)
+                    // Fallback : si higherIsBetter non défini, on assume true (Force, etc.)
                     const higherIsBetter = testDef.higherIsBetter !== undefined ? testDef.higherIsBetter : true;
-                    const isActuallyRegression = higherIsBetter ? (change < -10) : (change > 10);
-                    const isActuallyProgression = higherIsBetter ? (change > 10) : (change < -10);
                     
-                    if (isActuallyRegression) {
+                    // Détecter régression et progression selon higherIsBetter
+                    const isRegression = higherIsBetter ? (change < -10) : (change > 10);
+                    const isProgression = higherIsBetter ? (change > 10) : (change < -10);
+                    
+                    if (isRegression) {
                         analysis.regressions.push({
                             test: `${testDef.name} (Gauche)`,
                             quality: quality.name,
@@ -58,7 +60,7 @@ function analyzeProgressions(history) {
                             severity: 'high',
                             message: `⚠️ Régression importante : ${testDef.name} (Gauche) ${Math.abs(change).toFixed(1)}%`
                         });
-                    } else if (isActuallyProgression) {
+                    } else if (isProgression) {
                         analysis.progressions.push({
                             test: `${testDef.name} (Gauche)`,
                             quality: quality.name,
@@ -75,12 +77,13 @@ function analyzeProgressions(history) {
                 if (currentValue.right && previousValue.right) {
                     const change = ((currentValue.right - previousValue.right) / previousValue.right) * 100;
                     
-                    // Tenir compte de higherIsBetter (par défaut true si non défini)
+                    // Fallback : si higherIsBetter non défini, on assume true
                     const higherIsBetter = testDef.higherIsBetter !== undefined ? testDef.higherIsBetter : true;
-                    const isActuallyRegression = higherIsBetter ? (change < -10) : (change > 10);
-                    const isActuallyProgression = higherIsBetter ? (change > 10) : (change < -10);
                     
-                    if (isActuallyRegression) {
+                    const isRegression = higherIsBetter ? (change < -10) : (change > 10);
+                    const isProgression = higherIsBetter ? (change > 10) : (change < -10);
+                    
+                    if (isRegression) {
                         analysis.regressions.push({
                             test: `${testDef.name} (Droite)`,
                             quality: quality.name,
@@ -96,7 +99,7 @@ function analyzeProgressions(history) {
                             severity: 'high',
                             message: `⚠️ Régression importante : ${testDef.name} (Droite) ${Math.abs(change).toFixed(1)}%`
                         });
-                    } else if (isActuallyProgression) {
+                    } else if (isProgression) {
                         analysis.progressions.push({
                             test: `${testDef.name} (Droite)`,
                             quality: quality.name,
@@ -142,12 +145,13 @@ function analyzeProgressions(history) {
                 if (typeof currentValue === 'number' && typeof previousValue === 'number') {
                     const change = ((currentValue - previousValue) / previousValue) * 100;
                     
-                    // Tenir compte de higherIsBetter (par défaut true si non défini)
+                    // Fallback : si higherIsBetter non défini, on assume true
                     const higherIsBetter = testDef.higherIsBetter !== undefined ? testDef.higherIsBetter : true;
-                    const isActuallyRegression = higherIsBetter ? (change < -10) : (change > 10);
-                    const isActuallyProgression = higherIsBetter ? (change > 10) : (change < -10);
                     
-                    if (isActuallyRegression) {
+                    const isRegression = higherIsBetter ? (change < -10) : (change > 10);
+                    const isProgression = higherIsBetter ? (change > 10) : (change < -10);
+                    
+                    if (isRegression) {
                         analysis.regressions.push({
                             test: testDef.name,
                             quality: quality.name,
@@ -163,7 +167,7 @@ function analyzeProgressions(history) {
                             severity: 'high',
                             message: `⚠️ Régression importante : ${testDef.name} ${Math.abs(change).toFixed(1)}%`
                         });
-                    } else if (isActuallyProgression) {
+                    } else if (isProgression) {
                         analysis.progressions.push({
                             test: testDef.name,
                             quality: quality.name,
