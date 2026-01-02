@@ -291,33 +291,60 @@ function displayTimeline(history) {
         return;
     }
     
+    
     let html = '';
     
-    // Afficher chaque test
+    // Regrouper les tests par qualité
+    const testsByQuality = {};
     history.forEach((test, index) => {
-        const quality = QUALITY_TESTS[test.quality];
-        if (!quality) return;
-        
         // Appliquer les filtres
         if (currentFilter.quality !== 'all' && test.quality !== currentFilter.quality) {
             return;
         }
         
-        const color = QUALITY_COLORS[test.quality] || '#999';
-        const icon = QUALITY_ICONS[test.quality] || '📊';
-        const name = QUALITY_NAMES[test.quality] || test.quality;
-        
-        // Trouver le test précédent de la MÊME qualité pour la progression
-        let previousTest = null;
-        for (let i = index + 1; i < history.length; i++) {
-            if (history[i].quality === test.quality) {
-                previousTest = history[i];
-                break;
-            }
+        if (!testsByQuality[test.quality]) {
+            testsByQuality[test.quality] = [];
         }
+        testsByQuality[test.quality].push({test, index});
+    });
+    
+    // Afficher les tests regroupés par qualité
+    const qualityOrder = ['force', 'vitesse', 'endurance', 'explosivite', 'core', 'mobilite', 'equilibre', 'tpi'];
+    
+    qualityOrder.forEach(qualityKey => {
+        if (!testsByQuality[qualityKey]) return;
         
+        const quality = QUALITY_TESTS[qualityKey];
+        if (!quality) return;
+        
+        const color = QUALITY_COLORS[qualityKey] || '#999';
+        const icon = QUALITY_ICONS[qualityKey] || '📊';
+        const name = QUALITY_NAMES[qualityKey] || qualityKey;
+        
+        // En-tête de la qualité
         html += `
-            <div class="test-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; border-left: 4px solid ${color};">
+            <div style="margin: 30px 0 15px 0;">
+                <h3 style="display: flex; align-items: center; gap: 10px; color: ${color}; margin: 0;">
+                    <span style="font-size: 32px;">${icon}</span>
+                    <span style="text-transform: uppercase;">${name}</span>
+                    <span style="font-size: 14px; color: #999; font-weight: normal;">(${testsByQuality[qualityKey].length} enregistrement${testsByQuality[qualityKey].length > 1 ? 's' : ''})</span>
+                </h3>
+            </div>
+        `;
+        
+        // Afficher tous les tests de cette qualité
+        testsByQuality[qualityKey].forEach(({test, index}) => {
+            // Trouver le test précédent de la MÊME qualité
+            let previousTest = null;
+            for (let i = index + 1; i < history.length; i++) {
+                if (history[i].quality === test.quality) {
+                    previousTest = history[i];
+                    break;
+                }
+            }
+            
+            html += `
+                <div class="test-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; border-left: 4px solid ${color};">
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
                     <div>
                         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
@@ -344,6 +371,8 @@ function displayTimeline(history) {
                 ${test.coachNotes ? renderCoachNotes(test.coachNotes) : ''}
             </div>
         `;
+    });
+        });
     });
     
     if (html === '') {
