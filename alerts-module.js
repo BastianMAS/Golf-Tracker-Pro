@@ -6,6 +6,9 @@
 function analyzeProgressions(history) {
     if (!history || history.length < 2) return null;
     
+    // IMPORTANT : Trier par date décroissante (plus récent en premier)
+    const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
+    
     const analysis = {
         progressions: [],
         regressions: [],
@@ -14,16 +17,27 @@ function analyzeProgressions(history) {
         alerts: []
     };
     
-    // Parcourir l'historique pour détecter les changements
-    for (let i = 0; i < history.length - 1; i++) {
-        const current = history[i];
-        const previous = history[i + 1];
+    // Grouper les tests par qualité
+    const testsByQuality = {};
+    sortedHistory.forEach(test => {
+        if (!testsByQuality[test.quality]) {
+            testsByQuality[test.quality] = [];
+        }
+        testsByQuality[test.quality].push(test);
+    });
+    
+    // Pour chaque qualité, comparer UNIQUEMENT les 2 tests les plus récents
+    Object.keys(testsByQuality).forEach(qualityKey => {
+        const testsOfQuality = testsByQuality[qualityKey];
         
-        // Comparer seulement les tests de même qualité
-        if (current.quality !== previous.quality) continue;
+        // On a besoin d'au moins 2 tests pour comparer
+        if (testsOfQuality.length < 2) return;
         
-        const quality = QUALITY_TESTS[current.quality];
-        if (!quality) continue;
+        const current = testsOfQuality[0];  // Le plus récent
+        const previous = testsOfQuality[1]; // Le 2ème plus récent
+        
+        const quality = QUALITY_TESTS[qualityKey];
+        if (!quality) return;
         
         quality.tests.forEach(testDef => {
             const currentValue = current.tests[testDef.key];
@@ -181,11 +195,11 @@ function analyzeProgressions(history) {
                 }
             }
         });
-    }
+    });
     
     // Identifier les points faibles (scores < 12.5)
-    if (history.length > 0) {
-        const latestTest = history[0];
+    if (sortedHistory.length > 0) {
+        const latestTest = sortedHistory[0];
         const quality = QUALITY_TESTS[latestTest.quality];
         
         if (quality) {
