@@ -291,7 +291,6 @@ function displayTimeline(history) {
         return;
     }
     
-    
     let html = '';
     
     // Regrouper les tests par qualité
@@ -345,33 +344,32 @@ function displayTimeline(history) {
             
             html += `
                 <div class="test-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; border-left: 4px solid ${color};">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
-                    <div>
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-                            <span style="font-size: 24px;">${icon}</span>
-                            <h4 style="margin: 0; color: ${color}; font-size: 18px;">${name}</h4>
-                            <span style="font-size: 12px; color: #999;">(${countTests(test)} tests complétés)</span>
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                <span style="font-size: 24px;">${icon}</span>
+                                <h4 style="margin: 0; color: ${color}; font-size: 18px;">${name}</h4>
+                                <span style="font-size: 12px; color: #999;">(${countTests(test)} tests complétés)</span>
+                            </div>
+                            <div style="color: #666; font-size: 14px;">📅 ${formatDate(test.date)}</div>
                         </div>
-                        <div style="color: #666; font-size: 14px;">📅 ${formatDate(test.date)}</div>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="editTest(${test.id})" style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                                ✏️ Modifier
+                            </button>
+                            <button onclick="deleteTest(${test.id})" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                                🗑️ Supprimer
+                            </button>
+                        </div>
                     </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button onclick="editTest(${test.id})" style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">
-                            ✏️ Modifier
-                        </button>
-                        <button onclick="deleteTest(${test.id})" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">
-                            🗑️ Supprimer
-                        </button>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                        ${renderTestResults(test, previousTest, quality)}
                     </div>
+                    
+                    ${test.coachNotes ? renderCoachNotes(test.coachNotes) : ''}
                 </div>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
-                    ${renderTestResults(test, previousTest, quality)}
-                </div>
-                
-                ${test.coachNotes ? renderCoachNotes(test.coachNotes) : ''}
-            </div>
-        `;
-    });
+            `;
         });
     });
     
@@ -382,7 +380,6 @@ function displayTimeline(history) {
     timeline.innerHTML = html;
     console.log('✅ Timeline affichée');
 }
-
 // Rendre les résultats des tests
 function renderTestResults(test, previousTest, quality) {
     let html = '';
