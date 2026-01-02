@@ -392,7 +392,7 @@ function renderTestResults(test, previousTest, quality) {
                             const isImprovement = testDef.higherIsBetter ? diff > 0 : diff < 0;
                             html += `
                                 <div style="margin-top: 8px; padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: 600; background: ${isImprovement ? '#e8f5e9' : '#ffebee'}; color: ${isImprovement ? '#27ae60' : '#e74c3c'};">
-                                    ${isImprovement ? '🔻' : '🔺'} ${diff > 0 ? '+' : ''}${diff.toFixed(1)}${testDef.unit}
+                                    ${isImprovement ? '🔺' : '🔻'} ${diff > 0 ? '+' : ''}${diff.toFixed(1)}${testDef.unit}
                                 </div>
                             `;
                         }
@@ -419,7 +419,7 @@ function renderTestResults(test, previousTest, quality) {
                     const isImprovement = testDef.higherIsBetter ? diff > 0 : diff < 0;
                     html += `
                         <div style="margin-top: 8px; padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: 600; background: ${isImprovement ? '#e8f5e9' : '#ffebee'}; color: ${isImprovement ? '#27ae60' : '#e74c3c'};">
-                            ${isImprovement ? '🔻' : '🔺'} ${diff > 0 ? '+' : ''}${diff.toFixed(1)}${testDef.unit}
+                            ${isImprovement ? '🔺' : '🔻'} ${diff > 0 ? '+' : ''}${diff.toFixed(1)}${testDef.unit}
                         </div>
                     `;
                 }
