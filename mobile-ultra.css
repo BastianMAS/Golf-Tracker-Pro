@@ -3,6 +3,43 @@
    ========================================================================== */
 
 @media (max-width: 768px) {
+    /* ===== FORCER LE SCROLL - CRITIQUE ===== */
+    html, body {
+        height: auto !important;
+        min-height: 100vh !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+    }
+    
+    body {
+        position: relative !important;
+    }
+    
+    .container {
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+    }
+    
+    .tab-content {
+        height: auto !important;
+        min-height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+        padding-bottom: 120px !important;
+    }
+    
+    .tab-content.active {
+        display: block !important;
+        overflow: visible !important;
+    }
+    
+    /* Assurer que les catégories ne coupent pas */
+    .test-category {
+        overflow: visible !important;
+        height: auto !important;
+    }
+    
     /* ===== RÉDUCTION GLOBALE ===== */
     body {
         font-size: 11px !important;
@@ -110,7 +147,15 @@
     button[onclick*="saveQualityTests"] {
         padding: 12px 20px !important;
         font-size: 13px !important;
-        margin: 15px 0 !important;
+        margin: 20px 0 40px 0 !important;
+        width: 100% !important;
+        display: block !important;
+    }
+    
+    /* Conteneur des boutons d'enregistrement */
+    div[style*="text-align: center"] {
+        padding: 15px 0 30px 0 !important;
+        margin-bottom: 40px !important;
     }
     
     /* ===== HISTORIQUE ===== */
@@ -257,7 +302,13 @@
     /* ===== SCROLL SAFE ZONE ===== */
     /* Assurer qu'on peut scroller jusqu'au bout */
     .tab-content {
-        padding-bottom: 80px !important;
+        padding-bottom: 150px !important;
+    }
+    
+    /* Espace en bas de chaque section */
+    #tests-tab,
+    #profile-tab {
+        padding-bottom: 150px !important;
     }
     
     /* ===== ICÔNES PLUS PETITES ===== */
