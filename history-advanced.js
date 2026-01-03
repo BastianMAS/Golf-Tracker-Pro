@@ -353,7 +353,11 @@ function displayTimeline(history) {
                             </div>
                             <div style="color: #666; font-size: 14px;">📅 ${formatDate(test.date)}</div>
                         </div>
-                        <div style="display: flex; gap: 10px;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 13px; color: #666;">
+                                <input type="checkbox" id="compare-checkbox-${test.id}" onchange="toggleTestSelection(${test.id})" style="cursor: pointer; width: 18px; height: 18px;">
+                                <span>Comparer</span>
+                            </label>
                             <button onclick="editTest(${test.id})" style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">
                                 ✏️ Modifier
                             </button>
