@@ -89,8 +89,9 @@
     }
     
     .category-content.active {
-        max-height: 2000px !important;
+        max-height: 5000px !important;
         padding: 8px !important;
+        overflow-y: auto !important;
     }
     
     /* ===== FORMULAIRES SAISIE ===== */

@@ -1074,14 +1074,7 @@ function switchTab(tabName) {
     if (tabName === 'dashboard') {
         updateDashboard();
     } else if (tabName === 'history') {
-        // Appeler displayHistoryAdvanced si disponible, sinon displayHistory
-        if (typeof displayHistoryAdvanced === 'function') {
-            console.log('📈 Chargement de l\'historique avancé...');
-            displayHistoryAdvanced();
-        } else {
-            console.log('⚠️ displayHistoryAdvanced non disponible, utilisation de displayHistory');
-            displayHistory();
-        }
+        displayHistory();
     }
 }
 
@@ -1149,7 +1142,7 @@ function saveProfile() {
     const level = document.getElementById('playerLevel').value;
     const handicap = document.getElementById('playerHandicap').value || null;
     const circuit = document.getElementById('playerCircuit').value || null;
-    const color = document.getElementById('profileColor').value;
+    const color = '#1a4d2e'; // Couleur par défaut
     const photoPreview = document.getElementById('profilePhotoPreview');
     const photo = photoPreview.style.display !== 'none' ? photoPreview.src : null;
     
@@ -3929,13 +3922,9 @@ function saveQualityTests(qualityKey) {
     const quality = QUALITY_TESTS[qualityKey];
     if (!quality) return;
     
-    // CORRECTION: Lire la date du champ testDate
-    const testDateInput = document.getElementById('testDate');
-    const testDate = testDateInput?.value || new Date().toISOString().split('T')[0];
-    
     const testData = {
         id: Date.now(),
-        date: new Date(testDate).toISOString(),
+        date: new Date().toISOString(),
         quality: qualityKey,
         player: currentPlayer.name,
         tests: {}
