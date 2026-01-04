@@ -32,21 +32,76 @@ function addPlayer(playerData) {
         id: Date.now(),
         firstName: playerData.firstName,
         lastName: playerData.lastName,
+        name: `${playerData.firstName} ${playerData.lastName}`, // Pour compatibilité
         age: playerData.age || null,
         gender: playerData.gender || 'M',
+        
+        // Données physiques
+        weight: playerData.weight || null,
+        height: playerData.height || null,
+        sittingHeight: playerData.sittingHeight || null,
+        wingspan: playerData.wingspan || null,
+        
+        // Données golf
         handicap: playerData.handicap || null,
+        level: playerData.level || null,
+        circuit: playerData.circuit || null,
         status: playerData.status || 'amateur', // 'pro' ou 'amateur'
         club: playerData.club || null,
+        
+        // Visuel
         photo: playerData.photo || null,
+        
+        // Métadonnées
         createdAt: new Date().toISOString(),
         lastTestDate: null
     };
+    
+    // Calculer Mirwald si données disponibles
+    if (newPlayer.sittingHeight && newPlayer.height && newPlayer.age && newPlayer.weight) {
+        newPlayer.mirwald = calculateMirwaldForPlayer(newPlayer);
+    }
     
     players.push(newPlayer);
     savePlayers();
     
     console.log(`✅ Joueur ajouté: ${newPlayer.firstName} ${newPlayer.lastName}`);
     return newPlayer;
+}
+
+// Calculer Mirwald pour un joueur
+function calculateMirwaldForPlayer(player) {
+    if (!player.sittingHeight || !player.height || !player.age || !player.weight) {
+        return null;
+    }
+    
+    const legLength = player.height - player.sittingHeight;
+    const sittingHeightRatio = (player.sittingHeight / player.height) * 100;
+    
+    let offset, ageCoef, heightCoef, ratioCoef, weightCoef, interactionCoef;
+    
+    if (player.gender === 'M') {
+        offset = -9.236;
+        ageCoef = 0.0002708;
+        heightCoef = -0.001663;
+        ratioCoef = 0.007216;
+        weightCoef = 0.02292;
+        interactionCoef = legLength * sittingHeightRatio * 0.000017;
+    } else {
+        offset = -9.376;
+        ageCoef = 0.0001882;
+        heightCoef = 0.0022;
+        ratioCoef = 0.005841;
+        weightCoef = -0.0002658;
+        interactionCoef = legLength * sittingHeightRatio * 0.00000105635;
+    }
+    
+    return offset +
+        (ageCoef * Math.pow(player.age, 2) * legLength) +
+        (heightCoef * player.age * player.height) +
+        (ratioCoef * player.age * sittingHeightRatio) +
+        (weightCoef * player.age * player.weight) +
+        interactionCoef;
 }
 
 // Supprimer un joueur
@@ -171,7 +226,8 @@ function displayPlayersList() {
                 </div>
                 <div style="display: flex; gap: 8px; margin-top: 12px;">
                     ${!isSelected ? `<button onclick="selectPlayer(${player.id}); switchTab('tests');" style="flex: 1; background: #27ae60; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">✅ Sélectionner</button>` : ''}
-                    <button onclick="viewPlayerHistory(${player.id})" style="flex: 1; background: #3498db; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">📊 Historique</button>
+                    <button onclick="editPlayer(${player.id})" style="flex: 1; background: #3498db; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">✏️ Modifier</button>
+                    <button onclick="viewPlayerHistory(${player.id})" style="flex: 1; background: #9b59b6; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">📊 Historique</button>
                     <button onclick="deletePlayer(${player.id})" style="background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">🗑️</button>
                 </div>
             </div>
@@ -208,6 +264,87 @@ function filterPlayers() {
     });
 }
 
+// Modifier un joueur existant
+function editPlayer(playerId) {
+    const player = players.find(p => p.id === playerId);
+    if (!player) {
+        alert('Joueur non trouvé');
+        return;
+    }
+    
+    // Pré-remplir le formulaire
+    document.getElementById('newPlayerFirstName').value = player.firstName || '';
+    document.getElementById('newPlayerLastName').value = player.lastName || '';
+    document.getElementById('newPlayerAge').value = player.age || '';
+    document.getElementById('newPlayerWeight').value = player.weight || '';
+    document.getElementById('newPlayerHeight').value = player.height || '';
+    document.getElementById('newPlayerSittingHeight').value = player.sittingHeight || '';
+    document.getElementById('newPlayerWingspan').value = player.wingspan || '';
+    document.getElementById('newPlayerHandicap').value = player.handicap !== null ? player.handicap : '';
+    document.getElementById('newPlayerLevel').value = player.level || '';
+    document.getElementById('newPlayerCircuit').value = player.circuit || '';
+    document.getElementById('newPlayerClub').value = player.club || '';
+    
+    // Sexe
+    const genderRadio = document.querySelector(`input[name="newPlayerGender"][value="${player.gender}"]`);
+    if (genderRadio) genderRadio.checked = true;
+    
+    // Statut
+    const statusRadio = document.querySelector(`input[name="newPlayerStatus"][value="${player.status}"]`);
+    if (statusRadio) statusRadio.checked = true;
+    
+    // Photo
+    const photoPreview = document.getElementById('newPlayerPhotoPreview');
+    if (player.photo) {
+        photoPreview.src = player.photo;
+        photoPreview.style.display = 'block';
+    } else {
+        photoPreview.style.display = 'none';
+    }
+    
+    // Stocker l'ID du joueur en cours d'édition
+    window.editingPlayerId = playerId;
+    
+    // Changer le titre et le bouton
+    const modal = document.getElementById('addPlayerModal');
+    const title = modal.querySelector('h3');
+    title.textContent = '✏️ Modifier Joueur';
+    
+    const submitBtn = modal.querySelector('button[type="submit"]');
+    submitBtn.textContent = '💾 Mettre à jour';
+    
+    modal.style.display = 'flex';
+}
+
+// Mettre à jour un joueur
+function updatePlayer(playerId, playerData) {
+    const index = players.findIndex(p => p.id === playerId);
+    if (index === -1) {
+        alert('Joueur non trouvé');
+        return null;
+    }
+    
+    // Garder l'ID et createdAt
+    const updatedPlayer = {
+        ...players[index],
+        ...playerData,
+        id: playerId,
+        createdAt: players[index].createdAt,
+        name: `${playerData.firstName} ${playerData.lastName}`
+    };
+    
+    // Recalculer Mirwald si données disponibles
+    if (updatedPlayer.sittingHeight && updatedPlayer.height && updatedPlayer.age && updatedPlayer.weight) {
+        updatedPlayer.mirwald = calculateMirwaldForPlayer(updatedPlayer);
+    }
+    
+    players[index] = updatedPlayer;
+    savePlayers();
+    
+    console.log(`✅ Joueur modifié: ${updatedPlayer.firstName} ${updatedPlayer.lastName}`);
+    return updatedPlayer;
+}
+
 // Afficher le modal d'ajout
 function showAddPlayerModal() {
     const modal = document.getElementById('addPlayerModal');
@@ -225,17 +362,38 @@ function closeAddPlayerModal() {
     if (modal) {
         modal.style.display = 'none';
     }
+    
+    // Réinitialiser le mode édition
+    window.editingPlayerId = null;
+    
+    // Réinitialiser le titre et bouton
+    const title = modal.querySelector('h3');
+    title.textContent = '➕ Nouveau Joueur';
+    
+    const submitBtn = modal.querySelector('button[type="submit"]');
+    submitBtn.textContent = '💾 Enregistrer';
 }
 
-// Sauvegarder le nouveau joueur
+// Sauvegarder le nouveau joueur (ou mettre à jour si édition)
 function saveNewPlayer() {
     const firstName = document.getElementById('newPlayerFirstName').value.trim();
     const lastName = document.getElementById('newPlayerLastName').value.trim();
     const age = parseInt(document.getElementById('newPlayerAge').value) || null;
     const gender = document.querySelector('input[name="newPlayerGender"]:checked')?.value || 'M';
+    
+    // Données physiques
+    const weight = parseFloat(document.getElementById('newPlayerWeight').value) || null;
+    const height = parseFloat(document.getElementById('newPlayerHeight').value) || null;
+    const sittingHeight = parseFloat(document.getElementById('newPlayerSittingHeight').value) || null;
+    const wingspan = parseFloat(document.getElementById('newPlayerWingspan').value) || null;
+    
+    // Données golf
     const handicap = parseFloat(document.getElementById('newPlayerHandicap').value) || null;
+    const level = document.getElementById('newPlayerLevel').value || null;
+    const circuit = document.getElementById('newPlayerCircuit').value.trim() || null;
     const status = document.querySelector('input[name="newPlayerStatus"]:checked')?.value || 'amateur';
     const club = document.getElementById('newPlayerClub').value.trim() || null;
+    
     const photoPreview = document.getElementById('newPlayerPhotoPreview');
     const photo = photoPreview.style.display !== 'none' ? photoPreview.src : null;
     
@@ -244,22 +402,48 @@ function saveNewPlayer() {
         return;
     }
     
-    const newPlayer = addPlayer({
+    // Validation des données physiques
+    if (weight && (weight <= 0 || weight > 300)) {
+        alert('⚠️ Poids invalide (doit être entre 1 et 300 kg)');
+        return;
+    }
+    
+    if (height && (height <= 0 || height > 250)) {
+        alert('⚠️ Taille invalide (doit être entre 1 et 250 cm)');
+        return;
+    }
+    
+    const playerData = {
         firstName,
         lastName,
         age,
         gender,
+        weight,
+        height,
+        sittingHeight,
+        wingspan,
         handicap,
+        level,
+        circuit,
         status,
         club,
         photo
-    });
+    };
+    
+    let savedPlayer;
+    
+    // Mode édition ou création ?
+    if (window.editingPlayerId) {
+        savedPlayer = updatePlayer(window.editingPlayerId, playerData);
+        window.editingPlayerId = null;
+    } else {
+        savedPlayer = addPlayer(playerData);
+        // Sélectionner automatiquement le nouveau joueur
+        selectPlayer(savedPlayer.id);
+    }
     
     closeAddPlayerModal();
     displayPlayersList();
-    
-    // Sélectionner automatiquement le nouveau joueur
-    selectPlayer(newPlayer.id);
 }
 
 // Gérer l'upload de photo

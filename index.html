@@ -176,8 +176,7 @@
 
             <!-- Navigation du Tracker -->
             <div class="tracker-nav">
-                <button class="tracker-tab" data-tab="players">👥 Joueurs</button>
-                <button class="tracker-tab active" data-tab="profile">Profil</button>
+                <button class="tracker-tab active" data-tab="players">👥 Joueurs</button>
                 <button class="tracker-tab" data-tab="tests">Saisie Tests</button>
                 <button class="tracker-tab" data-tab="dashboard">Dashboard</button>
                 <button class="tracker-tab" data-tab="history">Historique</button>
@@ -188,157 +187,10 @@
             <div id="currentPlayerDisplay" style="margin: 15px 0;"></div>
 
             <!-- Onglet Joueurs -->
-            <div id="players-tab" class="tab-content">
+            <div id="players-tab" class="tab-content active">
                 <div id="playersListContainer"></div>
             </div>
 
-            <!-- Onglet Profil -->
-            <div id="profile-tab" class="tab-content active">
-                <div class="profile-form">
-                    <h3>Profil Joueur</h3>
-                    
-                    <!-- Photo et Couleur -->
-                    <div class="profile-customization">
-                        <div class="profile-photo-section">
-                            <label>Photo de profil</label>
-                            <div class="photo-upload-area">
-                                <img id="profilePhotoPreview" src="" alt="Photo" style="display:none; max-width: 150px; border-radius: 50%; margin-bottom: 1rem;">
-                                <input type="file" id="profilePhoto" accept="image/*" style="display:none;">
-                                <button type="button" class="btn btn-secondary" onclick="document.getElementById('profilePhoto').click()">
-                                    📷 Choisir une photo
-                                </button>
-                                <button type="button" class="btn btn-secondary" id="removePhoto" style="display:none; margin-left: 0.5rem;">
-                                    ❌ Supprimer
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Informations de base -->
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="playerName">Nom du joueur *</label>
-                            <input type="text" id="playerName" placeholder="Nom et prénom" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="playerGender">Sexe *</label>
-                            <select id="playerGender" required>
-                                <option value="M">Homme</option>
-                                <option value="F">Femme</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="playerAge">Tranche d'âge *</label>
-                            <select id="playerAge" required>
-                                <option value="<12">&lt;12 ans</option>
-                                <option value="12-14">12-14 ans</option>
-                                <option value="14-16">14-16 ans</option>
-                                <option value="17-25">17-25 ans</option>
-                                <option value="25-40">25-40 ans</option>
-                                <option value="40-50">40-50 ans</option>
-                                <option value="50+">50+ ans</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="playerWeight">Poids (kg) *</label>
-                            <input type="number" id="playerWeight" placeholder="65" step="0.1" required>
-                        </div>
-                    </div>
-
-                    <!-- Mensurations -->
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="playerHeight">Taille debout (cm) *</label>
-                            <input type="number" id="playerHeight" placeholder="175" step="0.1" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="playerSittingHeight">
-                                Taille assise (cm) 
-                                <button type="button" class="help-btn" id="mirwaldHelp">?</button>
-                            </label>
-                            <input type="number" id="playerSittingHeight" placeholder="90" step="0.1">
-                        </div>
-                        <div class="form-group">
-                            <label for="playerWingspan">Envergure (cm) - Bras écartés</label>
-                            <input type="number" id="playerWingspan" placeholder="180" step="0.1">
-                        </div>
-                        <div class="form-group" id="imcResult" style="display:none;">
-                            <label>IMC (Indice de Masse Corporelle)</label>
-                            <div class="imc-display"></div>
-                        </div>
-                        <div class="form-group" id="wingspanResult" style="display:none;">
-                            <label>⛳ Analyse Envergure - Impact Golf</label>
-                            <div class="wingspan-display"></div>
-                        </div>
-                        <div class="form-group" id="mirwaldResult" style="display:none;">
-                            <label>Âge de Maturité (Mirwald)</label>
-                            <div class="mirwald-display"></div>
-                        </div>
-                    </div>
-
-                    <!-- Niveau de jeu -->
-                    <div class="form-section">
-                        <h4>Niveau de jeu</h4>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="playerLevel">Statut *</label>
-                                <select id="playerLevel" required>
-                                    <option value="amateur">Amateur</option>
-                                    <option value="teaching-pro">Professionnel - Enseignant</option>
-                                    <option value="playing-pro">Professionnel - Joueur</option>
-                                </select>
-                            </div>
-                            <div class="form-group" id="handicapGroup">
-                                <label for="playerHandicap">Handicap</label>
-                                <input type="number" id="playerHandicap" placeholder="10.5" step="0.1">
-                            </div>
-                            <div class="form-group" id="circuitGroup" style="display:none;">
-                                <label for="playerCircuit">Circuit</label>
-                                <select id="playerCircuit">
-                                    <optgroup label="Hommes">
-                                        <option value="dp-world">DP World Tour</option>
-                                        <option value="challenge">Challenge Tour</option>
-                                        <option value="alps">Alps Tour</option>
-                                        <option value="pro-golf">Pro Golf Tour</option>
-                                    </optgroup>
-                                    <optgroup label="Femmes">
-                                        <option value="let">LET (Ladies European Tour)</option>
-                                        <option value="let-access">LET Access</option>
-                                    </optgroup>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Boutons -->
-                    <div class="profile-actions">
-                        <button class="btn btn-primary" id="saveProfile">💾 Enregistrer le profil</button>
-                        <button class="btn btn-secondary" id="clearProfile">🗑️ Effacer</button>
-                    </div>
-
-                    <!-- Options de sauvegarde -->
-                    <div class="save-options">
-                        <h4>Options de sauvegarde</h4>
-                        <div class="save-info">
-                            <p><strong>💾 Sauvegarde locale (LocalStorage)</strong></p>
-                            <p class="info-text">
-                                Les données sont sauvegardées automatiquement dans votre navigateur. 
-                                <strong>⚠️ Important :</strong> Si vous effacez les données du navigateur ou changez d'appareil, 
-                                vous perdrez vos données. Pensez à exporter régulièrement !
-                            </p>
-                        </div>
-                        <div class="save-info">
-                            <p><strong>☁️ Sauvegarde externe recommandée</strong></p>
-                            <p class="info-text">
-                                Pour sécuriser vos données, exportez-les régulièrement (onglet "Données") 
-                                et sauvegardez le fichier JSON sur votre Google Drive, Dropbox ou autre service cloud.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Onglet Saisie Tests -->
             <div id="tests-tab" class="tab-content">
                 <div class="tests-container">
                     <h3>Saisie des Tests</h3>
@@ -1610,14 +1462,18 @@
             </div>
             
             <form id="newPlayerForm" onsubmit="event.preventDefault(); saveNewPlayer();">
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Prénom *</label>
-                    <input type="text" id="newPlayerFirstName" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
-                </div>
+                <!-- IDENTITÉ -->
+                <h4 style="margin: 0 0 15px 0; color: #1a4d2e; border-bottom: 2px solid #1a4d2e; padding-bottom: 8px;">👤 Identité</h4>
                 
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Nom *</label>
-                    <input type="text" id="newPlayerLastName" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Prénom *</label>
+                        <input type="text" id="newPlayerFirstName" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Nom *</label>
+                        <input type="text" id="newPlayerLastName" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    </div>
                 </div>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
@@ -1625,24 +1481,64 @@
                         <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Âge</label>
                         <input type="number" id="newPlayerAge" min="5" max="100" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
                     </div>
-                    
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px;">Sexe</label>
+                        <div style="display: flex; gap: 20px;">
+                            <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                <input type="radio" name="newPlayerGender" value="M" checked>
+                                <span>♂️ Homme</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                <input type="radio" name="newPlayerGender" value="F">
+                                <span>♀️ Femme</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- DONNÉES PHYSIQUES -->
+                <h4 style="margin: 20px 0 15px 0; color: #1a4d2e; border-bottom: 2px solid #1a4d2e; padding-bottom: 8px;">📏 Données Physiques</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Poids (kg)</label>
+                        <input type="number" id="newPlayerWeight" step="0.1" min="20" max="300" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Taille (cm)</label>
+                        <input type="number" id="newPlayerHeight" step="0.1" min="100" max="250" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Taille assise (cm)</label>
+                        <input type="number" id="newPlayerSittingHeight" step="0.1" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Envergure (cm)</label>
+                        <input type="number" id="newPlayerWingspan" step="0.1" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    </div>
+                </div>
+                
+                <!-- DONNÉES GOLF -->
+                <h4 style="margin: 20px 0 15px 0; color: #1a4d2e; border-bottom: 2px solid #1a4d2e; padding-bottom: 8px;">🏌️ Golf</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                     <div>
                         <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Handicap</label>
                         <input type="number" id="newPlayerHandicap" step="0.1" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
                     </div>
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px;">Sexe</label>
-                    <div style="display: flex; gap: 20px;">
-                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                            <input type="radio" name="newPlayerGender" value="M" checked>
-                            <span>♂️ Homme</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                            <input type="radio" name="newPlayerGender" value="F">
-                            <span>♀️ Femme</span>
-                        </label>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Niveau</label>
+                        <select id="newPlayerLevel" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                            <option value="">-- Sélectionner --</option>
+                            <option value="débutant">Débutant</option>
+                            <option value="intermédiaire">Intermédiaire</option>
+                            <option value="confirmé">Confirmé</option>
+                            <option value="expert">Expert</option>
+                            <option value="compétition">Compétition</option>
+                        </select>
                     </div>
                 </div>
                 
@@ -1661,12 +1557,19 @@
                 </div>
                 
                 <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Circuit</label>
+                    <input type="text" id="newPlayerCircuit" placeholder="Ex: Ligue Paris IDF" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
                     <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Club</label>
                     <input type="text" id="newPlayerClub" placeholder="Golf Mont Griffon" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
                 </div>
                 
+                <!-- PHOTO -->
+                <h4 style="margin: 20px 0 15px 0; color: #1a4d2e; border-bottom: 2px solid #1a4d2e; padding-bottom: 8px;">📸 Photo</h4>
+                
                 <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Photo</label>
                     <input type="file" id="newPlayerPhoto" accept="image/*" onchange="handleNewPlayerPhotoUpload(event)" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
                     <img id="newPlayerPhotoPreview" style="display: none; margin-top: 10px; width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
                 </div>
