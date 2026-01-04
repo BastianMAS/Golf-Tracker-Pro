@@ -50,7 +50,7 @@ const QUALITY_NAMES = {
 function displayHistoryAdvanced() {
     console.log('🔄 displayHistoryAdvanced() appelé');
     
-    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    const allHistory = JSON.parse(localStorage.getItem('testsHistory') || '[]');
     const container = document.querySelector('.history-container');
     
     if (!container) {
@@ -58,7 +58,13 @@ function displayHistoryAdvanced() {
         return;
     }
     
-    console.log(`📊 ${history.length} tests dans l'historique`);
+    // Filtrer par joueur sélectionné (système multi-joueurs)
+    const currentPlayerId = localStorage.getItem('currentPlayerId');
+    const history = currentPlayerId 
+        ? allHistory.filter(t => t.playerId === parseInt(currentPlayerId))
+        : allHistory;
+    
+    console.log(`📊 ${history.length} tests dans l'historique pour le joueur sélectionné (${allHistory.length} au total)`);
     
     // Si pas de tests
     if (history.length === 0) {

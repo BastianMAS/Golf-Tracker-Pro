@@ -176,11 +176,20 @@
 
             <!-- Navigation du Tracker -->
             <div class="tracker-nav">
+                <button class="tracker-tab" data-tab="players">👥 Joueurs</button>
                 <button class="tracker-tab active" data-tab="profile">Profil</button>
                 <button class="tracker-tab" data-tab="tests">Saisie Tests</button>
                 <button class="tracker-tab" data-tab="dashboard">Dashboard</button>
                 <button class="tracker-tab" data-tab="history">Historique</button>
                 <button class="tracker-tab" data-tab="data">Données</button>
+            </div>
+            
+            <!-- Affichage joueur actuel -->
+            <div id="currentPlayerDisplay" style="margin: 15px 0;"></div>
+
+            <!-- Onglet Joueurs -->
+            <div id="players-tab" class="tab-content">
+                <div id="playersListContainer"></div>
             </div>
 
             <!-- Onglet Profil -->
@@ -1590,9 +1599,107 @@
         </div>
     </div>
     
+    <!-- Modal Ajouter Joueur -->
+    <div id="addPlayerModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
+        <div style="background: white; padding: 25px; border-radius: 12px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: #1a4d2e; font-size: 18px;">➕ Nouveau Joueur</h3>
+                <button onclick="closeAddPlayerModal()" style="background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">
+                    ✕
+                </button>
+            </div>
+            
+            <form id="newPlayerForm" onsubmit="event.preventDefault(); saveNewPlayer();">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Prénom *</label>
+                    <input type="text" id="newPlayerFirstName" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Nom *</label>
+                    <input type="text" id="newPlayerLastName" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Âge</label>
+                        <input type="number" id="newPlayerAge" min="5" max="100" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Handicap</label>
+                        <input type="number" id="newPlayerHandicap" step="0.1" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px;">Sexe</label>
+                    <div style="display: flex; gap: 20px;">
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                            <input type="radio" name="newPlayerGender" value="M" checked>
+                            <span>♂️ Homme</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                            <input type="radio" name="newPlayerGender" value="F">
+                            <span>♀️ Femme</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px;">Statut</label>
+                    <div style="display: flex; gap: 20px;">
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                            <input type="radio" name="newPlayerStatus" value="amateur" checked>
+                            <span>Amateur</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                            <input type="radio" name="newPlayerStatus" value="pro">
+                            <span>Pro</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Club</label>
+                    <input type="text" id="newPlayerClub" placeholder="Golf Mont Griffon" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Photo</label>
+                    <input type="file" id="newPlayerPhoto" accept="image/*" onchange="handleNewPlayerPhotoUpload(event)" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                    <img id="newPlayerPhotoPreview" style="display: none; margin-top: 10px; width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" onclick="closeAddPlayerModal()" style="flex: 1; background: #95a5a6; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                        Annuler
+                    </button>
+                    <button type="submit" style="flex: 1; background: #27ae60; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                        💾 Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal Dashboard Équipe -->
+    <div id="teamDashboardModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
+        <div style="background: white; padding: 25px; border-radius: 12px; max-width: 1200px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+                <button onclick="closeTeamDashboard()" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">
+                    ✕ Fermer
+                </button>
+            </div>
+            <div id="teamDashboardContent"></div>
+        </div>
+    </div>
+    
     <!-- Scripts -->
     <script src="baremes.js"></script>
     <script src="app-light.js"></script>
+    <script src="players-manager.js"></script>
+    <script src="team-dashboard.js"></script>
     <script src="history-advanced.js"></script>
     <script src="coach-notes.js"></script>
     <script src="export-module.js"></script>

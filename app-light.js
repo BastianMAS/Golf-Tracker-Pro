@@ -3968,6 +3968,14 @@ const QUALITY_TESTS = {
 
 // Sauvegarder les tests d'une qualité spécifique
 function saveQualityTests(qualityKey) {
+    // Vérifier qu'un joueur est sélectionné (système multi-joueurs)
+    const currentPlayerId = localStorage.getItem('currentPlayerId');
+    if (!currentPlayerId) {
+        alert('⚠️ Veuillez d\'abord sélectionner un joueur dans l\'onglet "Joueurs"');
+        return;
+    }
+    
+    // Fallback pour compatibilité avec ancien système
     if (!currentPlayer) {
         alert('Veuillez d\'abord enregistrer votre profil !');
         return;
@@ -3980,6 +3988,7 @@ function saveQualityTests(qualityKey) {
         id: Date.now(),
         date: new Date().toISOString(),
         quality: qualityKey,
+        playerId: parseInt(currentPlayerId),
         player: currentPlayer.name,
         tests: {}
     };
