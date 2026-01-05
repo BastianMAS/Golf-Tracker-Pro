@@ -518,7 +518,7 @@ function handleNewPlayerPhotoUpload(e) {
             return;
         }
         
-        compressImage(file, 400, 0.7)
+        compressImage(file, 400, 0.7, true)
             .then(compressedBase64 => {
                 const preview = document.getElementById('newPlayerPhotoPreview');
                 preview.src = compressedBase64;

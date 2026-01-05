@@ -1267,7 +1267,7 @@ function updatePlayerDisplay() {
 }
 
 // Fonction de compression d'image
-function compressImage(file, maxWidth = 800, quality = 0.7) {
+function compressImage(file, maxWidth = 800, quality = 0.7, cropSquare = false) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -1276,6 +1276,21 @@ function compressImage(file, maxWidth = 800, quality = 0.7) {
                 const canvas = document.createElement('canvas');
                 let width = img.width;
                 let height = img.height;
+                let sourceX = 0;
+                let sourceY = 0;
+                let sourceWidth = width;
+                let sourceHeight = height;
+                
+                // Crop carré (centré)
+                if (cropSquare) {
+                    const size = Math.min(width, height);
+                    sourceX = (width - size) / 2;
+                    sourceY = (height - size) / 2;
+                    sourceWidth = size;
+                    sourceHeight = size;
+                    width = size;
+                    height = size;
+                }
                 
                 // Réduire si trop grande
                 if (width > maxWidth) {
@@ -1287,7 +1302,7 @@ function compressImage(file, maxWidth = 800, quality = 0.7) {
                 canvas.height = height;
                 
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
+                ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, width, height);
                 
                 // Convertir en base64 avec compression
                 const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
@@ -1313,7 +1328,7 @@ function handlePhotoUpload(e) {
         }
         
         // Compresser l'image
-        compressImage(file, 800, 0.7)
+        compressImage(file, 400, 0.7, true)
             .then(compressedBase64 => {
                 const preview = document.getElementById('profilePhotoPreview');
                 preview.src = compressedBase64;
@@ -3967,6 +3982,68 @@ const QUALITY_TESTS = {
 };
 
 // Sauvegarder les tests d'une qualité spécifique
+// Valider les valeurs des tests (détecter valeurs aberrantes)
+function validateTestValue(testKey, value, qualityKey) {
+    // Limites max par test (en valeur absolue)
+    const maxLimits = {
+        // FORCE
+        'squat_1rm': 300,
+        'deadlift_1rm': 350,
+        'bench_press_1rm': 200,
+        'overhead_press_1rm': 150,
+        'tirage_vertical_1rm': 200,
+        
+        // PUISSANCE
+        'vertical_jump': 100,
+        'broad_jump': 400,
+        'medecine_ball_throw': 30,
+        
+        // VITESSE
+        'sprint_10m': 5,
+        'sprint_20m': 10,
+        'sprint_40m': 15,
+        
+        // MOBILITE (tous en degrés)
+        'flexion_hanche': 180,
+        'rotation_hanche_interne': 90,
+        'rotation_hanche_externe': 90,
+        'rotation_thoracique': 90,
+        'rotation_epaule': 180,
+        
+        // EQUILIBRE (secondes)
+        'equilibre_unipodal': 120,
+        'y_balance': 200,
+        
+        // ENDURANCE
+        'vo2max': 100,
+        'test_cooper': 5000,
+        'planche_abdos': 600,
+        
+        // COORDINATION
+        'temps_reaction': 2
+    };
+    
+    const limit = maxLimits[testKey];
+    
+    if (limit && Math.abs(value) > limit) {
+        return {
+            valid: false,
+            message: `⚠️ Valeur très élevée pour ${testKey} : ${value}. Maximum attendu : ${limit}. Confirmez-vous cette valeur ?`
+        };
+    }
+    
+    // Valeurs négatives interdites (sauf certains tests)
+    const allowNegative = ['rotation_thoracique', 'rotation_epaule', 'rotation_hanche_interne', 'rotation_hanche_externe'];
+    if (value < 0 && !allowNegative.includes(testKey)) {
+        return {
+            valid: false,
+            message: `⚠️ Valeur négative pour ${testKey} : ${value}. Confirmez-vous cette valeur ?`
+        };
+    }
+    
+    return { valid: true };
+}
+
 function saveQualityTests(qualityKey) {
     // Vérifier qu'un joueur est sélectionné (système multi-joueurs)
     const currentPlayerId = localStorage.getItem('currentPlayerId');
@@ -4008,6 +4085,25 @@ function saveQualityTests(qualityKey) {
             const rightValid = rightEl?.tagName === 'SELECT' ? rightValue && rightValue !== '' : !isNaN(rightValue);
             
             if (leftValid || rightValid) {
+                // Validation valeurs aberrantes (sauf pour les selects TPI)
+                if (leftValid && leftEl?.tagName !== 'SELECT') {
+                    const validation = validateTestValue(test.key, leftValue, qualityKey);
+                    if (!validation.valid) {
+                        if (!confirm(validation.message + ' (Gauche)')) {
+                            return;
+                        }
+                    }
+                }
+                
+                if (rightValid && rightEl?.tagName !== 'SELECT') {
+                    const validation = validateTestValue(test.key, rightValue, qualityKey);
+                    if (!validation.valid) {
+                        if (!confirm(validation.message + ' (Droite)')) {
+                            return;
+                        }
+                    }
+                }
+                
                 testData.tests[test.key] = {
                     left: leftValid ? leftValue : null,
                     right: rightValid ? rightValue : null
@@ -4022,6 +4118,16 @@ function saveQualityTests(qualityKey) {
             const isValid = el?.tagName === 'SELECT' ? value && value !== '' : !isNaN(value);
             
             if (isValid) {
+                // Validation valeurs aberrantes (sauf pour les selects TPI)
+                if (el?.tagName !== 'SELECT') {
+                    const validation = validateTestValue(test.key, value, qualityKey);
+                    if (!validation.valid) {
+                        if (!confirm(validation.message)) {
+                            return; // Annuler la sauvegarde
+                        }
+                    }
+                }
+                
                 testData.tests[test.key] = value;
                 hasData = true;
             }
