@@ -226,6 +226,7 @@ function displayPlayersList() {
                 </div>
                 <div style="display: flex; gap: 8px; margin-top: 12px;">
                     ${!isSelected ? `<button onclick="selectPlayer(${player.id}); switchTab('tests');" style="flex: 1; background: #27ae60; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">✅ Sélectionner</button>` : ''}
+                    <button onclick="showPlayerProfile(${player.id})" style="flex: 1; background: #16a085; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">👤 Profil</button>
                     <button onclick="editPlayer(${player.id})" style="flex: 1; background: #3498db; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">✏️ Modifier</button>
                     <button onclick="viewPlayerHistory(${player.id})" style="flex: 1; background: #9b59b6; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">📊 Historique</button>
                     <button onclick="deletePlayer(${player.id})" style="background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">🗑️</button>
@@ -281,7 +282,6 @@ function editPlayer(playerId) {
     document.getElementById('newPlayerSittingHeight').value = player.sittingHeight || '';
     document.getElementById('newPlayerWingspan').value = player.wingspan || '';
     document.getElementById('newPlayerHandicap').value = player.handicap !== null ? player.handicap : '';
-    document.getElementById('newPlayerLevel').value = player.level || '';
     document.getElementById('newPlayerCircuit').value = player.circuit || '';
     document.getElementById('newPlayerClub').value = player.club || '';
     
@@ -532,6 +532,131 @@ function handleNewPlayerPhotoUpload(e) {
     }
 }
 
+// Afficher le profil complet d'un joueur
+function showPlayerProfile(playerId) {
+    const player = players.find(p => p.id === playerId);
+    if (!player) {
+        alert('Joueur non trouvé');
+        return;
+    }
+    
+    let html = `
+        <div style="max-width: 700px; margin: 0 auto;">
+            <div style="text-align: center; margin-bottom: 30px;">
+                ${player.photo ? `<img src="${player.photo}" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 4px solid #1a4d2e;">` : '<div style="font-size: 80px; margin-bottom: 15px;">👤</div>'}
+                <h2 style="margin: 0; color: #1a4d2e;">${player.firstName} ${player.lastName}</h2>
+                <div style="font-size: 14px; color: #666; margin-top: 5px;">
+                    ${player.age ? player.age + ' ans' : ''} ${player.gender === 'M' ? '♂️' : '♀️'}
+                    ${player.handicap !== null ? ' • Handicap ' + player.handicap : ''}
+                </div>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <h3 style="margin: 0 0 15px 0; color: #1a4d2e;">📏 Données Physiques</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div><strong>Poids:</strong> ${player.weight ? player.weight + ' kg' : '-'}</div>
+                    <div><strong>Taille:</strong> ${player.height ? player.height + ' cm' : '-'}</div>
+                    <div><strong>Taille assise:</strong> ${player.sittingHeight ? player.sittingHeight + ' cm' : '-'}</div>
+                    <div><strong>Envergure:</strong> ${player.wingspan ? player.wingspan + ' cm' : '-'}</div>
+                </div>
+    `;
+    
+    // Calcul envergure
+    if (player.height && player.wingspan) {
+        const diff = player.wingspan - player.height;
+        const ratio = (player.wingspan / player.height * 100).toFixed(1);
+        let analysis = '';
+        
+        if (diff > 5) {
+            analysis = '<span style="color: #27ae60;">✅ Bras longs (avantage distance)</span>';
+        } else if (diff < -5) {
+            analysis = '<span style="color: #e67e22;">⚠️ Bras courts (privilégier précision)</span>';
+        } else {
+            analysis = '<span style="color: #3498db;">✓ Proportions standard</span>';
+        }
+        
+        html += `
+                <div style="margin-top: 15px; padding: 12px; background: white; border-radius: 8px; border-left: 4px solid #3498db;">
+                    <div><strong>Analyse envergure:</strong></div>
+                    <div style="margin-top: 5px;">Différence: ${diff > 0 ? '+' : ''}${diff.toFixed(1)} cm (${ratio}%)</div>
+                    <div style="margin-top: 5px;">${analysis}</div>
+                </div>
+        `;
+    }
+    
+    html += `</div>`;
+    
+    // Mirwald
+    if (player.mirwald !== undefined && player.mirwald !== null) {
+        const yearsFromPHV = player.mirwald.toFixed(2);
+        let growthStatus = '';
+        let advice = '';
+        
+        if (player.mirwald < -1) {
+            growthStatus = '🔵 Pré-pubertaire (avant pic de croissance)';
+            advice = 'Focus: Coordination, technique, développement moteur général';
+        } else if (player.mirwald >= -1 && player.mirwald < 1) {
+            growthStatus = '🟡 Pic de croissance actuel';
+            advice = 'Attention: Risque blessures ↑, adapter charges, privilégier technique';
+        } else {
+            growthStatus = '🟢 Post-pubertaire (pic passé)';
+            advice = 'Développement force et puissance optimisé';
+        }
+        
+        html += `
+            <div style="background: #fff3e0; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #f57c00;">
+                <h3 style="margin: 0 0 15px 0; color: #e65100;">📊 Maturation (Mirwald)</h3>
+                <div style="margin-bottom: 10px;"><strong>Pic de croissance:</strong> ${yearsFromPHV > 0 ? 'Il y a ' + Math.abs(yearsFromPHV) + ' an(s)' : 'Dans ' + Math.abs(yearsFromPHV) + ' an(s)'}</div>
+                <div style="margin-bottom: 10px;">${growthStatus}</div>
+                <div style="padding: 12px; background: white; border-radius: 8px; margin-top: 10px;">
+                    <strong>💡 Conseil:</strong> ${advice}
+                </div>
+            </div>
+        `;
+    }
+    
+    // Golf
+    html += `
+        <div style="background: #e8f5e9; padding: 20px; border-radius: 12px;">
+            <h3 style="margin: 0 0 15px 0; color: #1a4d2e;">🏌️ Golf</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div><strong>Handicap:</strong> ${player.handicap !== null ? player.handicap : '-'}</div>
+                <div><strong>Niveau:</strong> ${getLevelLabel(player.level) || '-'}</div>
+                <div><strong>Circuit:</strong> ${player.circuit || '-'}</div>
+                <div><strong>Club:</strong> ${player.club || '-'}</div>
+            </div>
+        </div>
+    `;
+    
+    html += `</div>`;
+    
+    const modal = document.getElementById('playerProfileModal');
+    const content = document.getElementById('playerProfileContent');
+    if (modal && content) {
+        content.innerHTML = html;
+        modal.style.display = 'flex';
+    }
+}
+
+// Obtenir le libellé du niveau
+function getLevelLabel(level) {
+    const labels = {
+        'amateur_8+': 'Amateur 8+',
+        'amateur_0-7': 'Amateur 0-7',
+        'amateur_negatif': 'Pro enseignant / Très bon amateur',
+        'pro': '⭐ Joueur Pro'
+    };
+    return labels[level] || level;
+}
+
+// Fermer le modal profil
+function closePlayerProfile() {
+    const modal = document.getElementById('playerProfileModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
 // Voir l'historique d'un joueur
 function viewPlayerHistory(playerId) {
     selectPlayer(playerId);
@@ -543,7 +668,10 @@ function viewPlayerHistory(playerId) {
 function changePlayer() {
     switchTab('players');
     setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const listContainer = document.getElementById('playersListContainer');
+        if (listContainer) {
+            listContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         displayPlayersList();
     }, 100);
 }
