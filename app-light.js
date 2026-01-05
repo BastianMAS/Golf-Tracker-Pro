@@ -4052,11 +4052,23 @@ function saveQualityTests(qualityKey) {
         return;
     }
     
-    // Fallback pour compatibilité avec ancien système
-    if (!currentPlayer) {
-        alert('Veuillez d\'abord enregistrer votre profil !');
+    // Récupérer le joueur sélectionné
+    const players = JSON.parse(localStorage.getItem('players') || '[]');
+    const selectedPlayer = players.find(p => p.id === parseInt(currentPlayerId));
+    
+    if (!selectedPlayer) {
+        alert('⚠️ Joueur non trouvé. Veuillez sélectionner un joueur dans l\'onglet "Joueurs"');
         return;
     }
+    
+    // Créer currentPlayer pour compatibilité avec le reste du code
+    const currentPlayer = {
+        name: `${selectedPlayer.firstName} ${selectedPlayer.lastName}`,
+        age: selectedPlayer.age,
+        gender: selectedPlayer.gender,
+        weight: selectedPlayer.weight,
+        height: selectedPlayer.height
+    };
     
     const quality = QUALITY_TESTS[qualityKey];
     if (!quality) return;
