@@ -477,6 +477,15 @@ function viewPlayerHistory(playerId) {
 }
 
 // Mettre à jour l'affichage du joueur actuel (en haut de l'app)
+// Changer de joueur (retour à la liste)
+function changePlayer() {
+    switchTab('players');
+    setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        displayPlayersList();
+    }, 100);
+}
+
 function updateCurrentPlayerDisplay() {
     const player = getCurrentPlayer();
     const display = document.getElementById('currentPlayerDisplay');
@@ -487,7 +496,7 @@ function updateCurrentPlayerDisplay() {
         display.innerHTML = `
             <div style="background: #fff3cd; padding: 10px; border-radius: 8px; text-align: center;">
                 <span style="color: #856404;">⚠️ Aucun joueur sélectionné</span>
-                <button onclick="switchTab('players')" style="margin-left: 10px; background: #1a4d2e; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                <button onclick="changePlayer()" style="margin-left: 10px; background: #1a4d2e; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">
                     Sélectionner
                 </button>
             </div>
@@ -502,7 +511,7 @@ function updateCurrentPlayerDisplay() {
                         <div style="font-size: 11px; color: #666;">${player.status === 'pro' ? 'PRO' : 'AMATEUR'}${player.handicap !== null ? ' • H' + player.handicap : ''}</div>
                     </div>
                 </div>
-                <button onclick="switchTab('players')" style="background: #27ae60; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600;">
+                <button onclick="changePlayer()" style="background: #27ae60; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600;">
                     Changer
                 </button>
             </div>
