@@ -285,9 +285,8 @@ function editPlayer(playerId) {
     document.getElementById('newPlayerCircuit').value = player.circuit || '';
     document.getElementById('newPlayerClub').value = player.club || '';
     
-    // Sexe
-    const genderRadio = document.querySelector(`input[name="newPlayerGender"][value="${player.gender}"]`);
-    if (genderRadio) genderRadio.checked = true;
+    // Checkbox Joueur Pro
+    document.getElementById('newPlayerIsProPlayer').checked = player.level === 'pro';
     
     // Statut
     const statusRadio = document.querySelector(`input[name="newPlayerStatus"][value="${player.status}"]`);
@@ -299,6 +298,9 @@ function editPlayer(playerId) {
         photoPreview.src = player.photo;
         photoPreview.style.display = 'block';
     } else {
+    
+    // Recalculer le niveau pour affichage
+    setTimeout(() => calculatePlayerLevel(), 100);
         photoPreview.style.display = 'none';
     }
     
@@ -345,6 +347,66 @@ function updatePlayer(playerId, playerData) {
     return updatedPlayer;
 }
 
+// Calculer le niveau du joueur basé sur âge + handicap
+function calculatePlayerLevel() {
+    const age = parseInt(document.getElementById('newPlayerAge').value) || null;
+    const handicap = parseFloat(document.getElementById('newPlayerHandicap').value);
+    const isProPlayer = document.getElementById('newPlayerIsProPlayer').checked;
+    
+    const display = document.getElementById('newPlayerLevelDisplay');
+    const levelText = document.getElementById('newPlayerLevelText');
+    
+    // Si pas d'âge ou pas de handicap, masquer
+    if (!age || isNaN(handicap)) {
+        display.style.display = 'none';
+        return null;
+    }
+    
+    let level = null;
+    
+    // Si case "Joueur Pro" cochée
+    if (isProPlayer) {
+        level = 'pro';
+        levelText.textContent = '⭐ Joueur Pro';
+        levelText.style.color = '#d4af37'; // Or
+        display.style.display = 'block';
+        display.style.borderColor = '#d4af37';
+        display.style.background = '#fffbf0';
+        return level;
+    }
+    
+    // Si âge < 18, handicap informatif uniquement
+    if (age < 18) {
+        levelText.textContent = 'Handicap informatif (< 18 ans)';
+        levelText.style.color = '#666';
+        display.style.display = 'block';
+        display.style.borderColor = '#95a5a6';
+        display.style.background = '#f8f9fa';
+        return null;
+    }
+    
+    // Adulte (≥18 ans) - Calcul auto
+    if (handicap >= 8) {
+        level = 'amateur_8+';
+        levelText.textContent = 'Amateur 8+';
+        levelText.style.color = '#e67e22'; // Orange
+    } else if (handicap >= 0 && handicap < 8) {
+        level = 'amateur_0-7';
+        levelText.textContent = 'Amateur 0-7';
+        levelText.style.color = '#3498db'; // Bleu
+    } else if (handicap < 0) {
+        level = 'amateur_negatif';
+        levelText.textContent = 'Pro enseignant / Très bon amateur';
+        levelText.style.color = '#27ae60'; // Vert
+    }
+    
+    display.style.display = 'block';
+    display.style.borderColor = '#27ae60';
+    display.style.background = '#e8f5e9';
+    
+    return level;
+}
+
 // Afficher le modal d'ajout
 function showAddPlayerModal() {
     const modal = document.getElementById('addPlayerModal');
@@ -389,7 +451,7 @@ function saveNewPlayer() {
     
     // Données golf
     const handicap = parseFloat(document.getElementById('newPlayerHandicap').value) || null;
-    const level = document.getElementById('newPlayerLevel').value || null;
+    const level = calculatePlayerLevel(); // Niveau calculé automatiquement
     const circuit = document.getElementById('newPlayerCircuit').value.trim() || null;
     const status = document.querySelector('input[name="newPlayerStatus"]:checked')?.value || 'amateur';
     const club = document.getElementById('newPlayerClub').value.trim() || null;
