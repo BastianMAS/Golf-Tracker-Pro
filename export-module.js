@@ -2,8 +2,30 @@
 // MODULE D'EXPORT - CSV & EXCEL
 // ==========================================================================
 
+// Fonction helper pour récupérer le joueur actuel
+function getCurrentPlayerForExport() {
+    const currentPlayerId = localStorage.getItem('currentPlayerId');
+    if (!currentPlayerId) return null;
+    
+    const players = JSON.parse(localStorage.getItem('players') || '[]');
+    const selectedPlayer = players.find(p => p.id === parseInt(currentPlayerId));
+    
+    if (!selectedPlayer) return null;
+    
+    // Retourner au format compatible avec l'ancien système
+    return {
+        name: `${selectedPlayer.firstName} ${selectedPlayer.lastName}`,
+        age: selectedPlayer.age,
+        gender: selectedPlayer.gender,
+        weight: selectedPlayer.weight,
+        height: selectedPlayer.height,
+        ...selectedPlayer
+    };
+}
+
 // Export CSV complet de tous les tests
 function exportToCSV() {
+    const currentPlayer = getCurrentPlayerForExport();
     if (!currentPlayer) {
         alert('Veuillez d\'abord enregistrer votre profil !');
         return;
@@ -89,8 +111,9 @@ function exportToCSV() {
 
 // Export Excel (HTML table qui s'ouvre dans Excel)
 function exportToExcel() {
+    const currentPlayer = getCurrentPlayerForExport();
     if (!currentPlayer) {
-        alert('Veuillez d\'abord enregistrer votre profil !');
+        alert('Veuillez d\'abord sélectionner un joueur !');
         return;
     }
     
