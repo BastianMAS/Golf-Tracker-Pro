@@ -1074,7 +1074,11 @@ function switchTab(tabName) {
     if (tabName === 'dashboard') {
         updateDashboard();
     } else if (tabName === 'history') {
-        displayHistory();
+        if (typeof displayHistoryAdvanced === 'function') {
+            displayHistoryAdvanced();
+        } else {
+            displayHistory();
+        }
     }
 }
 
@@ -1142,7 +1146,7 @@ function saveProfile() {
     const level = document.getElementById('playerLevel').value;
     const handicap = document.getElementById('playerHandicap').value || null;
     const circuit = document.getElementById('playerCircuit').value || null;
-    const color = document.getElementById('profileColor').value;
+    const color = '#1a4d2e'; // Couleur par défaut
     const photoPreview = document.getElementById('profilePhotoPreview');
     const photo = photoPreview.style.display !== 'none' ? photoPreview.src : null;
     
@@ -1262,22 +1266,72 @@ function updatePlayerDisplay() {
     }
 }
 
+// Fonction de compression d'image
+function compressImage(file, maxWidth = 800, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                
+                // Réduire si trop grande
+                if (width > maxWidth) {
+                    height = (height * maxWidth) / width;
+                    width = maxWidth;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Convertir en base64 avec compression
+                const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                resolve(compressedBase64);
+            };
+            img.onerror = reject;
+            img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
 function handlePhotoUpload(e) {
     const file = e.target.files[0];
     if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const preview = document.getElementById('profilePhotoPreview');
-            preview.src = event.target.result;
-            preview.style.display = 'block';
-            document.getElementById('removePhoto').style.display = 'inline-block';
-            
-            if (currentPlayer) {
-                currentPlayer.photo = event.target.result;
-                localStorage.setItem('currentPlayer', JSON.stringify(currentPlayer));
-            }
-        };
-        reader.readAsDataURL(file);
+        // Vérifier la taille du fichier
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+            alert('⚠️ La photo est trop volumineuse (max 5MB)');
+            e.target.value = '';
+            return;
+        }
+        
+        // Compresser l'image
+        compressImage(file, 800, 0.7)
+            .then(compressedBase64 => {
+                const preview = document.getElementById('profilePhotoPreview');
+                preview.src = compressedBase64;
+                preview.style.display = 'block';
+                document.getElementById('removePhoto').style.display = 'inline-block';
+                
+                if (currentPlayer) {
+                    currentPlayer.photo = compressedBase64;
+                    localStorage.setItem('currentPlayer', JSON.stringify(currentPlayer));
+                }
+                
+                console.log('✅ Photo compressée et enregistrée');
+            })
+            .catch(error => {
+                console.error('❌ Erreur compression photo:', error);
+                alert('⚠️ Erreur lors du traitement de la photo');
+                e.target.value = '';
+            });
     }
 }
 

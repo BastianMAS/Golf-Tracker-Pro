@@ -5,9 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Golf Performance Tracker - Bastian MAS, Préparateur Physique Spécialisé Golf">
     <title>Golf Performance Tracker - Bastian MAS</title>
+    
+    <!-- Chart.js pour les graphiques -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Styles -->
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="pwa-mobile-styles.css">
+    <link rel="stylesheet" href="compact-styles.css">
+    <link rel="stylesheet" href="mobile-ultra.css">
+    
+    <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
+    
+    <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#1a4d2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Golf Tracker">
+    <link rel="apple-touch-icon" href="logo_bastian.png">
+    <meta name="msapplication-TileColor" content="#1a4d2e">
+    <meta name="msapplication-TileImage" content="logo_bastian.png">
 </head>
 <body>
     <!-- Navigation -->
@@ -183,13 +201,6 @@
                                 <button type="button" class="btn btn-secondary" id="removePhoto" style="display:none; margin-left: 0.5rem;">
                                     ❌ Supprimer
                                 </button>
-                            </div>
-                        </div>
-                        <div class="profile-color-section">
-                            <label for="profileColor">Couleur de personnalisation</label>
-                            <div class="color-picker-wrapper">
-                                <input type="color" id="profileColor" value="#1a4d2e">
-                                <span id="colorPreview" class="color-preview-text">Vert Golf</span>
                             </div>
                         </div>
                     </div>
@@ -446,6 +457,51 @@
                                         </div>
                                     </div>
                                 </div>
+                                
+                                <!-- Notes du Coach - FORCE -->
+                                <div class="coach-notes-section" style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border-left: 4px solid #e74c3c;">
+                                    <h4 style="color: #e74c3c; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 24px;">📝</span>
+                                        Notes du Coach (optionnel)
+                                    </h4>
+                                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                                        Ces notes seront incluses dans le rapport et visibles dans l'historique
+                                    </p>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            📋 Observations techniques
+                                        </label>
+                                        <textarea 
+                                            id="notes-force-observations" 
+                                            placeholder="Ex: Compensation épaule droite, manque de stabilité sur appui gauche..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            🎯 Objectifs prochaine session
+                                        </label>
+                                        <textarea 
+                                            id="notes-force-objectifs" 
+                                            placeholder="Ex: Travailler mobilité thoracique, renforcer fessier gauche..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 0;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            💬 Remarques générales
+                                        </label>
+                                        <textarea 
+                                            id="notes-force-remarques" 
+                                            placeholder="Ex: Fatigue visible, bonne motivation, contexte particulier..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                </div>
+                                
                                 <div style="margin-top: 20px; text-align: center;">
                                     <button class="btn btn-primary" onclick="saveQualityTests('force')" style="background: #e74c3c; padding: 12px 30px; font-size: 16px; font-weight: 600;; color: white;">
                                         💪 Enregistrer Force
@@ -468,6 +524,50 @@
                                 <div class="test-item">
                                     <label>Driver Speed (mph) <button class="help-btn" data-test="driverspeed">?</button></label>
                                     <input type="number" id="test-driverspeed" step="0.1">
+                                </div>
+                                
+                                <!-- Notes du Coach - VITESSE -->
+                                <div class="coach-notes-section" style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border-left: 4px solid #f39c12;">
+                                    <h4 style="color: #f39c12; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 24px;">📝</span>
+                                        Notes du Coach (optionnel)
+                                    </h4>
+                                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                                        Ces notes seront incluses dans le rapport et visibles dans l'historique
+                                    </p>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            📋 Observations techniques
+                                        </label>
+                                        <textarea 
+                                            id="notes-vitesse-observations" 
+                                            placeholder="Ex: Bonne explosivité au départ, technique driver à améliorer..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            🎯 Objectifs prochaine session
+                                        </label>
+                                        <textarea 
+                                            id="notes-vitesse-objectifs" 
+                                            placeholder="Ex: Améliorer temps de réaction, travailler vitesse de club..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 0;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            💬 Remarques générales
+                                        </label>
+                                        <textarea 
+                                            id="notes-vitesse-remarques" 
+                                            placeholder="Ex: Conditions météo favorables, très motivé..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
                                 </div>
                                 
                                 <div style="margin-top: 20px; text-align: center;">
@@ -502,6 +602,50 @@
                                     <div class="bilateral-inputs">
                                         <input type="number" id="test-wallsit-left" placeholder="Gauche" step="0.1">
                                         <input type="number" id="test-wallsit-right" placeholder="Droite" step="0.1">
+                                    </div>
+                                </div>
+                                
+                                <!-- Notes du Coach - ENDURANCE -->
+                                <div class="coach-notes-section" style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border-left: 4px solid #3498db;">
+                                    <h4 style="color: #3498db; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 24px;">📝</span>
+                                        Notes du Coach (optionnel)
+                                    </h4>
+                                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                                        Ces notes seront incluses dans le rapport et visibles dans l'historique
+                                    </p>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            📋 Observations techniques
+                                        </label>
+                                        <textarea 
+                                            id="notes-endurance-observations" 
+                                            placeholder="Ex: Bonne capacité aérobie, essoufflement rapide au début..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            🎯 Objectifs prochaine session
+                                        </label>
+                                        <textarea 
+                                            id="notes-endurance-objectifs" 
+                                            placeholder="Ex: Améliorer VMA, travailler endurance musculaire..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 0;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            💬 Remarques générales
+                                        </label>
+                                        <textarea 
+                                            id="notes-endurance-remarques" 
+                                            placeholder="Ex: Test effectué après entraînement, conditions difficiles..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
                                     </div>
                                 </div>
                                 
@@ -559,6 +703,50 @@
                                     </div>
                                 </div>
                                 
+                                <!-- Notes du Coach - Explosivité -->
+                                <div class="coach-notes-section" style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border-left: 4px solid #9b59b6;">
+                                    <h4 style="color: #9b59b6; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 24px;">📝</span>
+                                        Notes du Coach (optionnel)
+                                    </h4>
+                                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                                        Ces notes seront incluses dans le rapport et visibles dans l'historique
+                                    </p>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            📋 Observations techniques
+                                        </label>
+                                        <textarea 
+                                            id="notes-explosivite-observations" 
+                                            placeholder="Ex: Observations sur Explosivité..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            🎯 Objectifs prochaine session
+                                        </label>
+                                        <textarea 
+                                            id="notes-explosivite-objectifs" 
+                                            placeholder="Ex: Objectifs pour améliorer Explosivité..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 0;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            💬 Remarques générales
+                                        </label>
+                                        <textarea 
+                                            id="notes-explosivite-remarques" 
+                                            placeholder="Ex: Contexte, motivation..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                </div>
+                                
                                 <div style="margin-top: 20px; text-align: center;">
                                     <button class="btn btn-primary" onclick="saveQualityTests('explosivite')" style="background: #9b59b6; padding: 12px 30px; font-size: 16px; font-weight: 600; color: white;">
                                         🚀 Enregistrer Explosivité
@@ -596,6 +784,50 @@
                                 <div class="test-item">
                                     <label>McGill Extensor (secondes) <button class="help-btn" data-test="mcgillextensor">?</button></label>
                                     <input type="number" id="test-mcgillextensor" step="0.1">
+                                </div>
+                                
+                                <!-- Notes du Coach - Core -->
+                                <div class="coach-notes-section" style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border-left: 4px solid #1abc9c;">
+                                    <h4 style="color: #1abc9c; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 24px;">📝</span>
+                                        Notes du Coach (optionnel)
+                                    </h4>
+                                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                                        Ces notes seront incluses dans le rapport et visibles dans l'historique
+                                    </p>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            📋 Observations techniques
+                                        </label>
+                                        <textarea 
+                                            id="notes-core-observations" 
+                                            placeholder="Ex: Observations sur Core..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            🎯 Objectifs prochaine session
+                                        </label>
+                                        <textarea 
+                                            id="notes-core-objectifs" 
+                                            placeholder="Ex: Objectifs pour améliorer Core..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 0;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            💬 Remarques générales
+                                        </label>
+                                        <textarea 
+                                            id="notes-core-remarques" 
+                                            placeholder="Ex: Contexte, motivation..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
                                 </div>
                                 
                                 <div style="margin-top: 20px; text-align: center;">
@@ -656,6 +888,50 @@
                                     </div>
                                 </div>
                                 
+                                <!-- Notes du Coach - Mobilité -->
+                                <div class="coach-notes-section" style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border-left: 4px solid #f39c12;">
+                                    <h4 style="color: #f39c12; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 24px;">📝</span>
+                                        Notes du Coach (optionnel)
+                                    </h4>
+                                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                                        Ces notes seront incluses dans le rapport et visibles dans l'historique
+                                    </p>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            📋 Observations techniques
+                                        </label>
+                                        <textarea 
+                                            id="notes-mobilite-observations" 
+                                            placeholder="Ex: Observations sur Mobilité..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            🎯 Objectifs prochaine session
+                                        </label>
+                                        <textarea 
+                                            id="notes-mobilite-objectifs" 
+                                            placeholder="Ex: Objectifs pour améliorer Mobilité..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 0;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            💬 Remarques générales
+                                        </label>
+                                        <textarea 
+                                            id="notes-mobilite-remarques" 
+                                            placeholder="Ex: Contexte, motivation..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                </div>
+                                
                                 <div style="margin-top: 20px; text-align: center;">
                                     <button class="btn btn-primary" onclick="saveQualityTests('mobilite')" style="background: #27ae60; padding: 12px 30px; font-size: 16px; font-weight: 600;; color: white;">
                                         🤸 Enregistrer Mobilité
@@ -683,6 +959,50 @@
                                     <div class="bilateral-inputs">
                                         <input type="number" id="test-balanceclosed-left" placeholder="Gauche" step="0.1">
                                         <input type="number" id="test-balanceclosed-right" placeholder="Droite" step="0.1">
+                                    </div>
+                                </div>
+                                
+                                <!-- Notes du Coach - Équilibre -->
+                                <div class="coach-notes-section" style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border-left: 4px solid #95a5a6;">
+                                    <h4 style="color: #95a5a6; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 24px;">📝</span>
+                                        Notes du Coach (optionnel)
+                                    </h4>
+                                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                                        Ces notes seront incluses dans le rapport et visibles dans l'historique
+                                    </p>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            📋 Observations techniques
+                                        </label>
+                                        <textarea 
+                                            id="notes-equilibre-observations" 
+                                            placeholder="Ex: Observations sur Équilibre..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            🎯 Objectifs prochaine session
+                                        </label>
+                                        <textarea 
+                                            id="notes-equilibre-objectifs" 
+                                            placeholder="Ex: Objectifs pour améliorer Équilibre..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 0;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            💬 Remarques générales
+                                        </label>
+                                        <textarea 
+                                            id="notes-equilibre-remarques" 
+                                            placeholder="Ex: Contexte, motivation..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
                                     </div>
                                 </div>
                                 
@@ -930,6 +1250,50 @@
                                     </div>
                                 </div>
                                 
+                                <!-- Notes du Coach - TPI -->
+                                <div class="coach-notes-section" style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border-left: 4px solid #e67e22;">
+                                    <h4 style="color: #e67e22; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 24px;">📝</span>
+                                        Notes du Coach (optionnel)
+                                    </h4>
+                                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                                        Ces notes seront incluses dans le rapport et visibles dans l'historique
+                                    </p>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            📋 Observations techniques
+                                        </label>
+                                        <textarea 
+                                            id="notes-tpi-observations" 
+                                            placeholder="Ex: Observations sur TPI..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            🎯 Objectifs prochaine session
+                                        </label>
+                                        <textarea 
+                                            id="notes-tpi-objectifs" 
+                                            placeholder="Ex: Objectifs pour améliorer TPI..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                    
+                                    <div style="margin-bottom: 0;">
+                                        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #333;">
+                                            💬 Remarques générales
+                                        </label>
+                                        <textarea 
+                                            id="notes-tpi-remarques" 
+                                            placeholder="Ex: Contexte, motivation..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; min-height: 60px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                </div>
+                                
                                 <div style="margin-top: 20px; text-align: center;">
                                     <button class="btn btn-primary" onclick="saveQualityTests('tpi')" style="background: #e67e22; padding: 12px 30px; font-size: 16px; font-weight: 600; color: white;">
                                         🏌️ Enregistrer TPI
@@ -937,11 +1301,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="test-actions">
-                        <button class="btn btn-primary" id="saveTests">Enregistrer les Tests</button>
-                        <button class="btn btn-secondary" id="clearTests">Effacer</button>
                     </div>
                 </div>
             </div>
@@ -1053,6 +1412,71 @@
                             <button class="btn btn-primary" id="generateReport">Générer Rapport</button>
                         </div>
                     </div>
+                    
+                    <!-- Export CSV & Excel -->
+                    <div style="margin: 30px 0; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border-left: 4px solid #1a4d2e;">
+                        <h3 style="color: #1a4d2e; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 24px;">📥</span>
+                            Exporter les données
+                        </h3>
+                        <p style="font-size: 14px; color: #666; margin-bottom: 20px;">
+                            Exportez toutes vos données de tests pour les analyser dans Excel, Google Sheets ou archiver.
+                        </p>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                            
+                            <!-- Export CSV -->
+                            <div style="padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <span style="font-size: 32px;">📊</span>
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 16px; color: #333;">Export CSV</div>
+                                        <div style="font-size: 12px; color: #666;">Format universel</div>
+                                    </div>
+                                </div>
+                                <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                                    Fichier CSV compatible avec Excel, Google Sheets, Numbers. Idéal pour analyses et graphiques personnalisés.
+                                </p>
+                                <button 
+                                    onclick="exportToCSV()" 
+                                    style="width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;"
+                                >
+                                    📥 Télécharger CSV
+                                </button>
+                            </div>
+                            
+                            <!-- Export Excel -->
+                            <div style="padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <span style="font-size: 32px;">📗</span>
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 16px; color: #333;">Export Excel</div>
+                                        <div style="font-size: 12px; color: #666;">Avec onglets par qualité</div>
+                                    </div>
+                                </div>
+                                <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                                    Fichier Excel avec un onglet par qualité physique. Couleurs et mise en forme incluses.
+                                </p>
+                                <button 
+                                    onclick="exportToExcel()" 
+                                    style="width: 100%; padding: 12px; background: #1a4d2e; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;"
+                                >
+                                    📥 Télécharger Excel
+                                </button>
+                            </div>
+                            
+                        </div>
+                        
+                        <div style="margin-top: 15px; padding: 12px; background: #e3f2fd; border-radius: 8px; border-left: 3px solid #2196f3;">
+                            <div style="display: flex; align-items: start; gap: 10px;">
+                                <span style="font-size: 18px;">💡</span>
+                                <div style="font-size: 13px; color: #333;">
+                                    <strong>Astuce :</strong> Les exports incluent vos notes du coach, les scores sur 20, et les niveaux de performance pour chaque test.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -1068,7 +1492,7 @@
                         <div class="contact-icon">📧</div>
                         <div>
                             <h4>Email</h4>
-                            <a href="mailto:bastianmas@gmail.com">bastianmas@gmail.com</a>
+                            <a href="/cdn-cgi/l/email-protection#b2d0d3c1c6dbd3dcdfd3c1f2d5dfd3dbde9cd1dddf"><span class="__cf_email__" data-cfemail="3d5f5c4e49545c53505c4e7d5a505c5451135e5250">[email&#160;protected]</span></a>
                         </div>
                     </div>
                     <div class="contact-item">
@@ -1137,9 +1561,46 @@
             </div>
         </div>
     </div>
-
+    
+    <!-- Modal Graphique Évolution -->
+    <div id="evolutionModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
+        <div style="background: white; padding: 20px; border-radius: 12px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 id="evolutionModalTitle" style="margin: 0; color: #1a4d2e; font-size: 18px;">📊 Évolution</h3>
+                <button onclick="closeEvolutionModal()" style="background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">
+                    ✕ Fermer
+                </button>
+            </div>
+            <div style="position: relative; height: 400px;">
+                <canvas id="evolutionChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Comparaison de Sessions -->
+    <div id="comparisonModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
+        <div style="background: white; padding: 20px; border-radius: 12px; max-width: 900px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: #1a4d2e; font-size: 18px;">⚖️ Comparaison de Sessions</h3>
+                <button onclick="closeComparisonModal()" style="background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">
+                    ✕ Fermer
+                </button>
+            </div>
+            <div id="comparisonContent"></div>
+        </div>
+    </div>
+    
     <!-- Scripts -->
-    <script src="baremes.js" defer></script>
-    <script src="app-light.js" defer></script>
+    <script src="baremes.js"></script>
+    <script src="app-light.js"></script>
+    <script src="history-advanced.js"></script>
+    <script src="coach-notes.js"></script>
+    <script src="export-module.js"></script>
+    <script src="alerts-module.js"></script>
+    <script src="evolution-charts.js"></script>
+    <script src="comparison-module.js"></script>
+    
+    <!-- PWA Installation -->
+    <script src="pwa-install.js"></script>
 </body>
 </html>
