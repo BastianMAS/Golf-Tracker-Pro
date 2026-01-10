@@ -1075,6 +1075,8 @@ function switchTab(tabName) {
         updateDashboard();
     } else if (tabName === 'history') {
         displayHistory();
+    } else if (tabName === 'analyse') {
+        updateAnalysePro();
     }
 }
 
@@ -4262,6 +4264,599 @@ function deleteTest(testId) {
     
     alert('✅ Test supprimé !');
     displayHistory();
+}
+
+// ==========================================================================
+// MODULE ANALYSE PRO
+// ==========================================================================
+
+// Pondérations pour le Golf Fitness Index
+const GFI_WEIGHTS = {
+    force: 0.25,
+    explosivite: 0.20,
+    mobilite: 0.20,
+    core: 0.15,
+    endurance: 0.10,
+    vitesse: 0.05,
+    equilibre: 0.05
+};
+
+// Normes PRO pour comparaison
+const PRO_NORMS = {
+    force: 16,
+    explosivite: 15,
+    mobilite: 14,
+    core: 15,
+    endurance: 13,
+    vitesse: 14,
+    equilibre: 13
+};
+
+// Corrélations physique → golf
+const PHYSICAL_GOLF_CORRELATIONS = {
+    force: { impact: 'Distance au drive', description: 'La force des jambes et du tronc est directement corrélée à la vitesse de swing', coefficient: 0.85 },
+    explosivite: { impact: 'Vitesse de tête de club', description: 'La puissance explosive permet un transfert d\'énergie optimal', coefficient: 0.90 },
+    mobilite: { impact: 'Amplitude de swing', description: 'Une bonne mobilité thoracique et des hanches permet un backswing complet', coefficient: 0.75 },
+    core: { impact: 'Stabilité et consistance', description: 'Un core solide assure la transmission de force et réduit les compensations', coefficient: 0.80 },
+    vitesse: { impact: 'Explosivité du mouvement', description: 'La vitesse de déplacement se transfère dans la vitesse de swing', coefficient: 0.65 },
+    endurance: { impact: 'Performance sur 18 trous', description: 'L\'endurance musculaire maintient la performance tout au long du parcours', coefficient: 0.55 },
+    equilibre: { impact: 'Contrôle et précision', description: 'L\'équilibre améliore la précision et réduit les erreurs', coefficient: 0.70 }
+};
+
+// Liens défauts physiques → défauts de swing
+const SWING_FAULTS_CORRELATIONS = {
+    'Mobilité thoracique faible': { faults: ['Perte d\'amplitude en backswing', 'Early extension', 'Slide latéral excessif'], risk: 'critique' },
+    'Rotation hanches limitée': { faults: ['Sway', 'Reverse spine angle', 'Perte de puissance'], risk: 'élevé' },
+    'Core faible': { faults: ['Early extension', 'Loss of posture', 'Inconsistency'], risk: 'élevé' },
+    'Asymétrie rotation hanches': { faults: ['Finish déséquilibré', 'Compensations latérales', 'Blessures lombaires'], risk: 'critique' },
+    'Force jambes insuffisante': { faults: ['Perte de vitesse', 'Manque de stabilité', 'Fatigue en fin de parcours'], risk: 'modéré' },
+    'Mobilité cheville limitée': { faults: ['Early extension', 'Perte d\'angle fémoral', 'Déséquilibre'], risk: 'modéré' },
+    'Mobilité épaule limitée': { faults: ['Chicken wing', 'Loss of width', 'Backswing restreint'], risk: 'élevé' },
+    'Déséquilibre force haut/bas du corps': { faults: ['Séquence kinétique déficiente', 'Arm swing', 'Perte de puissance'], risk: 'modéré' }
+};
+
+function updateAnalysePro() {
+    console.log('🎯 Mise à jour Analyse Pro');
+    
+    const analyseContainer = document.querySelector('.analyse-container');
+    if (!analyseContainer) return;
+    
+    if (!currentPlayer) {
+        analyseContainer.innerHTML = `
+            <div style="text-align: center; padding: 3rem;">
+                <h3>👤 Aucun joueur sélectionné</h3>
+                <p>Veuillez créer ou charger un profil joueur pour accéder à l'analyse professionnelle.</p>
+                <button class="btn btn-primary" onclick="switchTab('profile')">Créer un profil</button>
+            </div>
+        `;
+        return;
+    }
+    
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    if (history.length === 0) {
+        analyseContainer.innerHTML = `
+            <div style="text-align: center; padding: 3rem;">
+                <h3>📊 Aucune donnée disponible</h3>
+                <p>Veuillez saisir au moins un test pour générer l'analyse.</p>
+                <button class="btn btn-primary" onclick="switchTab('tests')">Saisir des tests</button>
+            </div>
+        `;
+        return;
+    }
+    
+    calculateAndDisplayGFI();
+    displayProComparison();
+    displayTop3Weaknesses();
+    loadGolfPerformanceData();
+    generateSmartAlerts();
+    displayProgressionTracking();
+    setupAnalyseProEventListeners();
+}
+
+function calculateAndDisplayGFI() {
+    const scores = calculateQualityScores();
+    if (!scores) return;
+    
+    let gfi = 0;
+    gfi += (scores.force || 0) * GFI_WEIGHTS.force;
+    gfi += (scores.explosivite || 0) * GFI_WEIGHTS.explosivite;
+    gfi += (scores.mobilite || 0) * GFI_WEIGHTS.mobilite;
+    gfi += (scores.core || 0) * GFI_WEIGHTS.core;
+    gfi += (scores.endurance || 0) * GFI_WEIGHTS.endurance;
+    gfi += (scores.vitesse || 0) * GFI_WEIGHTS.vitesse;
+    gfi += (scores.equilibre || 0) * GFI_WEIGHTS.equilibre;
+    
+    const gfiScore = Math.round((gfi / 20) * 100);
+    
+    let level = '', color = '';
+    if (gfiScore >= 85) { level = 'Élite / Pro Tour'; color = '#1a4d2e'; }
+    else if (gfiScore >= 70) { level = 'Très Bon Niveau'; color = '#27ae60'; }
+    else if (gfiScore >= 55) { level = 'Bon Niveau Amateur'; color = '#f39c12'; }
+    else { level = 'En Développement'; color = '#e74c3c'; }
+    
+    const scoreEl = document.getElementById('gfiScore');
+    const levelEl = document.getElementById('gfiLevel');
+    
+    if (scoreEl) {
+        scoreEl.textContent = gfiScore;
+        scoreEl.style.color = color;
+    }
+    if (levelEl) {
+        levelEl.textContent = level;
+        levelEl.style.color = color;
+    }
+    
+    drawGFIGauge(gfiScore, color);
+}
+
+function drawGFIGauge(score, color) {
+    const canvas = document.getElementById('gfiGauge');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height - 10;
+    const radius = 90;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, Math.PI, 2 * Math.PI);
+    ctx.lineWidth = 20;
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.stroke();
+    
+    const endAngle = Math.PI + (Math.PI * (score / 100));
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, Math.PI, endAngle);
+    ctx.lineWidth = 20;
+    ctx.strokeStyle = color;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    
+    ctx.font = '12px Arial';
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'center';
+    ctx.fillText('0', 20, centerY + 5);
+    ctx.fillText('50', centerX, centerY - radius - 10);
+    ctx.fillText('100', canvas.width - 20, centerY + 5);
+}
+
+function displayProComparison() {
+    const canvas = document.getElementById('proRadarChart');
+    if (!canvas) return;
+    
+    const scores = calculateQualityScores();
+    if (!scores) return;
+    
+    const ctx = canvas.getContext('2d');
+    const categories = ['Force', 'Explosivité', 'Mobilité', 'Core', 'Endurance', 'Vitesse', 'Équilibre'];
+    const playerData = [
+        scores.force || 0,
+        scores.explosivite || 0,
+        scores.mobilite || 0,
+        scores.core || 0,
+        scores.endurance || 0,
+        scores.vitesse || 0,
+        scores.equilibre || 0
+    ];
+    const proData = [
+        PRO_NORMS.force,
+        PRO_NORMS.explosivite,
+        PRO_NORMS.mobilite,
+        PRO_NORMS.core,
+        PRO_NORMS.endurance,
+        PRO_NORMS.vitesse,
+        PRO_NORMS.equilibre
+    ];
+    
+    drawRadarChart(ctx, canvas.width, canvas.height, categories, playerData, proData);
+}
+
+function drawRadarChart(ctx, width, height, labels, playerData, proData) {
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(width, height) / 2 - 60;
+    const numSides = labels.length;
+    
+    ctx.clearRect(0, 0, width, height);
+    
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 1;
+    for (let i = 1; i <= 4; i++) {
+        ctx.beginPath();
+        const r = (radius / 4) * i;
+        for (let j = 0; j <= numSides; j++) {
+            const angle = (Math.PI / 2) + (2 * Math.PI * j) / numSides;
+            const x = centerX + r * Math.cos(angle);
+            const y = centerY + r * Math.sin(angle);
+            if (j === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+    }
+    
+    ctx.strokeStyle = '#ccc';
+    for (let i = 0; i < numSides; i++) {
+        const angle = (Math.PI / 2) + (2 * Math.PI * i) / numSides;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX + radius * Math.cos(angle), centerY + radius * Math.sin(angle));
+        ctx.stroke();
+    }
+    
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#333';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (let i = 0; i < numSides; i++) {
+        const angle = (Math.PI / 2) + (2 * Math.PI * i) / numSides;
+        const labelRadius = radius + 30;
+        const x = centerX + labelRadius * Math.cos(angle);
+        const y = centerY + labelRadius * Math.sin(angle);
+        ctx.fillText(labels[i], x, y);
+    }
+    
+    ctx.beginPath();
+    for (let i = 0; i <= numSides; i++) {
+        const idx = i % numSides;
+        const value = proData[idx];
+        const angle = (Math.PI / 2) + (2 * Math.PI * i) / numSides;
+        const r = (radius / 20) * value;
+        const x = centerX + r * Math.cos(angle);
+        const y = centerY + r * Math.sin(angle);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(231, 76, 60, 0.2)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(231, 76, 60, 0.8)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    ctx.beginPath();
+    for (let i = 0; i <= numSides; i++) {
+        const idx = i % numSides;
+        const value = playerData[idx];
+        const angle = (Math.PI / 2) + (2 * Math.PI * i) / numSides;
+        const r = (radius / 20) * value;
+        const x = centerX + r * Math.cos(angle);
+        const y = centerY + r * Math.sin(angle);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(26, 77, 46, 0.3)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(26, 77, 46, 0.9)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+}
+
+function displayTop3Weaknesses() {
+    const scores = calculateQualityScores();
+    if (!scores) return;
+    
+    const qualities = [
+        { name: 'Force', key: 'force', score: scores.force || 0 },
+        { name: 'Explosivité', key: 'explosivite', score: scores.explosivite || 0 },
+        { name: 'Mobilité', key: 'mobilite', score: scores.mobilite || 0 },
+        { name: 'Core', key: 'core', score: scores.core || 0 },
+        { name: 'Endurance', key: 'endurance', score: scores.endurance || 0 },
+        { name: 'Vitesse', key: 'vitesse', score: scores.vitesse || 0 },
+        { name: 'Équilibre', key: 'equilibre', score: scores.equilibre || 0 }
+    ];
+    
+    qualities.sort((a, b) => a.score - b.score);
+    const top3 = qualities.slice(0, 3);
+    
+    const container = document.getElementById('top3Weaknesses');
+    if (!container) return;
+    
+    let html = '';
+    top3.forEach((quality, index) => {
+        const correlation = PHYSICAL_GOLF_CORRELATIONS[quality.key];
+        const isCritical = quality.score < 10;
+        
+        html += `
+            <div class="weakness-item ${isCritical ? 'critical' : ''}">
+                <h5>${index + 1}. ${quality.name}</h5>
+                <div class="score">${quality.score.toFixed(1)} / 20</div>
+                <div class="impact">
+                    <strong>Impact sur le golf:</strong> ${correlation.impact}
+                    <br>
+                    <small>${correlation.description}</small>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function loadGolfPerformanceData() {
+    const golfData = JSON.parse(localStorage.getItem('golfPerformanceData') || '{}');
+    
+    ['driverSpeed', 'driverDistance', 'fairwayAccuracy', 'greenAccuracy'].forEach(key => {
+        const el = document.getElementById(key);
+        if (el && golfData[key]) el.value = golfData[key];
+    });
+    
+    if (Object.keys(golfData).length > 0) {
+        displayGolfCorrelations(golfData);
+    }
+}
+
+function saveGolfPerformanceData() {
+    const golfData = {
+        driverSpeed: parseFloat(document.getElementById('driverSpeed').value) || null,
+        driverDistance: parseFloat(document.getElementById('driverDistance').value) || null,
+        fairwayAccuracy: parseFloat(document.getElementById('fairwayAccuracy').value) || null,
+        greenAccuracy: parseFloat(document.getElementById('greenAccuracy').value) || null,
+        date: new Date().toISOString()
+    };
+    
+    localStorage.setItem('golfPerformanceData', JSON.stringify(golfData));
+    displayGolfCorrelations(golfData);
+    alert('✅ Données golf enregistrées !');
+}
+
+function displayGolfCorrelations(golfData) {
+    const container = document.getElementById('golfCorrelations');
+    if (!container) return;
+    
+    const scores = calculateQualityScores();
+    if (!scores) return;
+    
+    let html = '<h5 style="margin: 1.5rem 0 1rem 0;">📊 Corrélations Physique ↔ Golf</h5>';
+    
+    if (golfData.driverSpeed) {
+        const predictedSpeed = 85 + (scores.force * 1.5) + (scores.explosivite * 1.2);
+        const diff = golfData.driverSpeed - predictedSpeed;
+        
+        html += `
+            <div class="correlation-item">
+                <h5>🏌️ Vitesse Driver: ${golfData.driverSpeed} mph</h5>
+                <p>Basé sur votre force (${scores.force.toFixed(1)}/20) et explosivité (${scores.explosivite.toFixed(1)}/20), 
+                votre vitesse prédite est de <strong>${predictedSpeed.toFixed(1)} mph</strong></p>
+                <p>${diff > 0 ? '✅ Excellente technique ! Vous optimisez bien votre physique.' : 
+                    '⚠️ Potentiel d\'amélioration: augmenter votre force et explosivité pourrait ajouter ' + Math.abs(diff).toFixed(0) + ' mph.'}</p>
+            </div>
+        `;
+    }
+    
+    if (golfData.driverDistance) {
+        html += `
+            <div class="correlation-item">
+                <h5>📏 Distance Driver: ${golfData.driverDistance} m</h5>
+                <p>Votre score de force (${scores.force.toFixed(1)}/20) influence directement la distance.</p>
+                <p>💡 Gain potentiel avec +2 points de force: <strong>+${(2 * 8).toFixed(0)}m</strong></p>
+            </div>
+        `;
+    }
+    
+    if (golfData.fairwayAccuracy || golfData.greenAccuracy) {
+        const stabilityScore = ((scores.core || 0) + (scores.equilibre || 0)) / 2;
+        html += `
+            <div class="correlation-item">
+                <h5>🎯 Précision</h5>
+                <p>Score de stabilité (Core + Équilibre): <strong>${stabilityScore.toFixed(1)}/20</strong></p>
+                ${golfData.fairwayAccuracy ? `<p>Fairways: ${golfData.fairwayAccuracy}%</p>` : ''}
+                ${golfData.greenAccuracy ? `<p>Greens: ${golfData.greenAccuracy}%</p>` : ''}
+                <p>💡 Un core plus solide améliore la consistance et réduit les variations.</p>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html;
+}
+
+function generateSmartAlerts() {
+    const container = document.getElementById('smartAlerts');
+    if (!container) return;
+    
+    const scores = calculateQualityScores();
+    if (!scores) return;
+    
+    const alerts = [];
+    
+    if ((scores.mobilite || 0) < 12) {
+        alerts.push({
+            type: 'warning',
+            title: 'Mobilité Insuffisante',
+            message: `Score mobilité: ${(scores.mobilite || 0).toFixed(1)}/20 (objectif: >14)`,
+            swingFault: SWING_FAULTS_CORRELATIONS['Mobilité thoracique faible']
+        });
+    }
+    
+    if ((scores.core || 0) < 12) {
+        alerts.push({
+            type: 'warning',
+            title: 'Core Insuffisant',
+            message: `Score Core: ${(scores.core || 0).toFixed(1)}/20 (objectif: >14)`,
+            swingFault: SWING_FAULTS_CORRELATIONS['Core faible']
+        });
+    }
+    
+    if ((scores.force || 0) < 10) {
+        alerts.push({
+            type: 'critical',
+            title: 'Force Limitante',
+            message: `Score Force: ${(scores.force || 0).toFixed(1)}/20 (objectif: >12)`,
+            swingFault: SWING_FAULTS_CORRELATIONS['Force jambes insuffisante']
+        });
+    }
+    
+    if (alerts.length === 0) {
+        container.innerHTML = `
+            <div class="alert-item alert-info">
+                <div class="alert-icon">✅</div>
+                <div class="alert-content">
+                    <h5>Aucune alerte critique</h5>
+                    <p>Le profil physique ne présente pas de limitation majeure identifiable.</p>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    alerts.forEach(alert => {
+        const iconMap = { critical: '🚨', warning: '⚠️', info: 'ℹ️' };
+        
+        html += `
+            <div class="alert-item alert-${alert.type}">
+                <div class="alert-icon">${iconMap[alert.type]}</div>
+                <div class="alert-content">
+                    <h5>${alert.title}</h5>
+                    <p>${alert.message}</p>
+                    ${alert.swingFault ? `
+                        <div class="swing-fault">
+                            <strong>Défauts de swing potentiels:</strong>
+                            <ul style="margin: 0.5rem 0 0 1.5rem; list-style: disc;">
+                                ${alert.swingFault.faults.map(f => `<li>${f}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function displayProgressionTracking() {
+    const container = document.getElementById('progressionTracking');
+    if (!container) return;
+    
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    if (history.length < 2) {
+        container.innerHTML = `
+            <p class="help-text">Au moins 2 sessions de tests sont nécessaires pour afficher la progression.</p>
+        `;
+        return;
+    }
+    
+    container.innerHTML = '<p class="help-text">Fonctionnalité en développement - Affichage de la progression temporelle</p>';
+}
+
+function exportToCSV() {
+    if (!currentPlayer) {
+        alert('⚠️ Aucune donnée à exporter');
+        return;
+    }
+    
+    const scores = calculateQualityScores();
+    if (!scores) {
+        alert('⚠️ Aucune donnée de test disponible');
+        return;
+    }
+    
+    let gfi = 0;
+    gfi += (scores.force || 0) * GFI_WEIGHTS.force;
+    gfi += (scores.explosivite || 0) * GFI_WEIGHTS.explosivite;
+    gfi += (scores.mobilite || 0) * GFI_WEIGHTS.mobilite;
+    gfi += (scores.core || 0) * GFI_WEIGHTS.core;
+    gfi += (scores.endurance || 0) * GFI_WEIGHTS.endurance;
+    gfi += (scores.vitesse || 0) * GFI_WEIGHTS.vitesse;
+    gfi += (scores.equilibre || 0) * GFI_WEIGHTS.equilibre;
+    const gfiScore = Math.round((gfi / 20) * 100);
+    
+    const headers = ['Nom', 'Sexe', 'Age', 'Poids', 'Niveau', 'Force', 'Explosivite', 'Mobilite', 'Core', 'Endurance', 'Vitesse', 'Equilibre', 'GFI', 'Date'];
+    const row = [
+        currentPlayer.name || '',
+        currentPlayer.gender || '',
+        currentPlayer.age || '',
+        currentPlayer.weight || '',
+        currentPlayer.level || '',
+        (scores.force || 0).toFixed(1),
+        (scores.explosivite || 0).toFixed(1),
+        (scores.mobilite || 0).toFixed(1),
+        (scores.core || 0).toFixed(1),
+        (scores.endurance || 0).toFixed(1),
+        (scores.vitesse || 0).toFixed(1),
+        (scores.equilibre || 0).toFixed(1),
+        gfiScore,
+        new Date().toLocaleDateString('fr-FR')
+    ];
+    
+    let csv = headers.join(',') + '\n';
+    csv += row.join(',');
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `golf-tracker-${currentPlayer.name || 'export'}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    alert('✅ Export CSV réussi !');
+}
+
+function importFromCSV() {
+    const input = document.getElementById('csvFileInput');
+    if (input) input.click();
+}
+
+function handleCSVImport(file) {
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        const text = e.target.result;
+        const lines = text.split('\n');
+        
+        if (lines.length < 2) {
+            alert('⚠️ Fichier CSV vide ou invalide');
+            return;
+        }
+        
+        let html = '<h5>📊 Aperçu des données importées</h5>';
+        html += '<table><thead><tr>';
+        
+        const headers = lines[0].split(',');
+        headers.forEach(h => html += `<th>${h.trim()}</th>`);
+        html += '</tr></thead><tbody>';
+        
+        for (let i = 1; i < Math.min(lines.length, 11); i++) {
+            if (!lines[i].trim()) continue;
+            html += '<tr>';
+            const cells = lines[i].split(',');
+            cells.forEach(c => html += `<td>${c.trim()}</td>`);
+            html += '</tr>';
+        }
+        
+        html += '</tbody></table>';
+        html += '<p class="help-text" style="margin-top: 1rem;">💡 Utilisez ces données pour comparer plusieurs joueurs</p>';
+        
+        const preview = document.getElementById('csvPreview');
+        if (preview) preview.innerHTML = html;
+    };
+    
+    reader.readAsText(file);
+}
+
+function setupAnalyseProEventListeners() {
+    const saveGolfBtn = document.getElementById('saveGolfData');
+    if (saveGolfBtn) saveGolfBtn.onclick = saveGolfPerformanceData;
+    
+    const exportBtn = document.getElementById('exportCSV');
+    if (exportBtn) exportBtn.onclick = exportToCSV;
+    
+    const importBtn = document.getElementById('importCSV');
+    if (importBtn) importBtn.onclick = importFromCSV;
+    
+    const csvInput = document.getElementById('csvFileInput');
+    if (csvInput) {
+        csvInput.onchange = function(e) {
+            if (e.target.files.length > 0) handleCSVImport(e.target.files[0]);
+        };
+    }
 }
 
 console.log('✅ Application chargée et prête');
