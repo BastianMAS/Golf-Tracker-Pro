@@ -4310,22 +4310,22 @@ function calculateProNorms() {
                 const proValues = baremeData.levels.M['18+'].pro;
                 if (!proValues || proValues.length !== 4) return;
                 
-                // Prendre le niveau 3 (bon niveau pro) - index [2]
-                // C'est entre "Bon" et "Elite", donc un bon pro tour
-                const proValue = proValues[2];
+                // Prendre le niveau 2 (index [1]) = bon niveau pro moyen
+                // [0]=faible pro, [1]=bon pro, [2]=très bon pro, [3]=élite pro
+                const proValue = proValues[1];
                 
                 // Calculer le score sur 20 pour cette valeur
-                // Utiliser la même logique que calculateScore20
+                // Un bon pro (niveau 2) devrait être autour de 15/20
                 const [faible, moyen, bon, elite] = proValues;
                 const higherIsBetter = baremeData.higherIsBetter;
                 
                 let score;
                 if (higherIsBetter) {
-                    // Pour niveau 3, on est entre "bon" et "elite"
-                    score = 15 + 5 * ((proValue - bon) / (elite - bon));
+                    // proValue = moyen (index 1), donc entre faible et bon
+                    score = 10 + 5 * ((proValue - faible) / (moyen - faible));
                 } else {
-                    // Pour les tests inversés (plus bas = mieux)
-                    score = 15 + 5 * ((bon - proValue) / (bon - elite));
+                    // Pour les tests inversés
+                    score = 10 + 5 * ((faible - proValue) / (faible - moyen));
                 }
                 
                 scores.push(Math.max(0, Math.min(20, score)));
