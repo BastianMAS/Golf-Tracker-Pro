@@ -4281,16 +4281,74 @@ const GFI_WEIGHTS = {
     equilibre: 0.05
 };
 
-// Normes PRO pour comparaison
-const PRO_NORMS = {
-    force: 16,
-    explosivite: 15,
-    mobilite: 14,
-    core: 15,
-    endurance: 13,
-    vitesse: 14,
-    equilibre: 13
-};
+// Fonction pour calculer les vraies normes PRO à partir des barèmes
+function calculateProNorms() {
+    // Mapping des tests par catégorie
+    const testsByCategory = {
+        force: ['squat', 'deadlift', 'bench', 'pullup'],
+        vitesse: ['shuttle', 'driverspeed'],
+        endurance: ['vma', 'maxpushups', 'maxsquats', 'wallsit'],
+        explosivite: ['vertjump', 'horizjump', 'medballchest', 'medballrotation'],
+        core: ['rkcplank', 'sideplank', 'mcgillflexor', 'mcgillextensor'],
+        mobilite: ['standreach', 'thoracic', 'hipint', 'hipext', 'ankle'],
+        equilibre: ['balanceopen', 'balanceclosed']
+    };
+    
+    const proNorms = {};
+    
+    // Pour chaque catégorie
+    Object.keys(testsByCategory).forEach(category => {
+        const tests = testsByCategory[category];
+        const scores = [];
+        
+        tests.forEach(testKey => {
+            const baremeData = BAREMES[testKey];
+            if (!baremeData) return;
+            
+            // Chercher les valeurs pro (Homme 18+ pro)
+            try {
+                const proValues = baremeData.levels.M['18+'].pro;
+                if (!proValues || proValues.length !== 4) return;
+                
+                // Prendre le niveau 3 (bon niveau pro) - index [2]
+                // C'est entre "Bon" et "Elite", donc un bon pro tour
+                const proValue = proValues[2];
+                
+                // Calculer le score sur 20 pour cette valeur
+                // Utiliser la même logique que calculateScore20
+                const [faible, moyen, bon, elite] = proValues;
+                const higherIsBetter = baremeData.higherIsBetter;
+                
+                let score;
+                if (higherIsBetter) {
+                    // Pour niveau 3, on est entre "bon" et "elite"
+                    score = 15 + 5 * ((proValue - bon) / (elite - bon));
+                } else {
+                    // Pour les tests inversés (plus bas = mieux)
+                    score = 15 + 5 * ((bon - proValue) / (bon - elite));
+                }
+                
+                scores.push(Math.max(0, Math.min(20, score)));
+            } catch (e) {
+                // Si pas de valeurs pro, ignorer
+            }
+        });
+        
+        // Calculer la moyenne pour cette catégorie
+        if (scores.length > 0) {
+            proNorms[category] = scores.reduce((a, b) => a + b, 0) / scores.length;
+        } else {
+            // Valeur par défaut si aucun barème pro trouvé
+            proNorms[category] = 15;
+        }
+    });
+    
+    return proNorms;
+}
+
+// Calculer les normes pro au chargement
+const PRO_NORMS = calculateProNorms();
+console.log('📊 Normes PRO calculées:', PRO_NORMS);
 
 // Corrélations physique → golf
 const PHYSICAL_GOLF_CORRELATIONS = {
