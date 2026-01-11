@@ -4281,74 +4281,19 @@ const GFI_WEIGHTS = {
     equilibre: 0.05
 };
 
-// Fonction pour calculer les vraies normes PRO à partir des barèmes
-function calculateProNorms() {
-    // Mapping des tests par catégorie
-    const testsByCategory = {
-        force: ['squat', 'deadlift', 'bench', 'pullup'],
-        vitesse: ['shuttle', 'driverspeed'],
-        endurance: ['vma', 'maxpushups', 'maxsquats', 'wallsit'],
-        explosivite: ['vertjump', 'horizjump', 'medballchest', 'medballrotation'],
-        core: ['rkcplank', 'sideplank', 'mcgillflexor', 'mcgillextensor'],
-        mobilite: ['standreach', 'thoracic', 'hipint', 'hipext', 'ankle'],
-        equilibre: ['balanceopen', 'balanceclosed']
-    };
-    
-    const proNorms = {};
-    
-    // Pour chaque catégorie
-    Object.keys(testsByCategory).forEach(category => {
-        const tests = testsByCategory[category];
-        const scores = [];
-        
-        tests.forEach(testKey => {
-            const baremeData = BAREMES[testKey];
-            if (!baremeData) return;
-            
-            // Chercher les valeurs pro (Homme 18+ pro)
-            try {
-                const proValues = baremeData.levels.M['18+'].pro;
-                if (!proValues || proValues.length !== 4) return;
-                
-                // Prendre le niveau 2 (index [1]) = bon niveau pro moyen
-                // [0]=faible pro, [1]=bon pro, [2]=très bon pro, [3]=élite pro
-                const proValue = proValues[1];
-                
-                // Calculer le score sur 20 pour cette valeur
-                // Un bon pro (niveau 2) devrait être autour de 15/20
-                const [faible, moyen, bon, elite] = proValues;
-                const higherIsBetter = baremeData.higherIsBetter;
-                
-                let score;
-                if (higherIsBetter) {
-                    // proValue = moyen (index 1), donc entre faible et bon
-                    score = 10 + 5 * ((proValue - faible) / (moyen - faible));
-                } else {
-                    // Pour les tests inversés
-                    score = 10 + 5 * ((faible - proValue) / (faible - moyen));
-                }
-                
-                scores.push(Math.max(0, Math.min(20, score)));
-            } catch (e) {
-                // Si pas de valeurs pro, ignorer
-            }
-        });
-        
-        // Calculer la moyenne pour cette catégorie
-        if (scores.length > 0) {
-            proNorms[category] = scores.reduce((a, b) => a + b, 0) / scores.length;
-        } else {
-            // Valeur par défaut si aucun barème pro trouvé
-            proNorms[category] = 15;
-        }
-    });
-    
-    return proNorms;
-}
+// Normes PRO : Un joueur pro tour devrait être entre 18-20/20 sur toutes les qualités
+// C'est le niveau d'excellence requis pour jouer au plus haut niveau
+const PRO_NORMS = {
+    force: 18,         // Pro = très fort sur tous les exercices
+    explosivite: 19,   // Pro = explosif (critical pour distance)
+    mobilite: 19,      // Pro = excellente mobilité (critical pour amplitude)
+    core: 18,          // Pro = core très solide (stabilité)
+    endurance: 17,     // Pro = bonne endurance (moins critical)
+    vitesse: 19,       // Pro = très rapide
+    equilibre: 18      // Pro = excellent équilibre
+};
 
-// Calculer les normes pro au chargement
-const PRO_NORMS = calculateProNorms();
-console.log('📊 Normes PRO calculées:', PRO_NORMS);
+console.log('📊 Normes PRO (niveau Tour):', PRO_NORMS);
 
 // Corrélations physique → golf
 const PHYSICAL_GOLF_CORRELATIONS = {
