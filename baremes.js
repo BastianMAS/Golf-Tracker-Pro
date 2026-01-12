@@ -164,7 +164,7 @@ const BAREMES = {
     driverspeed: {
         unit: 'mph',
         higherIsBetter: true,
-        description: 'Vitesse driver (mph)',
+        description: 'Vitesse driver (mph) - Référence TrackMan 2023',
         levels: {
             M: {
                 '<12': [50, 60, 70, 80],
@@ -174,7 +174,7 @@ const BAREMES = {
                     'amateur_8+': [85, 94, 101, 109],
                     'amateur_0-7': [95, 104, 111, 119],
                     'amateur_negatif': [105, 112, 118, 125],
-                    'pro': [112, 120, 125, 132]
+                    'pro': [110, 115, 120, 128]  // TrackMan PGA 2023: Moy=115, Top10=121-123
                 }
             },
             F: {
@@ -185,7 +185,7 @@ const BAREMES = {
                     'amateur_8+': [65, 74, 81, 88],
                     'amateur_0-7': [72, 80, 86, 93],
                     'amateur_negatif': [78, 85, 90, 96],
-                    'pro': [83, 90, 95, 100]
+                    'pro': [90, 96, 102, 108]  // TrackMan LPGA 2023: Moy=96, Top10=100-104
                 }
             }
         }
