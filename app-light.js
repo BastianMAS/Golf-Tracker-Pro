@@ -3093,29 +3093,32 @@ function calculateQualityScores() {
         calculateScore20('wallsit', getTestValue('wallsit', 'endurance'))
     ];
     
-    // EXPLOSIVITÉ (4 tests)
+    // EXPLOSIVITÉ (5 tests - ajout CMJ Unilateral)
     const explosiviteScores = [
         calculateScore20('vertjump', getTestValue('vertjump', 'explosivite')),
         calculateScore20('horizjump', getTestValue('horizjump', 'explosivite')),
         calculateScore20('medballchest', getTestValue('medballchest', 'explosivite')),
-        calculateScore20('medballrotation', getTestValue('medballrotation', 'explosivite'))
+        calculateScore20('medballrotation', getTestValue('medballrotation', 'explosivite')),
+        calculateScore20('cmjunilateral', getTestValue('cmjunilateral', 'explosivite'))
     ];
     
-    // CORE & STABILITÉ (4 tests)
+    // CORE & STABILITÉ (5 tests - ajout Bird Dog)
     const coreScores = [
         calculateScore20('rkcplank', getTestValue('rkcplank', 'core')),
         calculateScore20('sideplank', getTestValue('sideplank', 'core')),
         calculateScore20('mcgillflexor', getTestValue('mcgillflexor', 'core')),
-        calculateScore20('mcgillextensor', getTestValue('mcgillextensor', 'core'))
+        calculateScore20('mcgillextensor', getTestValue('mcgillextensor', 'core')),
+        calculateScore20('birddog', getTestValue('birddog', 'core'))
     ];
     
-    // MOBILITÉ (5 tests)
+    // MOBILITÉ (6 tests - ajout Shoulder/Apley Scratch)
     const mobiliteScores = [
         calculateScore20('standreach', getTestValue('standreach', 'mobilite')),
         calculateScore20('thoracic', getTestValue('thoracic', 'mobilite')),
         calculateScore20('hipint', getTestValue('hipint', 'mobilite')),
         calculateScore20('hipext', getTestValue('hipext', 'mobilite')),
-        calculateScore20('ankle', getTestValue('ankle', 'mobilite'))
+        calculateScore20('ankle', getTestValue('ankle', 'mobilite')),
+        calculateScore20('shoulder', getTestValue('shoulder', 'mobilite'))
     ];
     
     // ÉQUILIBRE (2 tests)
