@@ -1024,6 +1024,105 @@
                 </div>
             </div>
 
+            <!-- Onglet Analyse Pro -->
+            <div id="analyse-tab" class="tab-content">
+                <div class="analyse-container">
+                    <h3>🎯 Analyse Professionnelle</h3>
+                    <p class="subtitle">Vue d'ensemble approfondie des performances physiques et corrélations avec le golf</p>
+                    
+                    <!-- Golf Fitness Index -->
+                    <div class="fitness-index-card">
+                        <h4>Golf Fitness Index</h4>
+                        <div class="gfi-score-container">
+                            <div class="gfi-gauge">
+                                <canvas id="gfiGauge" width="200" height="120"></canvas>
+                                <div class="gfi-score" id="gfiScore">--</div>
+                                <div class="gfi-level" id="gfiLevel">--</div>
+                            </div>
+                            <div class="gfi-explanation">
+                                <h5>Score pondéré basé sur :</h5>
+                                <ul>
+                                    <li><strong>Force</strong> : 25%</li>
+                                    <li><strong>Explosivité</strong> : 20%</li>
+                                    <li><strong>Mobilité</strong> : 20%</li>
+                                    <li><strong>Core</strong> : 15%</li>
+                                    <li><strong>Endurance</strong> : 10%</li>
+                                    <li><strong>Vitesse</strong> : 5%</li>
+                                    <li><strong>Équilibre</strong> : 5%</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comparaison avec Normes Pro -->
+                    <div class="pro-comparison-card">
+                        <h4>📊 Profil Athlétique vs Normes Pro</h4>
+                        <div class="radar-comparison">
+                            <canvas id="proRadarChart" width="500" height="500"></canvas>
+                        </div>
+                        <div class="comparison-legend">
+                            <span><span class="legend-color" style="background: rgba(26, 77, 46, 0.7);"></span> Votre Profil</span>
+                            <span><span class="legend-color" style="background: rgba(231, 76, 60, 0.5);"></span> Norme Pro</span>
+                        </div>
+                    </div>
+
+                    <!-- Top 3 Faiblesses -->
+                    <div class="weaknesses-card">
+                        <h4>⚠️ Top 3 des Axes Prioritaires</h4>
+                        <p class="help-text">Qualités physiques nécessitant une attention particulière</p>
+                        <div id="top3Weaknesses"></div>
+                    </div>
+
+                    <!-- Performance Golf -->
+                    <div class="golf-performance-card">
+                        <h4>🏌️ Performance Golf & Corrélations</h4>
+                        <p class="help-text">Saisissez vos données golf pour établir des corrélations avec vos tests physiques</p>
+                        
+                        <div class="golf-data-form">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="driverSpeed">Vitesse Driver (mph)</label>
+                                    <input type="number" id="driverSpeed" step="0.1" placeholder="105.0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="driverDistance">Distance Driver (mètres)</label>
+                                    <input type="number" id="driverDistance" step="1" placeholder="250">
+                                </div>
+                                <div class="form-group">
+                                    <label for="fairwayAccuracy">Précision Fairways (%)</label>
+                                    <input type="number" id="fairwayAccuracy" step="0.1" placeholder="65.0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="greenAccuracy">Précision Greens (%)</label>
+                                    <input type="number" id="greenAccuracy" step="0.1" placeholder="55.0">
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" id="saveGolfData">💾 Enregistrer données golf</button>
+                        </div>
+
+                        <div id="golfCorrelations" class="golf-correlations">
+                            <!-- Corrélations générées dynamiquement -->
+                        </div>
+                    </div>
+
+                    <!-- Alertes Intelligentes -->
+                    <div class="smart-alerts-card">
+                        <h4>🚨 Alertes Intelligentes</h4>
+                        <p class="help-text">Analyse automatique des limitations physiques et impact potentiel sur le swing</p>
+                        <div id="smartAlerts"></div>
+                    </div>
+
+                    <!-- Export Multi-Joueurs -->
+                    <div class="multi-player-card">
+                        <h4>👥 Export de Données (CSV)</h4>
+                        <p class="help-text">Exportez vos données pour analyse comparative</p>
+                        <div class="export-actions">
+                            <button class="btn btn-secondary" id="exportCSV">📊 Exporter en CSV</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Onglet Historique -->
             <div id="history-tab" class="tab-content">
                 <div class="history-container">
