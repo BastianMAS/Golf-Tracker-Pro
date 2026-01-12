@@ -4531,7 +4531,7 @@ function drawRadarChart(canvas, labels, playerData, proData) {
         ctx.fillText(labels[i], x, y);
     }
     
-    // Données PRO
+    // Données PRO (rouge vif)
     ctx.beginPath();
     for (let i = 0; i <= numSides; i++) {
         const idx = i % numSides;
@@ -4544,13 +4544,13 @@ function drawRadarChart(canvas, labels, playerData, proData) {
         else ctx.lineTo(x, y);
     }
     ctx.closePath();
-    ctx.fillStyle = 'rgba(231, 76, 60, 0.2)';
+    ctx.fillStyle = 'rgba(255, 87, 51, 0.15)';  // Rouge/orange transparent
     ctx.fill();
-    ctx.strokeStyle = 'rgba(231, 76, 60, 0.8)';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(255, 87, 51, 0.9)';  // Rouge/orange vif
+    ctx.lineWidth = 3;
     ctx.stroke();
     
-    // Données joueur
+    // Données joueur (bleu vif)
     ctx.beginPath();
     let hasData = false;
     for (let i = 0; i <= numSides; i++) {
@@ -4565,23 +4565,32 @@ function drawRadarChart(canvas, labels, playerData, proData) {
         else ctx.lineTo(x, y);
     }
     ctx.closePath();
-    ctx.fillStyle = 'rgba(26, 77, 46, 0.3)';
+    ctx.fillStyle = 'rgba(33, 150, 243, 0.2)';  // Bleu transparent
     ctx.fill();
-    ctx.strokeStyle = 'rgba(26, 77, 46, 0.9)';
+    ctx.strokeStyle = 'rgba(33, 150, 243, 1)';  // Bleu vif
     ctx.lineWidth = 3;
     ctx.stroke();
     
-    // Afficher un point d'interrogation sur les axes avec données insuffisantes
-    ctx.font = '20px Arial';
+    // AFFICHER LES "?" pour les données insuffisantes
+    ctx.font = 'bold 24px Arial';
     ctx.fillStyle = '#f39c12';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     for (let i = 0; i < numSides; i++) {
         if (playerData[i] === null || playerData[i] === undefined) {
             const angle = (Math.PI / 2) + (2 * Math.PI * i) / numSides;
-            const markRadius = radius * 0.3; // 30% du rayon
+            const markRadius = radius * 0.35; // 35% du rayon pour bien voir
             const x = centerX + markRadius * Math.cos(angle);
             const y = centerY + markRadius * Math.sin(angle);
+            
+            // Fond blanc derrière le "?" pour le rendre visible
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(x, y, 15, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Le "?" orange vif
+            ctx.fillStyle = '#ff6b00';
             ctx.fillText('?', x, y);
         }
     }
