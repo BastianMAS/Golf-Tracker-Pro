@@ -4286,3 +4286,482 @@ if (document.readyState === 'loading') {
     setupMobileMenu();
     setupRMCalculators();
 }
+
+// ==================== ONGLET ANALYSE PRO ====================
+
+// Pondérations pour le Golf Fitness Index
+const GFI_WEIGHTS = {
+    force: 0.25,
+    explosivite: 0.20,
+    mobilite: 0.20,
+    core: 0.15,
+    endurance: 0.10,
+    vitesse: 0.05,
+    equilibre: 0.05
+};
+
+// Normes PRO : Un joueur pro tour devrait être entre 18-20/20 sur toutes les qualités
+const PRO_NORMS = {
+    force: 18,
+    explosivite: 19,
+    mobilite: 19,
+    core: 18,
+    endurance: 17,
+    vitesse: 19,
+    equilibre: 18
+};
+
+console.log('📊 Normes PRO (niveau Tour):', PRO_NORMS);
+
+// Corrélations physique ↔ golf
+const PHYSICAL_GOLF_CORRELATIONS = {
+    force: { impact: 'Distance au drive', description: 'La force des jambes et du tronc est directement corrélée à la vitesse de swing' },
+    explosivite: { impact: 'Vitesse de tête de club', description: 'La puissance explosive permet un transfert d\'énergie optimal' },
+    mobilite: { impact: 'Amplitude de swing', description: 'Une bonne mobilité thoracique et des hanches permet un backswing complet' },
+    core: { impact: 'Stabilité et consistance', description: 'Un core solide assure la transmission de force et réduit les compensations' },
+    vitesse: { impact: 'Explosivité du mouvement', description: 'La vitesse de déplacement se transfère dans la vitesse de swing' },
+    endurance: { impact: 'Performance sur 18 trous', description: 'L\'endurance musculaire maintient la performance tout au long du parcours' },
+    equilibre: { impact: 'Contrôle et précision', description: 'L\'équilibre améliore la précision et réduit les erreurs' }
+};
+
+// Fonction principale appelée quand on clique sur l'onglet Analyse Pro
+function updateAnalysePro() {
+    console.log('🎯 Mise à jour onglet Analyse Pro');
+    
+    if (!currentPlayer) {
+        document.querySelector('.analyse-container').innerHTML = '<p class="help-text" style="text-align: center; padding: 3rem;">Veuillez d\'abord créer un profil joueur.</p>';
+        return;
+    }
+    
+    // Calculer et afficher le GFI
+    calculateAndDisplayGFI();
+    
+    // Afficher le radar comparatif
+    displayProComparison();
+    
+    // Afficher le top 3 des faiblesses
+    displayTop3Weaknesses();
+    
+    // Charger les données golf
+    loadGolfPerformanceData();
+    
+    // Générer les alertes
+    generateSmartAlerts();
+    
+    // Setup event listeners
+    setupAnalyseProEventListeners();
+}
+
+function calculateAndDisplayGFI() {
+    const scores = calculateQualityScores();
+    if (!scores) {
+        document.getElementById('gfiScore').textContent = '--';
+        document.getElementById('gfiLevel').textContent = 'Aucune donnée';
+        return;
+    }
+    
+    // Calculer le GFI pondéré
+    let gfi = 0;
+    gfi += (scores.force || 0) * GFI_WEIGHTS.force;
+    gfi += (scores.explosivite || 0) * GFI_WEIGHTS.explosivite;
+    gfi += (scores.mobilite || 0) * GFI_WEIGHTS.mobilite;
+    gfi += (scores.core || 0) * GFI_WEIGHTS.core;
+    gfi += (scores.endurance || 0) * GFI_WEIGHTS.endurance;
+    gfi += (scores.vitesse || 0) * GFI_WEIGHTS.vitesse;
+    gfi += (scores.equilibre || 0) * GFI_WEIGHTS.equilibre;
+    
+    // Convertir en score sur 100
+    const gfiScore = Math.round((gfi / 20) * 100);
+    
+    // Déterminer le niveau
+    let level = '', color = '';
+    if (gfiScore >= 85) { level = 'Élite / Pro Tour'; color = '#1a4d2e'; }
+    else if (gfiScore >= 70) { level = 'Très Bon Niveau'; color = '#27ae60'; }
+    else if (gfiScore >= 55) { level = 'Bon Niveau Amateur'; color = '#f39c12'; }
+    else { level = 'En Développement'; color = '#e74c3c'; }
+    
+    document.getElementById('gfiScore').textContent = gfiScore;
+    document.getElementById('gfiScore').style.color = color;
+    document.getElementById('gfiLevel').textContent = level;
+    document.getElementById('gfiLevel').style.color = color;
+    
+    drawGFIGauge(gfiScore, color);
+}
+
+function drawGFIGauge(score, color) {
+    const canvas = document.getElementById('gfiGauge');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height - 10;
+    const radius = 90;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Arc de fond
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, Math.PI, 2 * Math.PI);
+    ctx.lineWidth = 20;
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.stroke();
+    
+    // Arc de progression
+    const endAngle = Math.PI + (Math.PI * (score / 100));
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, Math.PI, endAngle);
+    ctx.lineWidth = 20;
+    ctx.strokeStyle = color;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    
+    // Graduations
+    ctx.font = '12px Arial';
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'center';
+    ctx.fillText('0', 20, centerY + 5);
+    ctx.fillText('50', centerX, centerY - radius - 10);
+    ctx.fillText('100', canvas.width - 20, centerY + 5);
+}
+
+function displayProComparison() {
+    const canvas = document.getElementById('proRadarChart');
+    if (!canvas) return;
+    
+    const scores = calculateQualityScores();
+    if (!scores) return;
+    
+    const categories = ['Force', 'Explosivité', 'Mobilité', 'Core', 'Endurance', 'Vitesse', 'Équilibre'];
+    const playerData = [
+        scores.force || 0,
+        scores.explosivite || 0,
+        scores.mobilite || 0,
+        scores.core || 0,
+        scores.endurance || 0,
+        scores.vitesse || 0,
+        scores.equilibre || 0
+    ];
+    const proData = [
+        PRO_NORMS.force,
+        PRO_NORMS.explosivite,
+        PRO_NORMS.mobilite,
+        PRO_NORMS.core,
+        PRO_NORMS.endurance,
+        PRO_NORMS.vitesse,
+        PRO_NORMS.equilibre
+    ];
+    
+    drawRadarChart(canvas, categories, playerData, proData);
+}
+
+function drawRadarChart(canvas, labels, playerData, proData) {
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(width, height) / 2 - 60;
+    const numSides = labels.length;
+    
+    ctx.clearRect(0, 0, width, height);
+    
+    // Cercles concentriques
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 1;
+    for (let i = 1; i <= 4; i++) {
+        ctx.beginPath();
+        const r = (radius / 4) * i;
+        for (let j = 0; j <= numSides; j++) {
+            const angle = (Math.PI / 2) + (2 * Math.PI * j) / numSides;
+            const x = centerX + r * Math.cos(angle);
+            const y = centerY + r * Math.sin(angle);
+            if (j === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+    }
+    
+    // Axes
+    ctx.strokeStyle = '#ccc';
+    for (let i = 0; i < numSides; i++) {
+        const angle = (Math.PI / 2) + (2 * Math.PI * i) / numSides;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX + radius * Math.cos(angle), centerY + radius * Math.sin(angle));
+        ctx.stroke();
+    }
+    
+    // Labels
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#333';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (let i = 0; i < numSides; i++) {
+        const angle = (Math.PI / 2) + (2 * Math.PI * i) / numSides;
+        const labelRadius = radius + 30;
+        const x = centerX + labelRadius * Math.cos(angle);
+        const y = centerY + labelRadius * Math.sin(angle);
+        ctx.fillText(labels[i], x, y);
+    }
+    
+    // Données PRO
+    ctx.beginPath();
+    for (let i = 0; i <= numSides; i++) {
+        const idx = i % numSides;
+        const value = proData[idx];
+        const angle = (Math.PI / 2) + (2 * Math.PI * i) / numSides;
+        const r = (radius / 20) * value;
+        const x = centerX + r * Math.cos(angle);
+        const y = centerY + r * Math.sin(angle);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(231, 76, 60, 0.2)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(231, 76, 60, 0.8)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Données joueur
+    ctx.beginPath();
+    for (let i = 0; i <= numSides; i++) {
+        const idx = i % numSides;
+        const value = playerData[idx];
+        const angle = (Math.PI / 2) + (2 * Math.PI * i) / numSides;
+        const r = (radius / 20) * value;
+        const x = centerX + r * Math.cos(angle);
+        const y = centerY + r * Math.sin(angle);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(26, 77, 46, 0.3)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(26, 77, 46, 0.9)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+}
+
+function displayTop3Weaknesses() {
+    const container = document.getElementById('top3Weaknesses');
+    if (!container) return;
+    
+    const scores = calculateQualityScores();
+    if (!scores) {
+        container.innerHTML = '<p class="help-text">Aucune donnée disponible</p>';
+        return;
+    }
+    
+    const qualities = [
+        { name: 'Force', key: 'force', score: scores.force || 0 },
+        { name: 'Explosivité', key: 'explosivite', score: scores.explosivite || 0 },
+        { name: 'Mobilité', key: 'mobilite', score: scores.mobilite || 0 },
+        { name: 'Core', key: 'core', score: scores.core || 0 },
+        { name: 'Endurance', key: 'endurance', score: scores.endurance || 0 },
+        { name: 'Vitesse', key: 'vitesse', score: scores.vitesse || 0 },
+        { name: 'Équilibre', key: 'equilibre', score: scores.equilibre || 0 }
+    ];
+    
+    qualities.sort((a, b) => a.score - b.score);
+    const top3 = qualities.slice(0, 3);
+    
+    let html = '';
+    top3.forEach((quality, index) => {
+        const correlation = PHYSICAL_GOLF_CORRELATIONS[quality.key];
+        const isCritical = quality.score < 10;
+        
+        html += `
+            <div class="weakness-item ${isCritical ? 'critical' : ''}">
+                <h5>${index + 1}. ${quality.name}</h5>
+                <div class="score">${quality.score.toFixed(1)} / 20</div>
+                <div class="impact">
+                    <strong>Impact sur le golf:</strong> ${correlation.impact}
+                    <br>
+                    <small>${correlation.description}</small>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function loadGolfPerformanceData() {
+    const golfData = JSON.parse(localStorage.getItem('golfPerformanceData') || '{}');
+    
+    ['driverSpeed', 'driverDistance', 'fairwayAccuracy', 'greenAccuracy'].forEach(key => {
+        const el = document.getElementById(key);
+        if (el && golfData[key]) el.value = golfData[key];
+    });
+    
+    if (Object.keys(golfData).length > 0) {
+        displayGolfCorrelations(golfData);
+    }
+}
+
+function saveGolfPerformanceData() {
+    const golfData = {
+        driverSpeed: parseFloat(document.getElementById('driverSpeed').value) || null,
+        driverDistance: parseFloat(document.getElementById('driverDistance').value) || null,
+        fairwayAccuracy: parseFloat(document.getElementById('fairwayAccuracy').value) || null,
+        greenAccuracy: parseFloat(document.getElementById('greenAccuracy').value) || null,
+        date: new Date().toISOString()
+    };
+    
+    localStorage.setItem('golfPerformanceData', JSON.stringify(golfData));
+    displayGolfCorrelations(golfData);
+    alert('✅ Données golf enregistrées !');
+}
+
+function displayGolfCorrelations(golfData) {
+    const container = document.getElementById('golfCorrelations');
+    if (!container) return;
+    
+    const scores = calculateQualityScores();
+    if (!scores) {
+        container.innerHTML = '<p class="help-text">Enregistrez des tests physiques pour voir les corrélations.</p>';
+        return;
+    }
+    
+    let html = '<h5 style="margin: 1.5rem 0 1rem 0;">📊 Corrélations Physique ↔ Golf</h5>';
+    
+    if (!golfData.driverSpeed && !golfData.driverDistance && !golfData.fairwayAccuracy && !golfData.greenAccuracy) {
+        html += `
+            <div style="text-align: center; padding: 2rem; color: #666;">
+                <p>💡 Saisissez vos données golf ci-dessus pour voir les corrélations avec votre physique</p>
+            </div>
+        `;
+    } else {
+        html += '<p class="help-text">Corrélations affichées avec les données physiques actuelles</p>';
+    }
+    
+    container.innerHTML = html;
+}
+
+function generateSmartAlerts() {
+    const container = document.getElementById('smartAlerts');
+    if (!container) return;
+    
+    const scores = calculateQualityScores();
+    if (!scores) {
+        container.innerHTML = '<p class="help-text">Aucune donnée disponible</p>';
+        return;
+    }
+    
+    const alerts = [];
+    
+    if ((scores.mobilite || 0) < 12) {
+        alerts.push({
+            type: 'critical',
+            title: 'Mobilité Insuffisante',
+            message: `Score mobilité: ${(scores.mobilite || 0).toFixed(1)}/20 (objectif: >14)`,
+            faults: ['Perte d\'amplitude en backswing', 'Early extension', 'Slide latéral excessif']
+        });
+    }
+    
+    if ((scores.core || 0) < 12) {
+        alerts.push({
+            type: 'warning',
+            title: 'Core À Améliorer',
+            message: `Score Core: ${(scores.core || 0).toFixed(1)}/20 (objectif: >14)`,
+            faults: ['Early extension', 'Loss of posture', 'Inconsistency']
+        });
+    }
+    
+    if ((scores.force || 0) < 10) {
+        alerts.push({
+            type: 'warning',
+            title: 'Force Limitée',
+            message: `Score Force: ${(scores.force || 0).toFixed(1)}/20 (objectif: >14)`,
+            faults: ['Perte de vitesse', 'Distance limitée']
+        });
+    }
+    
+    let html = '';
+    if (alerts.length === 0) {
+        html = '<div class="alert-item alert-info"><div class="alert-icon">✅</div><div class="alert-content"><h5>Aucune alerte critique</h5><p>Votre profil physique ne présente pas de limitation majeure identifiée.</p></div></div>';
+    } else {
+        alerts.forEach(alert => {
+            const iconMap = { critical: '🚨', warning: '⚠️', info: 'ℹ️' };
+            
+            html += `
+                <div class="alert-item alert-${alert.type}">
+                    <div class="alert-icon">${iconMap[alert.type]}</div>
+                    <div class="alert-content">
+                        <h5>${alert.title}</h5>
+                        <p>${alert.message}</p>
+                        ${alert.faults ? `
+                            <div class="swing-fault">
+                                <strong>Défauts de swing potentiels:</strong>
+                                <ul>
+                                    ${alert.faults.map(f => `<li>${f}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        });
+    }
+    
+    container.innerHTML = html;
+}
+
+function exportToCSV() {
+    if (!currentPlayer) {
+        alert('Veuillez d\'abord créer un profil joueur');
+        return;
+    }
+    
+    const scores = calculateQualityScores();
+    if (!scores) {
+        alert('Aucune donnée de test disponible');
+        return;
+    }
+    
+    const gfiScores = calculateQualityScores();
+    let gfi = 0;
+    gfi += (gfiScores.force || 0) * GFI_WEIGHTS.force;
+    gfi += (gfiScores.explosivite || 0) * GFI_WEIGHTS.explosivite;
+    gfi += (gfiScores.mobilite || 0) * GFI_WEIGHTS.mobilite;
+    gfi += (gfiScores.core || 0) * GFI_WEIGHTS.core;
+    gfi += (gfiScores.endurance || 0) * GFI_WEIGHTS.endurance;
+    gfi += (gfiScores.vitesse || 0) * GFI_WEIGHTS.vitesse;
+    gfi += (gfiScores.equilibre || 0) * GFI_WEIGHTS.equilibre;
+    const gfiScore = Math.round((gfi / 20) * 100);
+    
+    const csv = `Nom,Sexe,Age,Handicap,Force,Explosivite,Mobilite,Core,Endurance,Vitesse,Equilibre,GFI
+${currentPlayer.name},${currentPlayer.gender},${currentPlayer.age},${currentPlayer.handicap || 'N/A'},${(scores.force || 0).toFixed(1)},${(scores.explosivite || 0).toFixed(1)},${(scores.mobilite || 0).toFixed(1)},${(scores.core || 0).toFixed(1)},${(scores.endurance || 0).toFixed(1)},${(scores.vitesse || 0).toFixed(1)},${(scores.equilibre || 0).toFixed(1)},${gfiScore}`;
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `golf_tracker_${currentPlayer.name}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+function setupAnalyseProEventListeners() {
+    const saveBtn = document.getElementById('saveGolfData');
+    if (saveBtn) {
+        saveBtn.onclick = saveGolfPerformanceData;
+    }
+    
+    const exportBtn = document.getElementById('exportCSV');
+    if (exportBtn) {
+        exportBtn.onclick = exportToCSV;
+    }
+}
+
+// Modifier la fonction switchTab pour gérer l'onglet Analyse Pro
+const originalSwitchTab = window.switchTab;
+window.switchTab = function(tabName) {
+    originalSwitchTab(tabName);
+    
+    if (tabName === 'analyse') {
+        setTimeout(() => updateAnalysePro(), 100);
+    }
+};

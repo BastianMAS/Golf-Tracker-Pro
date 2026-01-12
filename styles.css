@@ -1726,3 +1726,306 @@ img {
     }
 }
 
+/* ========================================
+   ONGLET ANALYSE PRO
+   ======================================== */
+
+.analyse-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.subtitle {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+/* Cards communes */
+.fitness-index-card,
+.pro-comparison-card,
+.weaknesses-card,
+.golf-performance-card,
+.smart-alerts-card,
+.multi-player-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.fitness-index-card h4,
+.pro-comparison-card h4,
+.weaknesses-card h4,
+.golf-performance-card h4,
+.smart-alerts-card h4,
+.multi-player-card h4 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.help-text {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+/* Golf Fitness Index */
+.gfi-score-container {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 3rem;
+    align-items: center;
+}
+
+.gfi-gauge {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.gfi-score {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-top: -60px;
+}
+
+.gfi-level {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.gfi-explanation {
+    padding: 1.5rem;
+    background: var(--bg-light);
+    border-radius: 8px;
+}
+
+.gfi-explanation h5 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.gfi-explanation ul {
+    list-style: none;
+    padding: 0;
+}
+
+.gfi-explanation li {
+    padding: 0.4rem 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Radar */
+.radar-comparison {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
+}
+
+.comparison-legend {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.legend-color {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
+
+/* Weaknesses */
+.weakness-item {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--warning-color);
+}
+
+.weakness-item.critical {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    border-color: #e74c3c;
+}
+
+.weakness-item h5 {
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.weakness-item .score {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--warning-color);
+    margin: 0.5rem 0;
+}
+
+.weakness-item .impact {
+    background: white;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+}
+
+/* Performance Golf */
+.golf-data-form {
+    background: var(--bg-light);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: var(--text-light);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6c7d;
+}
+
+.correlation-item {
+    background: var(--bg-light);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--info-color);
+}
+
+.correlation-item h5 {
+    color: var(--primary-color);
+    margin-bottom: 0.8rem;
+}
+
+/* Alertes Intelligentes */
+.alert-item {
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.alert-item.alert-critical {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    border-left: 4px solid #e74c3c;
+}
+
+.alert-item.alert-warning {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    border-left: 4px solid #f39c12;
+}
+
+.alert-item.alert-info {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-left: 4px solid #2196f3;
+}
+
+.alert-icon {
+    font-size: 2rem;
+    min-width: 40px;
+}
+
+.alert-content h5 {
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.alert-content .swing-fault {
+    background: white;
+    padding: 0.8rem;
+    border-radius: 6px;
+    margin-top: 0.8rem;
+    font-weight: 600;
+}
+
+.alert-content ul {
+    margin: 0.5rem 0 0 1.5rem;
+}
+
+/* Export */
+.export-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Responsive Analyse Pro */
+@media (max-width: 768px) {
+    .gfi-score-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .alert-item {
+        flex-direction: column;
+    }
+}
+
