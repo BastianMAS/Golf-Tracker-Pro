@@ -4571,25 +4571,27 @@ function drawRadarChart(canvas, labels, playerData, proData) {
     ctx.lineWidth = 3;
     ctx.stroke();
     
-    // AFFICHER LES "?" pour les données insuffisantes
-    ctx.font = 'bold 24px Arial';
-    ctx.fillStyle = '#f39c12';
+    // AFFICHER LES "?" PAR-DESSUS TOUT (en dernier)
+    ctx.font = 'bold 28px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     for (let i = 0; i < numSides; i++) {
         if (playerData[i] === null || playerData[i] === undefined) {
             const angle = (Math.PI / 2) + (2 * Math.PI * i) / numSides;
-            const markRadius = radius * 0.35; // 35% du rayon pour bien voir
+            const markRadius = radius * 0.4; // 40% du rayon
             const x = centerX + markRadius * Math.cos(angle);
             const y = centerY + markRadius * Math.sin(angle);
             
-            // Fond blanc derrière le "?" pour le rendre visible
+            // Cercle blanc avec bordure pour le faire ressortir
+            ctx.strokeStyle = '#ff6b00';
+            ctx.lineWidth = 3;
             ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(x, y, 15, 0, 2 * Math.PI);
+            ctx.arc(x, y, 18, 0, 2 * Math.PI);
             ctx.fill();
+            ctx.stroke();
             
-            // Le "?" orange vif
+            // Le "?" orange vif et gros
             ctx.fillStyle = '#ff6b00';
             ctx.fillText('?', x, y);
         }
