@@ -3066,12 +3066,15 @@ function calculateQualityScores() {
     };
     
     // Moyenne d'un tableau de scores (ignore les nulls)
-    const average = (scores) => {
+    // NOUVEAU : Retourne null si moins de 50% des tests sont faits
+    const average = (scores, minRequired) => {
         const validScores = scores.filter(s => s !== null && !isNaN(s));
+        // Si on a moins de 50% des tests, on ne peut pas calculer un score fiable
+        if (validScores.length < minRequired) return null;
         return validScores.length > 0 ? validScores.reduce((a, b) => a + b, 0) / validScores.length : null;
     };
     
-    // FORCE (4 tests)
+    // FORCE (4 tests) - minimum 2 requis
     const forceScores = [
         calculateScore20('squat', getTestValue('squat', 'force')),
         calculateScore20('deadlift', getTestValue('deadlift', 'force')),
@@ -3079,13 +3082,13 @@ function calculateQualityScores() {
         calculateScore20('pullup', getTestValue('pullup', 'force'))
     ];
     
-    // VITESSE (2 tests)
+    // VITESSE (2 tests) - minimum 1 requis
     const vitesseScores = [
         calculateScore20('shuttle', getTestValue('shuttle', 'vitesse')),
         calculateScore20('driverspeed', getTestValue('driverspeed', 'vitesse'))
     ];
     
-    // ENDURANCE (4 tests)
+    // ENDURANCE (4 tests) - minimum 2 requis
     const enduranceScores = [
         calculateScore20('vma', getTestValue('vma', 'endurance')),
         calculateScore20('maxpushups', getTestValue('maxpushups', 'endurance')),
@@ -3093,7 +3096,7 @@ function calculateQualityScores() {
         calculateScore20('wallsit', getTestValue('wallsit', 'endurance'))
     ];
     
-    // EXPLOSIVITÉ (5 tests - ajout CMJ Unilateral)
+    // EXPLOSIVITÉ (5 tests - ajout CMJ Unilateral) - minimum 3 requis
     const explosiviteScores = [
         calculateScore20('vertjump', getTestValue('vertjump', 'explosivite')),
         calculateScore20('horizjump', getTestValue('horizjump', 'explosivite')),
@@ -3102,7 +3105,7 @@ function calculateQualityScores() {
         calculateScore20('cmjunilateral', getTestValue('cmjunilateral', 'explosivite'))
     ];
     
-    // CORE & STABILITÉ (5 tests - ajout Bird Dog)
+    // CORE & STABILITÉ (5 tests - ajout Bird Dog) - minimum 3 requis
     const coreScores = [
         calculateScore20('rkcplank', getTestValue('rkcplank', 'core')),
         calculateScore20('sideplank', getTestValue('sideplank', 'core')),
@@ -3111,7 +3114,7 @@ function calculateQualityScores() {
         calculateScore20('birddog', getTestValue('birddog', 'core'))
     ];
     
-    // MOBILITÉ (6 tests - ajout Shoulder/Apley Scratch)
+    // MOBILITÉ (6 tests - ajout Shoulder/Apley Scratch) - minimum 3 requis
     const mobiliteScores = [
         calculateScore20('standreach', getTestValue('standreach', 'mobilite')),
         calculateScore20('thoracic', getTestValue('thoracic', 'mobilite')),
@@ -3121,20 +3124,20 @@ function calculateQualityScores() {
         calculateScore20('shoulder', getTestValue('shoulder', 'mobilite'))
     ];
     
-    // ÉQUILIBRE (2 tests)
+    // ÉQUILIBRE (2 tests) - minimum 1 requis
     const equilibreScores = [
         calculateScore20('balanceopen', getTestValue('balanceopen', 'equilibre')),
         calculateScore20('balanceclosed', getTestValue('balanceclosed', 'equilibre'))
     ];
     
     return {
-        force: average(forceScores),
-        vitesse: average(vitesseScores),
-        endurance: average(enduranceScores),
-        explosivite: average(explosiviteScores),
-        core: average(coreScores),
-        mobilite: average(mobiliteScores),
-        equilibre: average(equilibreScores)
+        force: average(forceScores, 2),
+        vitesse: average(vitesseScores, 1),
+        endurance: average(enduranceScores, 2),
+        explosivite: average(explosiviteScores, 3),
+        core: average(coreScores, 3),
+        mobilite: average(mobiliteScores, 3),
+        equilibre: average(equilibreScores, 1)
     };
 }
 
@@ -4549,9 +4552,11 @@ function drawRadarChart(canvas, labels, playerData, proData) {
     
     // Données joueur
     ctx.beginPath();
+    let hasData = false;
     for (let i = 0; i <= numSides; i++) {
         const idx = i % numSides;
-        const value = playerData[idx];
+        const value = playerData[idx] !== null && playerData[idx] !== undefined ? playerData[idx] : 0;
+        if (value > 0) hasData = true;
         const angle = (Math.PI / 2) + (2 * Math.PI * i) / numSides;
         const r = (radius / 20) * value;
         const x = centerX + r * Math.cos(angle);
@@ -4565,6 +4570,21 @@ function drawRadarChart(canvas, labels, playerData, proData) {
     ctx.strokeStyle = 'rgba(26, 77, 46, 0.9)';
     ctx.lineWidth = 3;
     ctx.stroke();
+    
+    // Afficher un point d'interrogation sur les axes avec données insuffisantes
+    ctx.font = '20px Arial';
+    ctx.fillStyle = '#f39c12';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (let i = 0; i < numSides; i++) {
+        if (playerData[i] === null || playerData[i] === undefined) {
+            const angle = (Math.PI / 2) + (2 * Math.PI * i) / numSides;
+            const markRadius = radius * 0.3; // 30% du rayon
+            const x = centerX + markRadius * Math.cos(angle);
+            const y = centerY + markRadius * Math.sin(angle);
+            ctx.fillText('?', x, y);
+        }
+    }
 }
 
 function displayTop3Weaknesses() {
