@@ -4300,18 +4300,34 @@ const GFI_WEIGHTS = {
     equilibre: 0.05
 };
 
-// Normes PRO : Un joueur pro tour devrait être entre 18-20/20 sur toutes les qualités
-const PRO_NORMS = {
-    force: 18,
-    explosivite: 19,
-    mobilite: 19,
-    core: 18,
-    endurance: 17,
-    vitesse: 19,
-    equilibre: 18
-};
+// Normes PRO dynamiques selon le sexe
+function getProNorms(gender) {
+    if (gender === 'F') {
+        // LPGA Tour - TrackMan 2023: Driver moyen = 96 mph
+        return {
+            force: 16,         // LPGA niveau pro
+            explosivite: 17,   
+            mobilite: 18,      
+            core: 17,          
+            endurance: 16,     
+            vitesse: 17,       
+            equilibre: 17
+        };
+    } else {
+        // PGA Tour - TrackMan 2023: Driver moyen = 115 mph
+        return {
+            force: 18,
+            explosivite: 19,
+            mobilite: 19,
+            core: 18,
+            endurance: 17,
+            vitesse: 19,
+            equilibre: 18
+        };
+    }
+}
 
-console.log('📊 Normes PRO (niveau Tour):', PRO_NORMS);
+console.log('📊 Normes PRO calculées dynamiquement selon sexe');
 
 // Corrélations physique ↔ golf
 const PHYSICAL_GOLF_CORRELATIONS = {
@@ -4431,6 +4447,10 @@ function displayProComparison() {
     const scores = calculateQualityScores();
     if (!scores) return;
     
+    // Récupérer les normes selon le sexe du joueur
+    const gender = currentPlayer ? currentPlayer.gender : 'M';
+    const proNorms = getProNorms(gender);
+    
     const categories = ['Force', 'Explosivité', 'Mobilité', 'Core', 'Endurance', 'Vitesse', 'Équilibre'];
     const playerData = [
         scores.force || 0,
@@ -4442,13 +4462,13 @@ function displayProComparison() {
         scores.equilibre || 0
     ];
     const proData = [
-        PRO_NORMS.force,
-        PRO_NORMS.explosivite,
-        PRO_NORMS.mobilite,
-        PRO_NORMS.core,
-        PRO_NORMS.endurance,
-        PRO_NORMS.vitesse,
-        PRO_NORMS.equilibre
+        proNorms.force,
+        proNorms.explosivite,
+        proNorms.mobilite,
+        proNorms.core,
+        proNorms.endurance,
+        proNorms.vitesse,
+        proNorms.equilibre
     ];
     
     drawRadarChart(canvas, categories, playerData, proData);
@@ -4627,18 +4647,283 @@ function displayGolfCorrelations(golfData) {
     
     let html = '<h5 style="margin: 1.5rem 0 1rem 0;">📊 Corrélations Physique ↔ Golf</h5>';
     
+    // ========== VITESSE DRIVER ==========
+    if (golfData.driverSpeed) {
+        // Récupérer le sexe du joueur
+        const gender = currentPlayer ? currentPlayer.gender : 'M';
+        const proNorms = getProNorms(gender);
+        
+        // Formule réaliste adaptée au sexe
+        // Hommes: Base 90, Femmes: Base 70
+        const baseSpeed = gender === 'F' ? 70 : 90;
+        const forceContribution = (scores.force || 10) * 0.9;
+        const explosiviteContribution = (scores.explosivite || 10) * 0.7;
+        const mobiliteContribution = (scores.mobilite || 10) * 0.3;
+        
+        const predictedSpeed = baseSpeed + forceContribution + explosiviteContribution + mobiliteContribution;
+        const diff = golfData.driverSpeed - predictedSpeed;
+        const percentDiff = (diff / golfData.driverSpeed) * 100;
+        
+        // Potentiel gain réaliste adapté (max 8 mph hommes, 6 mph femmes)
+        const maxGain = gender === 'F' ? 6 : 8;
+        const forceGap = Math.max(0, proNorms.force - (scores.force || 0));
+        const explosiviteGap = Math.max(0, proNorms.explosivite - (scores.explosivite || 0));
+        const mobiliteGap = Math.max(0, proNorms.mobilite - (scores.mobilite || 0));
+        const potentialGainSpeed = Math.min(maxGain, (forceGap * 0.9) + (explosiviteGap * 0.7) + (mobiliteGap * 0.3));
+        
+        // Contexte performance adapté au sexe (TrackMan 2023)
+        let performanceContext = '';
+        if (gender === 'F') {
+            // LPGA Tour - Moyenne 96 mph
+            if (golfData.driverSpeed >= 105) {
+                performanceContext = '🏆 <strong>Niveau Elite Mondial LPGA</strong> (Top 3-5 LPGA)';
+            } else if (golfData.driverSpeed >= 100) {
+                performanceContext = '🌟 <strong>Niveau Elite Tour LPGA</strong> (Top 10-20 LPGA)';
+            } else if (golfData.driverSpeed >= 96) {
+                performanceContext = '✅ <strong>Niveau Moyenne LPGA Tour</strong> (Moyenne LPGA 2023 = 96 mph TrackMan)';
+            } else if (golfData.driverSpeed >= 90) {
+                performanceContext = '📈 <strong>Bon niveau Pro Femmes</strong> (90-96 mph)';
+            } else if (golfData.driverSpeed >= 85) {
+                performanceContext = '💪 <strong>Très bonne amateure</strong> (HCP 0-5)';
+            } else if (golfData.driverSpeed >= 80) {
+                performanceContext = '👍 <strong>Bonne amateure</strong> (HCP 5-10)';
+            } else if (golfData.driverSpeed >= 75) {
+                performanceContext = '🎯 <strong>Amateure solide</strong> (HCP 10-15)';
+            } else {
+                performanceContext = '📚 <strong>Amateure en progression</strong> (HCP 15+)';
+            }
+        } else {
+            // PGA Tour - Moyenne 115 mph
+            if (golfData.driverSpeed >= 125) {
+                performanceContext = '🏆 <strong>Niveau Elite Mondial</strong> (Top 3-5 PGA - Bryson 125-128, Champ 127-129 mph)';
+            } else if (golfData.driverSpeed >= 120) {
+                performanceContext = '🌟 <strong>Niveau Elite Tour</strong> (Top 10-20 PGA - Rory 122-124, DJ 120-122 mph)';
+            } else if (golfData.driverSpeed >= 115) {
+                performanceContext = '✅ <strong>Niveau Moyenne PGA Tour</strong> (Moyenne PGA 2023 = 115 mph TrackMan)';
+            } else if (golfData.driverSpeed >= 110) {
+                performanceContext = '📈 <strong>Bon niveau Tour Européen</strong> (110-115 mph)';
+            } else if (golfData.driverSpeed >= 105) {
+                performanceContext = '💪 <strong>Très bon amateur</strong> (HCP 0-5)';
+            } else if (golfData.driverSpeed >= 100) {
+                performanceContext = '👍 <strong>Bon amateur</strong> (HCP 5-10)';
+            } else if (golfData.driverSpeed >= 95) {
+                performanceContext = '🎯 <strong>Amateur solide</strong> (HCP 10-15)';
+            } else {
+                performanceContext = '📚 <strong>Amateur en progression</strong> (HCP 15+)';
+            }
+        }
+        
+        // Référence tour adaptée
+        const tourReference = gender === 'F' ? 
+            'ℹ️ Référence: Moyenne Top 10 LPGA = 100-104 mph | Top 50 = 94-98 mph' :
+            'ℹ️ Référence: Moyenne Top 10 PGA = 121-123 mph | Top 50 = 116-118 mph';
+        
+        html += `
+            <div class="correlation-item">
+                <h5>🏌️ Vitesse Driver: ${golfData.driverSpeed} mph</h5>
+                
+                <div style="background: #e8f5e9; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+                    ${performanceContext}
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
+                    <div style="background: white; padding: 1rem; border-radius: 6px; border: 1px solid #e0e0e0;">
+                        <strong>Vitesse Actuelle</strong>
+                        <div style="font-size: 2rem; color: #1a4d2e; font-weight: 700;">${golfData.driverSpeed} mph</div>
+                    </div>
+                    <div style="background: white; padding: 1rem; border-radius: 6px; border: 1px solid #e0e0e0;">
+                        <strong>Vitesse Prédite (physique)</strong>
+                        <div style="font-size: 2rem; color: ${diff > 0 ? '#27ae60' : '#f39c12'}; font-weight: 700;">${predictedSpeed.toFixed(1)} mph</div>
+                    </div>
+                </div>
+                
+                <div style="background: ${Math.abs(percentDiff) < 5 ? '#e8f5e9' : percentDiff > 0 ? '#e3f2fd' : '#fff3e0'}; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
+                    ${Math.abs(percentDiff) < 5 ? 
+                        '<strong>✅ Optimisation excellente !</strong><br>Votre technique exploite parfaitement votre potentiel physique.' :
+                        percentDiff > 5 ? 
+                        '<strong>🌟 Technique exceptionnelle !</strong><br>Vous surpassez votre potentiel physique de ' + percentDiff.toFixed(1) + '%. Excellente efficacité technique !' :
+                        '<strong>⚠️ Potentiel inexploité</strong><br>Votre physique permettrait ' + Math.abs(diff).toFixed(0) + ' mph de plus. Travaillez la technique et le timing.'
+                    }
+                </div>
+                
+                <div style="margin-top: 1rem;">
+                    <strong>💡 Contributions physiques à la vitesse:</strong>
+                    <div style="margin-top: 0.5rem;">
+                        ${createContributionBar('Force', scores.force || 0, forceContribution, 18)}
+                        ${createContributionBar('Explosivité', scores.explosivite || 0, explosiviteContribution, 14)}
+                        ${createContributionBar('Mobilité', scores.mobilite || 0, mobiliteContribution, 6)}
+                    </div>
+                </div>
+                
+                ${potentialGainSpeed > 2 ? `
+                    <div style="background: #fff3e0; padding: 1rem; border-radius: 6px; margin-top: 1rem; border-left: 4px solid #f39c12;">
+                        <strong>🎯 Potentiel d'amélioration physique: +${potentialGainSpeed.toFixed(1)} mph</strong><br>
+                        <small>En atteignant des scores pro (${proNorms.force}-${proNorms.explosivite}/20), vous pourriez gagner <strong>${potentialGainSpeed.toFixed(0)} mph</strong> sur 12-18 mois d'entraînement intensif.</small><br>
+                        <small style="color: #666; margin-top: 0.5rem; display: block;">
+                            ${tourReference}
+                        </small>
+                    </div>
+                ` : `
+                    <div style="background: #e8f5e9; padding: 1rem; border-radius: 6px; margin-top: 1rem; border-left: 4px solid #27ae60;">
+                        <strong>✅ Physique optimal</strong><br>
+                        <small>Votre développement physique est excellent. Focus sur la technique pour progresser.</small>
+                    </div>
+                `}
+            </div>
+        `;
+    }
+    
+    // ========== DISTANCE DRIVER ==========
+    if (golfData.driverDistance) {
+        let smashAnalysis = '';
+        if (golfData.driverSpeed) {
+            const smashFactor = golfData.driverDistance / (golfData.driverSpeed * 2.4);
+            smashAnalysis = `
+                <div style="background: ${smashFactor > 0.95 ? '#e8f5e9' : '#fff3e0'}; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
+                    <strong>Efficacité de frappe: ${(smashFactor * 100).toFixed(0)}%</strong><br>
+                    ${smashFactor > 0.95 ? 
+                        '✅ Excellente efficacité ! Vous convertissez bien votre vitesse en distance.' :
+                        '⚠️ Marge de progression: améliorer le contact et l\'angle d\'attaque pourrait ajouter ' + ((1 - smashFactor) * golfData.driverDistance).toFixed(0) + 'm.'
+                    }
+                </div>
+            `;
+        }
+        
+        const forceGap = Math.max(0, 18 - (scores.force || 0));
+        const potentialGainDistance = forceGap * 10;
+        
+        html += `
+            <div class="correlation-item">
+                <h5>📏 Distance Driver: ${golfData.driverDistance} m</h5>
+                
+                <div style="margin: 1rem 0;">
+                    <strong>Lien Force ↔ Distance</strong>
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem;">
+                        <div style="flex: 1;">
+                            <div style="background: #e0e0e0; height: 30px; border-radius: 15px; overflow: hidden;">
+                                <div style="background: linear-gradient(90deg, #1a4d2e, #27ae60); height: 100%; width: ${((scores.force || 0) / 20) * 100}%; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; color: white; font-weight: 700;">
+                                    ${(scores.force || 0).toFixed(1)}/20
+                                </div>
+                            </div>
+                        </div>
+                        <div style="min-width: 100px; text-align: center; font-weight: 700; color: #1a4d2e;">
+                            Force Jambes
+                        </div>
+                    </div>
+                </div>
+                
+                ${smashAnalysis}
+                
+                ${potentialGainDistance > 10 ? `
+                    <div style="background: #e3f2fd; padding: 1rem; border-radius: 6px; margin-top: 1rem; border-left: 4px solid #2196f3;">
+                        <strong>🎯 Potentiel physique: +${potentialGainDistance.toFixed(0)}m</strong><br>
+                        <small>En augmentant votre force de ${forceGap.toFixed(1)} points (objectif: 18/20), vous pourriez gagner environ ${potentialGainDistance.toFixed(0)}m.</small>
+                        <div style="margin-top: 0.5rem; font-size: 0.9rem;">
+                            💡 Exercices prioritaires: Squat, Deadlift, développement puissance hanches
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    // ========== PRÉCISION ==========
+    if (golfData.fairwayAccuracy || golfData.greenAccuracy) {
+        const stabilityScore = ((scores.core || 0) + (scores.equilibre || 0)) / 2;
+        const stabilityPercent = (stabilityScore / 20) * 100;
+        
+        const avgAccuracy = ((golfData.fairwayAccuracy || 0) + (golfData.greenAccuracy || 0)) / 
+                           ((golfData.fairwayAccuracy ? 1 : 0) + (golfData.greenAccuracy ? 1 : 0));
+        
+        let precisionAnalysis = '';
+        if (avgAccuracy < 50) {
+            precisionAnalysis = '⚠️ Précision en développement - Le renforcement du core et de l\'équilibre devrait améliorer la consistance.';
+        } else if (avgAccuracy < 65) {
+            precisionAnalysis = '📈 Bonne précision - Continuez à travailler la stabilité pour gagner en régularité.';
+        } else {
+            precisionAnalysis = '✅ Excellente précision - Votre stabilité physique supporte bien votre technique.';
+        }
+        
+        const stabilityGap = Math.max(0, 18 - stabilityScore);
+        
+        html += `
+            <div class="correlation-item">
+                <h5>🎯 Précision & Stabilité</h5>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
+                    ${golfData.fairwayAccuracy ? `
+                        <div style="background: white; padding: 1rem; border-radius: 6px; text-align: center; border: 1px solid #e0e0e0;">
+                            <div style="font-size: 0.9rem; color: #666;">Fairways</div>
+                            <div style="font-size: 2rem; color: #1a4d2e; font-weight: 700;">${golfData.fairwayAccuracy}%</div>
+                        </div>
+                    ` : ''}
+                    ${golfData.greenAccuracy ? `
+                        <div style="background: white; padding: 1rem; border-radius: 6px; text-align: center; border: 1px solid #e0e0e0;">
+                            <div style="font-size: 0.9rem; color: #666;">Greens</div>
+                            <div style="font-size: 2rem; color: #1a4d2e; font-weight: 700;">${golfData.greenAccuracy}%</div>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div style="margin: 1rem 0;">
+                    <strong>Score de Stabilité (Core + Équilibre)</strong>
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem;">
+                        <div style="flex: 1;">
+                            <div style="background: #e0e0e0; height: 30px; border-radius: 15px; overflow: hidden;">
+                                <div style="background: linear-gradient(90deg, #1a4d2e, #27ae60); height: 100%; width: ${stabilityPercent}%; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; color: white; font-weight: 700;">
+                                    ${stabilityScore.toFixed(1)}/20
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: ${stabilityScore > 15 ? '#e8f5e9' : '#fff3e0'}; padding: 1rem; border-radius: 6px; margin-top: 1rem;">
+                    ${precisionAnalysis}
+                </div>
+                
+                ${stabilityGap > 2 ? `
+                    <div style="background: #e3f2fd; padding: 1rem; border-radius: 6px; margin-top: 1rem; border-left: 4px solid #2196f3;">
+                        <strong>💡 Amélioration recommandée</strong><br>
+                        <small>Core: ${(scores.core || 0).toFixed(1)}/20 | Équilibre: ${(scores.equilibre || 0).toFixed(1)}/20</small><br>
+                        <div style="margin-top: 0.5rem; font-size: 0.9rem;">
+                            Un gain de ${stabilityGap.toFixed(1)} points en stabilité devrait améliorer votre consistance de 5-10%.
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    // Message si aucune donnée
     if (!golfData.driverSpeed && !golfData.driverDistance && !golfData.fairwayAccuracy && !golfData.greenAccuracy) {
         html += `
             <div style="text-align: center; padding: 2rem; color: #666;">
                 <p>💡 Saisissez vos données golf ci-dessus pour voir les corrélations avec votre physique</p>
             </div>
         `;
-    } else {
-        html += '<p class="help-text">Corrélations affichées avec les données physiques actuelles</p>';
     }
     
     container.innerHTML = html;
 }
+
+// Fonction helper pour les barres de contribution
+function createContributionBar(label, score, contribution, maxContribution) {
+    const percent = (contribution / maxContribution) * 100;
+    
+    return `
+        <div style="margin-bottom: 0.8rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem; font-size: 0.9rem;">
+                <span><strong>${label}</strong> (${score.toFixed(1)}/20)</span>
+                <span style="color: #1a4d2e; font-weight: 600;">+${contribution.toFixed(1)} mph</span>
+            </div>
+            <div style="background: #e0e0e0; height: 20px; border-radius: 10px; overflow: hidden;">
+                <div style="background: linear-gradient(90deg, #1a4d2e, #27ae60); height: 100%; width: ${percent}%; transition: width 0.3s;"></div>
+            </div>
+        </div>
+    `;
+}
+
 
 function generateSmartAlerts() {
     const container = document.getElementById('smartAlerts');
