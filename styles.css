@@ -2053,49 +2053,94 @@ img {
 }
 
 /* Alertes Intelligentes */
+/* Alertes Intelligentes - Améliorées */
 .alert-item {
     padding: 1.5rem;
-    border-radius: 8px;
+    border-radius: 12px;
     margin-bottom: 1rem;
     display: flex;
-    gap: 1rem;
+    gap: 1.2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.alert-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .alert-item.alert-critical {
-    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-    border-left: 4px solid #e74c3c;
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%);
+    border-left: 5px solid #dc2626;
 }
 
 .alert-item.alert-warning {
-    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
-    border-left: 4px solid #f39c12;
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border-left: 5px solid #f59e0b;
 }
 
 .alert-item.alert-info {
-    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-    border-left: 4px solid #2196f3;
+    background: linear-gradient(135deg, #f0f9ff 0%, #dbeafe 100%);
+    border-left: 5px solid #3b82f6;
 }
 
 .alert-icon {
-    font-size: 2rem;
-    min-width: 40px;
+    font-size: 2.5rem;
+    min-width: 50px;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 0.2rem;
 }
 
 .alert-content h5 {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.8rem;
     color: var(--text-dark);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.alert-content p {
+    margin-bottom: 0.8rem;
+    color: #4b5563;
+    line-height: 1.6;
 }
 
 .alert-content .swing-fault {
     background: white;
-    padding: 0.8rem;
-    border-radius: 6px;
-    margin-top: 0.8rem;
-    font-weight: 600;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    border: 2px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.alert-content .swing-fault strong {
+    color: #1a4d2e;
+    font-size: 0.95rem;
+    display: block;
+    margin-bottom: 0.5rem;
 }
 
 .alert-content ul {
     margin: 0.5rem 0 0 1.5rem;
+    color: #374151;
+}
+
+.alert-content ul li {
+    margin-bottom: 0.3rem;
+    line-height: 1.5;
+}
+
+/* Catégories d'alertes */
+.smart-alerts-card h5 {
+    color: #1a4d2e !important;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 0.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* Export */
