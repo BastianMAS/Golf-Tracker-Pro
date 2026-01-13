@@ -5206,64 +5206,166 @@ function generateSmartAlerts() {
     if (!container) return;
     
     const scores = calculateQualityScores();
-    if (!scores) {
-        container.innerHTML = '<p class="help-text">Aucune donnée disponible</p>';
-        return;
-    }
     
     const alerts = [];
     
-    if ((scores.mobilite || 0) < 12) {
+    // ========== ALERTES PHYSIQUES (Scores faibles) ==========
+    if (scores && scores.mobilite !== null && scores.mobilite < 12) {
         alerts.push({
             type: 'critical',
+            category: 'LIMITATION PHYSIQUE',
             title: 'Mobilité Insuffisante',
-            message: `Score mobilité: ${(scores.mobilite || 0).toFixed(1)}/20 (objectif: >14)`,
+            message: `Score mobilité: ${scores.mobilite.toFixed(1)}/20 (objectif: >14)`,
             faults: ['Perte d\'amplitude en backswing', 'Early extension', 'Slide latéral excessif']
         });
     }
     
-    if ((scores.core || 0) < 12) {
+    if (scores && scores.core !== null && scores.core < 12) {
         alerts.push({
             type: 'warning',
+            category: 'LIMITATION PHYSIQUE',
             title: 'Core À Améliorer',
-            message: `Score Core: ${(scores.core || 0).toFixed(1)}/20 (objectif: >14)`,
+            message: `Score Core: ${scores.core.toFixed(1)}/20 (objectif: >14)`,
             faults: ['Early extension', 'Loss of posture', 'Inconsistency']
         });
     }
     
-    if ((scores.force || 0) < 10) {
+    if (scores && scores.force !== null && scores.force < 10) {
         alerts.push({
             type: 'warning',
+            category: 'LIMITATION PHYSIQUE',
             title: 'Force Limitée',
-            message: `Score Force: ${(scores.force || 0).toFixed(1)}/20 (objectif: >14)`,
+            message: `Score Force: ${scores.force.toFixed(1)}/20 (objectif: >14)`,
             faults: ['Perte de vitesse', 'Distance limitée']
         });
     }
     
+    // ========== ALERTES TPI (Tests échoués) ==========
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    const tpiTests = history
+        .filter(h => h.quality === 'tpi')
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    if (tpiTests.length > 0) {
+        const latestTPITest = tpiTests[0];
+        const tpiData = latestTPITest.tests;
+        
+        // Tests unilatéraux
+        const unilateralTests = [
+            'pelvic-tilt',
+            'pelvic-rotation',
+            'torso-rotation',
+            'bridge',
+            'overhead-squat',
+            'toe-touch',
+            '9090',
+            'shoulder',
+            'lat'
+        ];
+        
+        unilateralTests.forEach(testKey => {
+            const val = tpiData[testKey];
+            if (val === 'fail') {
+                const testInfo = TPI_SWING_FAULTS[testKey];
+                if (testInfo) {
+                    alerts.push({
+                        type: 'critical',
+                        category: 'LIMITATION TPI',
+                        title: `${testInfo.name}: FAIL`,
+                        message: testInfo.description,
+                        faults: testInfo.swingFaults
+                    });
+                }
+            }
+        });
+        
+        // Tests bilatéraux
+        const bilateralTests = [
+            'lower-lat',
+            'trunk-rotation',
+            'single-leg',
+            'cervical-rotation',
+            'forearm-rotation',
+            'wrist-hinge',
+            'wrist-flex'
+        ];
+        
+        bilateralTests.forEach(testKey => {
+            const testData = tpiData[testKey];
+            if (testData && typeof testData === 'object') {
+                const leftVal = testData.left;
+                const rightVal = testData.right;
+                
+                // Les deux côtés fail
+                if (leftVal === 'fail' && rightVal === 'fail') {
+                    const testInfo = TPI_SWING_FAULTS[testKey];
+                    if (testInfo) {
+                        alerts.push({
+                            type: 'critical',
+                            category: 'LIMITATION TPI',
+                            title: `${testInfo.name}: FAIL (Bilatéral)`,
+                            message: testInfo.description,
+                            faults: testInfo.swingFaults
+                        });
+                    }
+                }
+                // Asymétrie (un seul côté fail)
+                else if ((leftVal === 'pass' && rightVal === 'fail') || (leftVal === 'fail' && rightVal === 'pass')) {
+                    const testInfo = TPI_SWING_FAULTS[testKey];
+                    const failedSide = leftVal === 'fail' ? 'Gauche' : 'Droite';
+                    if (testInfo) {
+                        alerts.push({
+                            type: 'warning',
+                            category: 'ASYMÉTRIE TPI',
+                            title: `${testInfo.name}: Asymétrie`,
+                            message: `Côté ${failedSide} limité - ${testInfo.description}`,
+                            faults: testInfo.swingFaults
+                        });
+                    }
+                }
+            }
+        });
+    }
+    
+    // ========== AFFICHAGE ==========
     let html = '';
+    
     if (alerts.length === 0) {
-        html = '<div class="alert-item alert-info"><div class="alert-icon">✅</div><div class="alert-content"><h5>Aucune alerte critique</h5><p>Votre profil physique ne présente pas de limitation majeure identifiée.</p></div></div>';
+        html = '<div class="alert-item alert-info"><div class="alert-icon">✅</div><div class="alert-content"><h5>Aucune alerte critique</h5><p>Votre profil physique et TPI ne présentent pas de limitation majeure identifiée.</p></div></div>';
     } else {
-        alerts.forEach(alert => {
-            const iconMap = { critical: '🚨', warning: '⚠️', info: 'ℹ️' };
+        // Grouper par catégorie
+        const categories = ['LIMITATION PHYSIQUE', 'LIMITATION TPI', 'ASYMÉTRIE TPI'];
+        
+        categories.forEach(category => {
+            const categoryAlerts = alerts.filter(a => a.category === category);
             
-            html += `
-                <div class="alert-item alert-${alert.type}">
-                    <div class="alert-icon">${iconMap[alert.type]}</div>
-                    <div class="alert-content">
-                        <h5>${alert.title}</h5>
-                        <p>${alert.message}</p>
-                        ${alert.faults ? `
-                            <div class="swing-fault">
-                                <strong>Défauts de swing potentiels:</strong>
-                                <ul>
-                                    ${alert.faults.map(f => `<li>${f}</li>`).join('')}
-                                </ul>
+            if (categoryAlerts.length > 0) {
+                html += `<div style="margin-bottom: 2rem;"><h5 style="color: #1a4d2e; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 2px solid #e0e0e0; padding-bottom: 0.5rem;">${category}</h5>`;
+                
+                categoryAlerts.forEach(alert => {
+                    const iconMap = { critical: '🚨', warning: '⚠️', info: 'ℹ️' };
+                    
+                    html += `
+                        <div class="alert-item alert-${alert.type}">
+                            <div class="alert-icon">${iconMap[alert.type]}</div>
+                            <div class="alert-content">
+                                <h5>${alert.title}</h5>
+                                <p>${alert.message}</p>
+                                ${alert.faults ? `
+                                    <div class="swing-fault">
+                                        <strong>Défauts de swing potentiels:</strong>
+                                        <ul>
+                                            ${alert.faults.map(f => `<li>${f}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                ` : ''}
                             </div>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            }
         });
     }
     
