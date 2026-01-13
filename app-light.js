@@ -4542,26 +4542,27 @@ function calculateAndDisplayTPIScore() {
     const tpiData = latestTPITest.tests;
     
     console.log('🏌️ Données TPI les plus récentes:', tpiData);
+    console.log('🏌️ Clés disponibles:', Object.keys(tpiData));
     
-    // Liste de tous les tests TPI (16 tests)
-    const testMapping = {
-        'pelvictilt': 'pelvic-tilt',
-        'pelvicrotation': 'pelvic-rotation',
-        'torsorotation': 'torso-rotation',
-        'lowerlat': 'lower-lat',
-        'trunkrotation': 'trunk-rotation',
-        'bridge': 'bridge',
-        'overheadsquat': 'overhead-squat',
-        'toetouch': 'toe-touch',
-        '9090': '9090',
-        'singleleg': 'single-leg',
-        'cervical': 'cervical',
-        'forearm': 'forearm',
-        'wristhinge': 'wrist-hinge',
-        'wristflex': 'wrist-flex',
-        'shoulder': 'shoulder',
-        'lat': 'lat'
-    };
+    // Liste de tous les tests TPI avec leurs clés EXACTES du testsHistory
+    const allTests = [
+        'pelvic-tilt',
+        'pelvic-rotation',
+        'torso-rotation',
+        'lower-lat',
+        'trunk-rotation',
+        'bridge',
+        'overhead-squat',
+        'toe-touch',
+        '9090',
+        'single-leg',
+        'cervical-rotation',
+        'forearm-rotation',
+        'wrist-hinge',
+        'wrist-flex',
+        'shoulder',
+        'lat'
+    ];
     
     let passCount = 0;
     let failCount = 0;
@@ -4569,9 +4570,9 @@ function calculateAndDisplayTPIScore() {
     let totalTests = 0;
     
     // Tests bilatéraux (doivent passer des 2 côtés)
-    const bilateralTests = ['lowerlat', 'trunkrotation', 'singleleg', 'cervical', 'forearm', 'wristhinge', 'wristflex'];
+    const bilateralTests = ['lower-lat', 'trunk-rotation', 'single-leg', 'cervical-rotation', 'forearm-rotation', 'wrist-hinge', 'wrist-flex'];
     
-    Object.keys(testMapping).forEach(testKey => {
+    allTests.forEach(testKey => {
         if (bilateralTests.includes(testKey)) {
             // Test bilatéral
             const testData = tpiData[testKey];
@@ -4579,6 +4580,8 @@ function calculateAndDisplayTPIScore() {
             if (testData && typeof testData === 'object') {
                 const leftVal = testData.left;
                 const rightVal = testData.right;
+                
+                console.log(`  Test ${testKey}: gauche=${leftVal}, droite=${rightVal}`);
                 
                 if (leftVal || rightVal) {
                     totalTests++;
@@ -4602,6 +4605,7 @@ function calculateAndDisplayTPIScore() {
             
             if (val && val !== '') {
                 totalTests++;
+                console.log(`  Test ${testKey}: ${val}`);
                 if (val === 'pass') passCount++;
                 else if (val === 'fail') failCount++;
             }
@@ -4634,7 +4638,7 @@ function calculateAndDisplayTPIScore() {
     document.getElementById('tpiFailCount').textContent = failCount;
     document.getElementById('tpiAsymCount').textContent = asymmetryCount;
     
-    console.log(`📊 Score TPI: ${passCount}/16 (${percentage}%) - ${failCount} fails, ${asymmetryCount} asymétries`);
+    console.log(`📊 Score TPI FINAL: ${passCount}/16 (${percentage}%) - ${totalTests} tests faits, ${failCount} fails, ${asymmetryCount} asymétries`);
 }
 
 function drawGFIGauge(score, color) {
