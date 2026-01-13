@@ -4306,6 +4306,106 @@ const GFI_WEIGHTS = {
     equilibre: 0.05
 };
 
+// Matrice TPI : Lien entre tests échoués et défauts de swing
+const TPI_SWING_FAULTS = {
+    'pelvic-tilt': {
+        name: 'Pelvic Tilt',
+        category: 'Mobilité Bassin',
+        swingFaults: ['Sway', 'Slide', 'Early Extension', 'Loss of Posture'],
+        description: 'Incapacité à basculer le bassin limite la rotation et force des compensations'
+    },
+    'pelvic-rotation': {
+        name: 'Pelvic Rotation',
+        category: 'Mobilité Bassin',
+        swingFaults: ['Loss of Posture', 'Reverse Spine Angle', 'Hanging Back'],
+        description: 'Rotation pelvienne limitée crée des compensations au niveau du tronc'
+    },
+    'torso-rotation': {
+        name: 'Torso Rotation',
+        category: 'Mobilité Tronc',
+        swingFaults: ['Over-the-top', 'Chicken Wing', 'Casting', 'Limited Turn'],
+        description: 'Rotation thoracique insuffisante limite l\'amplitude et force les bras'
+    },
+    'lower-lat': {
+        name: 'Lower Quarter Lat Test',
+        category: 'Mobilité Latérale',
+        swingFaults: ['Sway', 'Slide', 'Reverse Spine Angle'],
+        description: 'Mobilité latérale limitée empêche un transfert de poids optimal'
+    },
+    'trunk-rotation': {
+        name: 'Seated Trunk Rotation',
+        category: 'Mobilité Tronc',
+        swingFaults: ['Over-the-top', 'Limited Turn', 'Loss of Posture'],
+        description: 'Rotation tronc isolée limitée indique des compensations'
+    },
+    'bridge': {
+        name: 'Bridge w/ Leg Extension',
+        category: 'Stabilité Core',
+        swingFaults: ['Early Extension', 'Loss of Posture', 'Sway'],
+        description: 'Faiblesse chaîne postérieure et stabilité lombaire'
+    },
+    'overhead-squat': {
+        name: 'Overhead Deep Squat',
+        category: 'Mobilité Globale',
+        swingFaults: ['Sway', 'Slide', 'Early Extension', 'Loss of Posture'],
+        description: 'Test global de mobilité cheville/hanche/thoracique et stabilité'
+    },
+    'toe-touch': {
+        name: 'Toe Touch',
+        category: 'Mobilité Postérieure',
+        swingFaults: ['Early Extension', 'Loss of Posture', 'Chicken Wing'],
+        description: 'Chaîne postérieure rigide force redressement prématuré'
+    },
+    '9090': {
+        name: '90/90',
+        category: 'Mobilité Hanche',
+        swingFaults: ['Limited Turn', 'Flat Shoulder Plane', 'Sway'],
+        description: 'Rotation interne hanche limitée réduit l\'amplitude du backswing'
+    },
+    'single-leg': {
+        name: 'Single Leg Balance',
+        category: 'Équilibre',
+        swingFaults: ['Sway', 'Slide', 'Loss of Balance', 'Hanging Back'],
+        description: 'Instabilité mono-podale impacte le transfert de poids'
+    },
+    'cervical': {
+        name: 'Cervical Rotation',
+        category: 'Mobilité Cervicale',
+        swingFaults: ['Limited Turn', 'Chicken Wing', 'Loss of Posture'],
+        description: 'Rotation cervicale limitée perturbe la séquence et le regard'
+    },
+    'forearm': {
+        name: 'Forearm Rotation',
+        category: 'Mobilité Avant-bras',
+        swingFaults: ['Chicken Wing', 'Cupped Wrist', 'Casting'],
+        description: 'Rotation avant-bras limitée impacte la release et la face du club'
+    },
+    'wrist-hinge': {
+        name: 'Wrist Hinge',
+        category: 'Mobilité Poignet',
+        swingFaults: ['Casting', 'Early Release', 'Loss of Lag'],
+        description: 'Hinge poignet limité réduit l\'angle d\'attaque et la puissance'
+    },
+    'wrist-flex': {
+        name: 'Wrist Flexion/Extension',
+        category: 'Mobilité Poignet',
+        swingFaults: ['Cupped Wrist', 'Bowed Wrist', 'Casting'],
+        description: 'Flexion/extension limitée perturbe le contrôle de la face'
+    },
+    'shoulder': {
+        name: 'Shoulder Mobility',
+        category: 'Mobilité Épaule',
+        swingFaults: ['Chicken Wing', 'Flying Elbow', 'Limited Turn'],
+        description: 'Mobilité épaule insuffisante limite l\'amplitude et crée compensations'
+    },
+    'lat': {
+        name: 'Lat Test',
+        category: 'Mobilité Latissimus',
+        swingFaults: ['Chicken Wing', 'Arms Disconnect', 'Over-the-top'],
+        description: 'Lats rigides déconnectent les bras du corps'
+    }
+};
+
 // Normes PRO dynamiques selon le sexe
 function getProNorms(gender) {
     if (gender === 'F') {
@@ -4358,6 +4458,9 @@ function updateAnalysePro() {
     // Calculer et afficher le GFI
     calculateAndDisplayGFI();
     
+    // Calculer et afficher le Score TPI
+    calculateAndDisplayTPIScore();
+    
     // Afficher le radar comparatif
     displayProComparison();
     
@@ -4408,6 +4511,105 @@ function calculateAndDisplayGFI() {
     document.getElementById('gfiLevel').style.color = color;
     
     drawGFIGauge(gfiScore, color);
+}
+
+function calculateAndDisplayTPIScore() {
+    // Récupérer les données TPI depuis localStorage
+    const tpiData = JSON.parse(localStorage.getItem('tpiData') || '{}');
+    
+    console.log('🏌️ Données TPI:', tpiData);
+    
+    // Liste de tous les tests TPI (16 tests)
+    const allTests = [
+        'pelvic-tilt',
+        'pelvic-rotation', 
+        'torso-rotation',
+        'lower-lat',
+        'trunk-rotation',
+        'bridge',
+        'overhead-squat',
+        'toe-touch',
+        '9090',
+        'single-leg',
+        'cervical',
+        'forearm',
+        'wrist-hinge',
+        'wrist-flex',
+        'shoulder',
+        'lat'
+    ];
+    
+    let passCount = 0;
+    let failCount = 0;
+    let asymmetryCount = 0;
+    let totalTests = 0;
+    
+    // Tests bilatéraux (doivent passer des 2 côtés)
+    const bilateralTests = ['lower-lat', 'trunk-rotation', 'single-leg', 'cervical', 'forearm', 'wrist-hinge', 'wrist-flex'];
+    
+    allTests.forEach(testKey => {
+        if (bilateralTests.includes(testKey)) {
+            // Test bilatéral
+            const leftKey = `tpi-${testKey}-left`;
+            const rightKey = `tpi-${testKey}-right`;
+            const leftVal = tpiData[leftKey];
+            const rightVal = tpiData[rightKey];
+            
+            if (leftVal || rightVal) {
+                totalTests++;
+                
+                // Pass seulement si les 2 côtés passent
+                if (leftVal === 'pass' && rightVal === 'pass') {
+                    passCount++;
+                } else if (leftVal === 'fail' || rightVal === 'fail') {
+                    failCount++;
+                    
+                    // Détecter asymétrie (un seul côté fail)
+                    if ((leftVal === 'pass' && rightVal === 'fail') || (leftVal === 'fail' && rightVal === 'pass')) {
+                        asymmetryCount++;
+                    }
+                }
+            }
+        } else {
+            // Test unilatéral
+            const key = `tpi-${testKey}`;
+            const val = tpiData[key];
+            
+            if (val) {
+                totalTests++;
+                if (val === 'pass') passCount++;
+                else if (val === 'fail') failCount++;
+            }
+        }
+    });
+    
+    // Calculer le pourcentage (sur 16 tests max)
+    const percentage = totalTests > 0 ? Math.round((passCount / 16) * 100) : 0;
+    
+    // Déterminer le niveau
+    let level = '', color = '';
+    if (percentage >= 90) { level = '✅ Excellent'; color = '#27ae60'; }
+    else if (percentage >= 75) { level = '👍 Bon'; color = '#2ecc71'; }
+    else if (percentage >= 60) { level = '⚠️ Moyen'; color = '#f39c12'; }
+    else if (percentage > 0) { level = '🚨 Critique'; color = '#e74c3c'; }
+    else { level = 'Aucune donnée'; color = '#95a5a6'; }
+    
+    // Afficher les résultats
+    document.getElementById('tpiPercentage').textContent = totalTests > 0 ? percentage + '%' : '--';
+    document.getElementById('tpiPercentage').style.color = color;
+    document.getElementById('tpiFraction').textContent = `${passCount} / 16 tests`;
+    document.getElementById('tpiLevel').textContent = level;
+    document.getElementById('tpiLevel').style.color = color;
+    
+    document.getElementById('tpiProgressBar').style.width = percentage + '%';
+    document.getElementById('tpiProgressText').textContent = percentage + '%';
+    document.getElementById('tpiProgressText').style.color = color;
+    
+    document.getElementById('tpiPassCount').textContent = passCount;
+    document.getElementById('tpiFailCount').textContent = failCount;
+    document.getElementById('tpiAsymCount').textContent = asymmetryCount;
+    
+    console.log(`📊 Score TPI: ${passCount}/16 (${percentage}%) - ${failCount} fails, ${asymmetryCount} asymétries`);
 }
 
 function drawGFIGauge(score, color) {

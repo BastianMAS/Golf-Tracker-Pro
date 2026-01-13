@@ -1054,6 +1054,58 @@
                         </div>
                     </div>
 
+                    <!-- Score TPI -->
+                    <div class="tpi-score-card">
+                        <h4>🏌️ Score TPI (Titleist Performance Institute)</h4>
+                        <p class="help-text">Évaluation des limitations physiques spécifiques au golf</p>
+                        
+                        <div class="tpi-score-container">
+                            <div class="tpi-gauge">
+                                <div class="tpi-score-display">
+                                    <div class="tpi-percentage" id="tpiPercentage">--</div>
+                                    <div class="tpi-fraction" id="tpiFraction">-- / 16 tests</div>
+                                </div>
+                                <div class="tpi-level" id="tpiLevel">Aucune donnée</div>
+                            </div>
+                            
+                            <div class="tpi-progress">
+                                <div style="margin-bottom: 1rem;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                        <span style="font-weight: 600;">Progression</span>
+                                        <span id="tpiProgressText" style="font-weight: 600; color: #1a4d2e;">0%</span>
+                                    </div>
+                                    <div style="background: #e0e0e0; height: 30px; border-radius: 15px; overflow: hidden;">
+                                        <div id="tpiProgressBar" style="background: linear-gradient(90deg, #1a4d2e, #27ae60); height: 100%; width: 0%; transition: width 0.5s;"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="tpi-breakdown">
+                                    <div class="tpi-stat">
+                                        <span class="tpi-stat-icon" style="color: #27ae60;">✅</span>
+                                        <div>
+                                            <div class="tpi-stat-value" id="tpiPassCount">0</div>
+                                            <div class="tpi-stat-label">Tests Pass</div>
+                                        </div>
+                                    </div>
+                                    <div class="tpi-stat">
+                                        <span class="tpi-stat-icon" style="color: #e74c3c;">❌</span>
+                                        <div>
+                                            <div class="tpi-stat-value" id="tpiFailCount">0</div>
+                                            <div class="tpi-stat-label">Tests Fail</div>
+                                        </div>
+                                    </div>
+                                    <div class="tpi-stat">
+                                        <span class="tpi-stat-icon" style="color: #f39c12;">⚠️</span>
+                                        <div>
+                                            <div class="tpi-stat-value" id="tpiAsymCount">0</div>
+                                            <div class="tpi-stat-label">Asymétries</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Comparaison avec Normes Pro -->
                     <div class="pro-comparison-card">
                         <h4>📊 Profil Athlétique vs Normes Pro</h4>
@@ -1061,9 +1113,9 @@
                             <canvas id="proRadarChart" width="500" height="500"></canvas>
                         </div>
                         <div class="comparison-legend">
-                            <span><span class="legend-color" style="background: rgba(26, 77, 46, 0.7);"></span> Votre Profil</span>
-                            <span><span class="legend-color" style="background: rgba(231, 76, 60, 0.5);"></span> Norme Pro</span>
-                            <span style="color: #f39c12; font-weight: 600;">? Données insuffisantes (minimum 50% des tests requis)</span>
+                            <span><span class="legend-color" style="background: rgba(33, 150, 243, 1);"></span> Votre Profil</span>
+                            <span><span class="legend-color" style="background: rgba(255, 87, 51, 0.9);"></span> Norme Pro</span>
+                            <span style="color: #f39c12; font-weight: 600;">? = Données insuffisantes (minimum 50% des tests requis)</span>
                         </div>
                     </div>
 
