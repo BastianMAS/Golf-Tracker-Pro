@@ -4514,30 +4514,54 @@ function calculateAndDisplayGFI() {
 }
 
 function calculateAndDisplayTPIScore() {
-    // Récupérer les données TPI depuis localStorage
-    const tpiData = JSON.parse(localStorage.getItem('tpiData') || '{}');
+    // Récupérer les données TPI depuis testsHistory
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
     
-    console.log('🏌️ Données TPI:', tpiData);
+    // Filtrer pour récupérer le dernier test TPI
+    const tpiTests = history
+        .filter(h => h.quality === 'tpi')
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    if (tpiTests.length === 0) {
+        // Aucun test TPI enregistré
+        document.getElementById('tpiPercentage').textContent = '--';
+        document.getElementById('tpiFraction').textContent = '0 / 16 tests';
+        document.getElementById('tpiLevel').textContent = 'Aucun test TPI';
+        document.getElementById('tpiLevel').style.color = '#95a5a6';
+        document.getElementById('tpiProgressBar').style.width = '0%';
+        document.getElementById('tpiProgressText').textContent = '0%';
+        document.getElementById('tpiPassCount').textContent = '0';
+        document.getElementById('tpiFailCount').textContent = '0';
+        document.getElementById('tpiAsymCount').textContent = '0';
+        console.log('🏌️ Aucun test TPI enregistré');
+        return;
+    }
+    
+    // Prendre le test TPI le plus récent
+    const latestTPITest = tpiTests[0];
+    const tpiData = latestTPITest.tests;
+    
+    console.log('🏌️ Données TPI les plus récentes:', tpiData);
     
     // Liste de tous les tests TPI (16 tests)
-    const allTests = [
-        'pelvic-tilt',
-        'pelvic-rotation', 
-        'torso-rotation',
-        'lower-lat',
-        'trunk-rotation',
-        'bridge',
-        'overhead-squat',
-        'toe-touch',
-        '9090',
-        'single-leg',
-        'cervical',
-        'forearm',
-        'wrist-hinge',
-        'wrist-flex',
-        'shoulder',
-        'lat'
-    ];
+    const testMapping = {
+        'pelvictilt': 'pelvic-tilt',
+        'pelvicrotation': 'pelvic-rotation',
+        'torsorotation': 'torso-rotation',
+        'lowerlat': 'lower-lat',
+        'trunkrotation': 'trunk-rotation',
+        'bridge': 'bridge',
+        'overheadsquat': 'overhead-squat',
+        'toetouch': 'toe-touch',
+        '9090': '9090',
+        'singleleg': 'single-leg',
+        'cervical': 'cervical',
+        'forearm': 'forearm',
+        'wristhinge': 'wrist-hinge',
+        'wristflex': 'wrist-flex',
+        'shoulder': 'shoulder',
+        'lat': 'lat'
+    };
     
     let passCount = 0;
     let failCount = 0;
@@ -4545,37 +4569,38 @@ function calculateAndDisplayTPIScore() {
     let totalTests = 0;
     
     // Tests bilatéraux (doivent passer des 2 côtés)
-    const bilateralTests = ['lower-lat', 'trunk-rotation', 'single-leg', 'cervical', 'forearm', 'wrist-hinge', 'wrist-flex'];
+    const bilateralTests = ['lowerlat', 'trunkrotation', 'singleleg', 'cervical', 'forearm', 'wristhinge', 'wristflex'];
     
-    allTests.forEach(testKey => {
+    Object.keys(testMapping).forEach(testKey => {
         if (bilateralTests.includes(testKey)) {
             // Test bilatéral
-            const leftKey = `tpi-${testKey}-left`;
-            const rightKey = `tpi-${testKey}-right`;
-            const leftVal = tpiData[leftKey];
-            const rightVal = tpiData[rightKey];
+            const testData = tpiData[testKey];
             
-            if (leftVal || rightVal) {
-                totalTests++;
+            if (testData && typeof testData === 'object') {
+                const leftVal = testData.left;
+                const rightVal = testData.right;
                 
-                // Pass seulement si les 2 côtés passent
-                if (leftVal === 'pass' && rightVal === 'pass') {
-                    passCount++;
-                } else if (leftVal === 'fail' || rightVal === 'fail') {
-                    failCount++;
+                if (leftVal || rightVal) {
+                    totalTests++;
                     
-                    // Détecter asymétrie (un seul côté fail)
-                    if ((leftVal === 'pass' && rightVal === 'fail') || (leftVal === 'fail' && rightVal === 'pass')) {
-                        asymmetryCount++;
+                    // Pass seulement si les 2 côtés passent
+                    if (leftVal === 'pass' && rightVal === 'pass') {
+                        passCount++;
+                    } else if (leftVal === 'fail' || rightVal === 'fail') {
+                        failCount++;
+                        
+                        // Détecter asymétrie (un seul côté fail)
+                        if ((leftVal === 'pass' && rightVal === 'fail') || (leftVal === 'fail' && rightVal === 'pass')) {
+                            asymmetryCount++;
+                        }
                     }
                 }
             }
         } else {
             // Test unilatéral
-            const key = `tpi-${testKey}`;
-            const val = tpiData[key];
+            const val = tpiData[testKey];
             
-            if (val) {
+            if (val && val !== '') {
                 totalTests++;
                 if (val === 'pass') passCount++;
                 else if (val === 'fail') failCount++;
