@@ -4453,20 +4453,31 @@ function displayProComparison() {
     const scores = calculateQualityScores();
     if (!scores) return;
     
+    // DEBUG: Afficher les scores dans la console
+    console.log('📊 Scores calculés pour le radar:', scores);
+    
     // Récupérer les normes selon le sexe du joueur
     const gender = currentPlayer ? currentPlayer.gender : 'M';
     const proNorms = getProNorms(gender);
     
     const categories = ['Force', 'Explosivité', 'Mobilité', 'Core', 'Endurance', 'Vitesse', 'Équilibre'];
+    
+    // IMPORTANT: Garder les null pour que les "?" s'affichent !
     const playerData = [
-        scores.force || 0,
-        scores.explosivite || 0,
-        scores.mobilite || 0,
-        scores.core || 0,
-        scores.endurance || 0,
-        scores.vitesse || 0,
-        scores.equilibre || 0
+        scores.force !== null ? scores.force : null,
+        scores.explosivite !== null ? scores.explosivite : null,
+        scores.mobilite !== null ? scores.mobilite : null,
+        scores.core !== null ? scores.core : null,
+        scores.endurance !== null ? scores.endurance : null,
+        scores.vitesse !== null ? scores.vitesse : null,
+        scores.equilibre !== null ? scores.equilibre : null
     ];
+    
+    // DEBUG: Afficher playerData
+    console.log('📊 playerData pour le radar:', playerData);
+    console.log('   - Core:', scores.core, '← devrait être null si < 3 tests');
+    console.log('   - Endurance:', scores.endurance, '← devrait être null si < 2 tests');
+    
     const proData = [
         proNorms.force,
         proNorms.explosivite,
