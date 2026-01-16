@@ -1061,6 +1061,7 @@
                         
                         <div class="tpi-score-container">
                             <div class="tpi-gauge">
+                                <canvas id="tpiDonutChart" width="220" height="220"></canvas>
                                 <div class="tpi-score-display">
                                     <div class="tpi-percentage" id="tpiPercentage">--</div>
                                     <div class="tpi-fraction" id="tpiFraction">-- / 16 tests</div>
@@ -1103,6 +1104,12 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <!-- Résumé par catégorie -->
+                        <div class="tpi-category-summary">
+                            <h5>📋 Résumé par Catégorie</h5>
+                            <div id="tpiCategorySummary" class="category-grid"></div>
                         </div>
                     </div>
 

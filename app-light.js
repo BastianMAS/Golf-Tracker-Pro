@@ -4638,7 +4638,164 @@ function calculateAndDisplayTPIScore() {
     document.getElementById('tpiFailCount').textContent = failCount;
     document.getElementById('tpiAsymCount').textContent = asymmetryCount;
     
+    // Dessiner le graphique circulaire
+    drawTPIDonutChart(passCount, failCount, 16 - totalTests, color);
+    
     console.log(`📊 Score TPI FINAL: ${passCount}/16 (${percentage}%) - ${totalTests} tests faits, ${failCount} fails, ${asymmetryCount} asymétries`);
+    
+    // Afficher le résumé par catégorie
+    displayTPICategorySummary(tpiData);
+}
+
+function drawTPIDonutChart(passCount, failCount, notDone, color) {
+    const canvas = document.getElementById('tpiDonutChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = 85;
+    const innerRadius = 60;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const total = 16;
+    const angles = [
+        { value: passCount, color: '#27ae60', label: 'Pass' },
+        { value: failCount, color: '#e74c3c', label: 'Fail' },
+        { value: notDone, color: '#e0e0e0', label: 'Non fait' }
+    ];
+    
+    let currentAngle = -Math.PI / 2; // Commence en haut
+    
+    angles.forEach(segment => {
+        if (segment.value > 0) {
+            const sliceAngle = (segment.value / total) * 2 * Math.PI;
+            
+            // Arc extérieur
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+            ctx.arc(centerX, centerY, innerRadius, currentAngle + sliceAngle, currentAngle, true);
+            ctx.closePath();
+            ctx.fillStyle = segment.color;
+            ctx.fill();
+            
+            // Bordure
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            currentAngle += sliceAngle;
+        }
+    });
+    
+    // Cercle central blanc
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, innerRadius, 0, 2 * Math.PI);
+    ctx.fillStyle = 'white';
+    ctx.fill();
+}
+
+function displayTPICategorySummary(tpiData) {
+    const container = document.getElementById('tpiCategorySummary');
+    if (!container) return;
+    
+    // Définir les catégories TPI avec leurs tests
+    const categories = [
+        {
+            name: 'Mobilité Bassin',
+            icon: '🦴',
+            tests: ['pelvic-tilt', 'pelvic-rotation']
+        },
+        {
+            name: 'Mobilité Tronc',
+            icon: '🔄',
+            tests: ['torso-rotation', 'trunk-rotation']
+        },
+        {
+            name: 'Core & Stabilité',
+            icon: '💪',
+            tests: ['bridge']
+        },
+        {
+            name: 'Mobilité Globale',
+            icon: '🧘',
+            tests: ['overhead-squat', 'toe-touch', '9090']
+        },
+        {
+            name: 'Équilibre',
+            icon: '⚖️',
+            tests: ['single-leg']
+        },
+        {
+            name: 'Mobilité Cervicale',
+            icon: '👤',
+            tests: ['cervical-rotation']
+        },
+        {
+            name: 'Mobilité Bras/Mains',
+            icon: '🤲',
+            tests: ['forearm-rotation', 'wrist-hinge', 'wrist-flex']
+        },
+        {
+            name: 'Mobilité Épaule',
+            icon: '💪',
+            tests: ['shoulder', 'lat', 'lower-lat']
+        }
+    ];
+    
+    const bilateralTests = ['trunk-rotation', 'single-leg', 'cervical-rotation', 'forearm-rotation', 'wrist-hinge', 'wrist-flex', 'lower-lat'];
+    
+    let html = '';
+    
+    categories.forEach(category => {
+        let passCount = 0;
+        let totalCount = category.tests.length;
+        
+        category.tests.forEach(testKey => {
+            if (bilateralTests.includes(testKey)) {
+                const testData = tpiData[testKey];
+                if (testData && typeof testData === 'object') {
+                    if (testData.left === 'pass' && testData.right === 'pass') {
+                        passCount++;
+                    }
+                }
+            } else {
+                if (tpiData[testKey] === 'pass') {
+                    passCount++;
+                }
+            }
+        });
+        
+        const percentage = totalCount > 0 ? Math.round((passCount / totalCount) * 100) : 0;
+        
+        // Déterminer la classe CSS selon le pourcentage
+        let className = '';
+        if (percentage >= 90) className = 'excellent';
+        else if (percentage >= 70) className = 'good';
+        else if (percentage >= 50) className = 'average';
+        else className = 'poor';
+        
+        // Icône de statut
+        let statusIcon = '';
+        if (percentage >= 90) statusIcon = '✅';
+        else if (percentage >= 70) statusIcon = '👍';
+        else if (percentage >= 50) statusIcon = '⚠️';
+        else statusIcon = '🚨';
+        
+        html += `
+            <div class="category-item ${className}">
+                <div class="category-header">
+                    <span class="category-name">${category.icon} ${category.name}</span>
+                    <span class="category-icon">${statusIcon}</span>
+                </div>
+                <div class="category-score">${passCount} / ${totalCount}</div>
+                <div class="category-tests">${percentage}% réussi</div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
 }
 
 function drawGFIGauge(score, color) {
