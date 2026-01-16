@@ -5484,6 +5484,118 @@ function generateSmartAlerts() {
         });
     }
     
+    // ========== ALERTES ASYMÉTRIES CRITIQUES (Tests bilatéraux numériques) ==========
+    // Récupérer tous les tests avec asymétries
+    const allTests = history.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Définir les tests bilatéraux critiques avec seuils
+    const criticalAsymmetryTests = {
+        'squat': { name: 'Squat', category: 'Jambes', risk: 'genou/hanche', action: 'Renforcer jambe faible (quadriceps, fessiers)' },
+        'deadlift': { name: 'Deadlift', category: 'Jambes', risk: 'dos/bassin', action: 'Renforcer chaîne postérieure côté faible' },
+        'singleleg': { name: 'Single Leg Balance', category: 'Équilibre', risk: 'cheville/genou', action: 'Renforcer stabilité mono-podale côté faible' },
+        'cmjunilateral': { name: 'CMJ Unilateral', category: 'Explosivité', risk: 'déséquilibre puissance', action: 'Entraînement pliométrique unilatéral côté faible' },
+        'benchpress': { name: 'Bench Press', category: 'Bras', risk: 'épaule/coude', action: 'Renforcer côté faible (pectoraux, triceps)' },
+        'pullup': { name: 'Pull-up', category: 'Bras', risk: 'épaule/dos', action: 'Renforcer dorsaux côté faible' }
+    };
+    
+    Object.keys(criticalAsymmetryTests).forEach(testKey => {
+        const testConfig = criticalAsymmetryTests[testKey];
+        const recentTests = allTests.filter(t => t.quality === testKey.replace('singleleg', 'equilibre').replace('cmjunilateral', 'explosivite'));
+        
+        if (recentTests.length > 0) {
+            const latestTest = recentTests[0];
+            const testData = latestTest.tests;
+            
+            // Chercher les tests bilatéraux
+            Object.keys(testData).forEach(key => {
+                const data = testData[key];
+                if (data && typeof data === 'object' && data.left !== undefined && data.right !== undefined) {
+                    const left = parseFloat(data.left);
+                    const right = parseFloat(data.right);
+                    
+                    if (!isNaN(left) && !isNaN(right) && left > 0 && right > 0) {
+                        const asymmetry = Math.abs(((left - right) / Math.max(left, right)) * 100);
+                        const weakerSide = left < right ? 'Gauche' : 'Droite';
+                        
+                        // CRITIQUE : >15%
+                        if (asymmetry > 15) {
+                            alerts.push({
+                                type: 'critical',
+                                category: 'ASYMÉTRIE CRITIQUE',
+                                title: `${testConfig.name}: Asymétrie ${asymmetry.toFixed(1)}% (${weakerSide})`,
+                                message: `Risque blessure ${testConfig.risk}. Asymétrie excessive détectée.`,
+                                action: testConfig.action,
+                                faults: [`Déséquilibre ${testConfig.category} G/D`, `Compensation motrice`, `Surcharge côté fort`]
+                            });
+                        }
+                        // SURVEILLANCE : 10-15%
+                        else if (asymmetry >= 10) {
+                            alerts.push({
+                                type: 'warning',
+                                category: 'ASYMÉTRIE SURVEILLANCE',
+                                title: `${testConfig.name}: Asymétrie ${asymmetry.toFixed(1)}% (${weakerSide})`,
+                                message: `À surveiller. Renforcement côté faible recommandé.`,
+                                action: testConfig.action,
+                                faults: [`Déséquilibre ${testConfig.category} G/D en développement`]
+                            });
+                        }
+                    }
+                }
+            });
+        }
+    });
+    
+    // ========== ALERTES COMBINAISONS DE FAIBLESSES ==========
+    if (scores) {
+        // Combinaison 1: Mobilité thoracique faible + Core faible
+        if ((scores.mobilite !== null && scores.mobilite < 12) && (scores.core !== null && scores.core < 12)) {
+            alerts.push({
+                type: 'critical',
+                category: 'COMBINAISON FAIBLESSE',
+                title: 'Mobilité Thoracique + Core Faibles',
+                message: 'Combinaison critique pour le golf. Limitation majeure du swing.',
+                action: 'Mobilité thoracique ET renforcement Core',
+                faults: ['Early Extension', 'Loss of Posture', 'Limited Turn', 'Compensation lombaire']
+            });
+        }
+        
+        // Combinaison 2: Core faible + Mobilité hanche limitée
+        if ((scores.core !== null && scores.core < 12) && (scores.mobilite !== null && scores.mobilite < 12)) {
+            alerts.push({
+                type: 'warning',
+                category: 'COMBINAISON FAIBLESSE',
+                title: 'Core Faible + Mobilité Hanche Limitée',
+                message: 'Risque de compensation et perte de posture.',
+                action: 'Renforcer Core ET mobilité hanches',
+                faults: ['Sway', 'Slide', 'Early Extension']
+            });
+        }
+        
+        // Combinaison 3: Explosivité basse + Force OK = Problème transfert
+        if ((scores.explosivite !== null && scores.explosivite < 12) && (scores.force !== null && scores.force >= 14)) {
+            alerts.push({
+                type: 'warning',
+                category: 'COMBINAISON FAIBLESSE',
+                title: 'Explosivité Basse malgré Force Correcte',
+                message: 'Problème de transfert de force. La force ne se traduit pas en puissance.',
+                action: 'Entraînement pliométrique et vitesse de mouvement',
+                faults: ['Perte de vitesse de swing', 'Manque de lag', 'Séquence inefficace']
+            });
+        }
+        
+        // Combinaison 4: Force faible + Mobilité OK = Priorité force
+        if ((scores.force !== null && scores.force < 10) && (scores.mobilite !== null && scores.mobilite >= 14)) {
+            alerts.push({
+                type: 'warning',
+                category: 'COMBINAISON FAIBLESSE',
+                title: 'Force Insuffisante (Mobilité OK)',
+                message: 'Bonne mobilité mais manque de force pour la stabiliser.',
+                action: 'Renforcer en amplitude complète',
+                faults: ['Instabilité', 'Manque de distance', 'Fatigue rapide']
+            });
+        }
+    }
+    
     // ========== AFFICHAGE ==========
     let html = '';
     
@@ -5491,7 +5603,7 @@ function generateSmartAlerts() {
         html = '<div class="alert-item alert-info"><div class="alert-icon">✅</div><div class="alert-content"><h5>Aucune alerte critique</h5><p>Votre profil physique et TPI ne présentent pas de limitation majeure identifiée.</p></div></div>';
     } else {
         // Grouper par catégorie
-        const categories = ['LIMITATION PHYSIQUE', 'LIMITATION TPI', 'ASYMÉTRIE TPI'];
+        const categories = ['ASYMÉTRIE CRITIQUE', 'ASYMÉTRIE SURVEILLANCE', 'COMBINAISON FAIBLESSE', 'LIMITATION PHYSIQUE', 'LIMITATION TPI', 'ASYMÉTRIE TPI'];
         
         categories.forEach(category => {
             const categoryAlerts = alerts.filter(a => a.category === category);
@@ -5508,9 +5620,14 @@ function generateSmartAlerts() {
                             <div class="alert-content">
                                 <h5>${alert.title}</h5>
                                 <p>${alert.message}</p>
+                                ${alert.action ? `
+                                    <div class="alert-action">
+                                        <strong>💪 Action recommandée:</strong> ${alert.action}
+                                    </div>
+                                ` : ''}
                                 ${alert.faults ? `
                                     <div class="swing-fault">
-                                        <strong>Défauts de swing potentiels:</strong>
+                                        <strong>Impacts potentiels:</strong>
                                         <ul>
                                             ${alert.faults.map(f => `<li>${f}</li>`).join('')}
                                         </ul>

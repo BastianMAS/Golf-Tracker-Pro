@@ -2201,6 +2201,20 @@ img {
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
+.alert-content .alert-action {
+    background: #f0fdf4;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    border-left: 4px solid #22c55e;
+    color: #166534;
+    font-weight: 600;
+}
+
+.alert-content .alert-action strong {
+    color: #15803d;
+}
+
 .alert-content .swing-fault strong {
     color: #1a4d2e;
     font-size: 0.95rem;
