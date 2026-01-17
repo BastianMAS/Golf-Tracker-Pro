@@ -5373,6 +5373,7 @@ function generateSmartAlerts() {
         alerts.push({
             type: 'critical',
             category: 'LIMITATION PHYSIQUE',
+            priority: scores.mobilite < 10 ? 1 : 2, // URGENT si <10, IMPORTANT si 10-12
             title: 'Mobilité Insuffisante',
             message: `Score mobilité: ${scores.mobilite.toFixed(1)}/20 (objectif: >14)`,
             faults: ['Perte d\'amplitude en backswing', 'Early extension', 'Slide latéral excessif']
@@ -5383,6 +5384,7 @@ function generateSmartAlerts() {
         alerts.push({
             type: 'warning',
             category: 'LIMITATION PHYSIQUE',
+            priority: scores.core < 10 ? 1 : 2,
             title: 'Core À Améliorer',
             message: `Score Core: ${scores.core.toFixed(1)}/20 (objectif: >14)`,
             faults: ['Early extension', 'Loss of posture', 'Inconsistency']
@@ -5393,6 +5395,7 @@ function generateSmartAlerts() {
         alerts.push({
             type: 'warning',
             category: 'LIMITATION PHYSIQUE',
+            priority: 2, // IMPORTANT
             title: 'Force Limitée',
             message: `Score Force: ${scores.force.toFixed(1)}/20 (objectif: >14)`,
             faults: ['Perte de vitesse', 'Distance limitée']
@@ -5427,9 +5430,14 @@ function generateSmartAlerts() {
             if (val === 'fail') {
                 const testInfo = TPI_SWING_FAULTS[testKey];
                 if (testInfo) {
+                    // Tests critiques pour le golf (bassin, tronc, overhead squat, toe touch)
+                    const criticalTests = ['pelvic-tilt', 'pelvic-rotation', 'torso-rotation', 'overhead-squat', 'toe-touch'];
+                    const isCritical = criticalTests.includes(testKey);
+                    
                     alerts.push({
                         type: 'critical',
                         category: 'LIMITATION TPI',
+                        priority: isCritical ? 1 : 2, // URGENT si critique, IMPORTANT sinon
                         title: `${testInfo.name}: FAIL`,
                         message: testInfo.description,
                         faults: testInfo.swingFaults
@@ -5462,6 +5470,7 @@ function generateSmartAlerts() {
                         alerts.push({
                             type: 'critical',
                             category: 'LIMITATION TPI',
+                            priority: 1, // URGENT si bilatéral
                             title: `${testInfo.name}: FAIL (Bilatéral)`,
                             message: testInfo.description,
                             faults: testInfo.swingFaults
@@ -5476,6 +5485,7 @@ function generateSmartAlerts() {
                         alerts.push({
                             type: 'warning',
                             category: 'ASYMÉTRIE TPI',
+                            priority: 3, // À SURVEILLER
                             title: `${testInfo.name}: Asymétrie`,
                             message: `Côté ${failedSide} limité - ${testInfo.description}`,
                             faults: testInfo.swingFaults
@@ -5524,6 +5534,7 @@ function generateSmartAlerts() {
                             alerts.push({
                                 type: 'critical',
                                 category: 'ASYMÉTRIE CRITIQUE',
+                                priority: 1, // URGENT
                                 title: `${testConfig.name}: Asymétrie ${asymmetry.toFixed(1)}% (${weakerSide})`,
                                 message: `Risque blessure ${testConfig.risk}. Asymétrie excessive détectée.`,
                                 action: testConfig.action,
@@ -5535,6 +5546,7 @@ function generateSmartAlerts() {
                             alerts.push({
                                 type: 'warning',
                                 category: 'ASYMÉTRIE SURVEILLANCE',
+                                priority: 2, // IMPORTANT
                                 title: `${testConfig.name}: Asymétrie ${asymmetry.toFixed(1)}% (${weakerSide})`,
                                 message: `À surveiller. Renforcement côté faible recommandé.`,
                                 action: testConfig.action,
@@ -5554,6 +5566,7 @@ function generateSmartAlerts() {
             alerts.push({
                 type: 'critical',
                 category: 'COMBINAISON FAIBLESSE',
+                priority: 1, // URGENT - Critique pour le golf
                 title: 'Mobilité Thoracique + Core Faibles',
                 message: 'Combinaison critique pour le golf. Limitation majeure du swing.',
                 action: 'Mobilité thoracique ET renforcement Core',
@@ -5566,6 +5579,7 @@ function generateSmartAlerts() {
             alerts.push({
                 type: 'warning',
                 category: 'COMBINAISON FAIBLESSE',
+                priority: 2, // IMPORTANT
                 title: 'Core Faible + Mobilité Hanche Limitée',
                 message: 'Risque de compensation et perte de posture.',
                 action: 'Renforcer Core ET mobilité hanches',
@@ -5578,6 +5592,7 @@ function generateSmartAlerts() {
             alerts.push({
                 type: 'warning',
                 category: 'COMBINAISON FAIBLESSE',
+                priority: 2, // IMPORTANT
                 title: 'Explosivité Basse malgré Force Correcte',
                 message: 'Problème de transfert de force. La force ne se traduit pas en puissance.',
                 action: 'Entraînement pliométrique et vitesse de mouvement',
@@ -5590,6 +5605,7 @@ function generateSmartAlerts() {
             alerts.push({
                 type: 'warning',
                 category: 'COMBINAISON FAIBLESSE',
+                priority: 2, // IMPORTANT
                 title: 'Force Insuffisante (Mobilité OK)',
                 message: 'Bonne mobilité mais manque de force pour la stabiliser.',
                 action: 'Renforcer en amplitude complète',
@@ -5604,45 +5620,73 @@ function generateSmartAlerts() {
     if (alerts.length === 0) {
         html = '<div class="alert-item alert-info"><div class="alert-icon">✅</div><div class="alert-content"><h5>Aucune alerte critique</h5><p>Votre profil physique et TPI ne présentent pas de limitation majeure identifiée.</p></div></div>';
     } else {
-        // Grouper par catégorie
-        const categories = ['ASYMÉTRIE CRITIQUE', 'ASYMÉTRIE SURVEILLANCE', 'COMBINAISON FAIBLESSE', 'LIMITATION PHYSIQUE', 'LIMITATION TPI', 'ASYMÉTRIE TPI'];
+        // Trier les alertes par priorité (1 = urgent, 2 = important, 3 = surveillance)
+        alerts.sort((a, b) => (a.priority || 3) - (b.priority || 3));
         
-        categories.forEach(category => {
-            const categoryAlerts = alerts.filter(a => a.category === category);
-            
-            if (categoryAlerts.length > 0) {
-                html += `<div style="margin-bottom: 2rem;"><h5 style="color: #1a4d2e; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 2px solid #e0e0e0; padding-bottom: 0.5rem;">${category}</h5>`;
-                
-                categoryAlerts.forEach(alert => {
-                    const iconMap = { critical: '🚨', warning: '⚠️', info: 'ℹ️' };
-                    
-                    html += `
-                        <div class="alert-item alert-${alert.type}">
-                            <div class="alert-icon">${iconMap[alert.type]}</div>
-                            <div class="alert-content">
-                                <h5>${alert.title}</h5>
-                                <p>${alert.message}</p>
-                                ${alert.action ? `
-                                    <div class="alert-action">
-                                        <strong>💪 Action recommandée:</strong> ${alert.action}
-                                    </div>
-                                ` : ''}
-                                ${alert.faults ? `
-                                    <div class="swing-fault">
-                                        <strong>Impacts potentiels:</strong>
-                                        <ul>
-                                            ${alert.faults.map(f => `<li>${f}</li>`).join('')}
-                                        </ul>
-                                    </div>
-                                ` : ''}
+        // Séparer par priorité
+        const urgentAlerts = alerts.filter(a => a.priority === 1);
+        const importantAlerts = alerts.filter(a => a.priority === 2);
+        const watchAlerts = alerts.filter(a => a.priority === 3);
+        
+        // Fonction helper pour générer le HTML d'une alerte
+        const renderAlert = (alert) => {
+            const iconMap = { critical: '🚨', warning: '⚠️', info: 'ℹ️' };
+            return `
+                <div class="alert-item alert-${alert.type}">
+                    <div class="alert-icon">${iconMap[alert.type]}</div>
+                    <div class="alert-content">
+                        <h5>${alert.title}</h5>
+                        <p>${alert.message}</p>
+                        ${alert.action ? `
+                            <div class="alert-action">
+                                <strong>💪 Action recommandée:</strong> ${alert.action}
                             </div>
-                        </div>
-                    `;
-                });
-                
-                html += '</div>';
-            }
-        });
+                        ` : ''}
+                        ${alert.faults ? `
+                            <div class="swing-fault">
+                                <strong>Impacts potentiels:</strong>
+                                <ul>
+                                    ${alert.faults.map(f => `<li>${f}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        };
+        
+        // URGENT (toujours affichées)
+        if (urgentAlerts.length > 0) {
+            html += `<div style="margin-bottom: 2rem;">
+                <h5 style="color: #dc2626; font-size: 1.2rem; margin-bottom: 1rem; border-bottom: 3px solid #dc2626; padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    🔴 URGENT (${urgentAlerts.length})
+                </h5>
+                ${urgentAlerts.map(renderAlert).join('')}
+            </div>`;
+        }
+        
+        // IMPORTANT (toujours affichées)
+        if (importantAlerts.length > 0) {
+            html += `<div style="margin-bottom: 2rem;">
+                <h5 style="color: #f59e0b; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 2px solid #f59e0b; padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    🟠 IMPORTANT (${importantAlerts.length})
+                </h5>
+                ${importantAlerts.map(renderAlert).join('')}
+            </div>`;
+        }
+        
+        // À SURVEILLER (repliées par défaut)
+        if (watchAlerts.length > 0) {
+            html += `<div style="margin-bottom: 2rem;">
+                <h5 style="color: #84cc16; font-size: 1rem; margin-bottom: 1rem; border-bottom: 2px solid #84cc16; padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;" onclick="document.getElementById('watchAlerts').style.display = document.getElementById('watchAlerts').style.display === 'none' ? 'block' : 'none'">
+                    🟡 À SURVEILLER (${watchAlerts.length})
+                    <span style="font-size: 0.9rem; color: #666;">(cliquer pour afficher/masquer)</span>
+                </h5>
+                <div id="watchAlerts" style="display: none;">
+                    ${watchAlerts.map(renderAlert).join('')}
+                </div>
+            </div>`;
+        }
     }
     
     container.innerHTML = html;
