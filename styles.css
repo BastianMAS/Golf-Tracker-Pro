@@ -1397,6 +1397,50 @@ img {
     margin-bottom: 2rem;
 }
 
+/* Navigation Synthèse/Détails */
+.analyse-nav-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    background: var(--bg-light);
+    padding: 0.5rem;
+    border-radius: 12px;
+}
+
+.analyse-nav-btn {
+    flex: 1;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: transparent;
+    color: var(--text-light);
+}
+
+.analyse-nav-btn:hover {
+    background: white;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.analyse-nav-btn.active {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 12px rgba(26, 77, 46, 0.3);
+}
+
+.analyse-view {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* Cards */
 .fitness-index-card,
 .pro-comparison-card,

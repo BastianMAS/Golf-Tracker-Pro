@@ -1078,6 +1078,25 @@ function switchTab(tabName) {
     }
 }
 
+// ==================== SWITCH VUE ANALYSE PRO (Synthèse/Détails) ====================
+function switchAnalyseView(view) {
+    console.log('Switching to analyse view:', view);
+    
+    // Update buttons
+    document.getElementById('btnSynthese').classList.remove('active');
+    document.getElementById('btnDetails').classList.remove('active');
+    
+    if (view === 'synthese') {
+        document.getElementById('btnSynthese').classList.add('active');
+        document.getElementById('analyseSynthese').style.display = 'block';
+        document.getElementById('analyseDetails').style.display = 'none';
+    } else {
+        document.getElementById('btnDetails').classList.add('active');
+        document.getElementById('analyseSynthese').style.display = 'none';
+        document.getElementById('analyseDetails').style.display = 'block';
+    }
+}
+
 // ==================== CALCULATEUR 1RM (BRZYCKI) ====================
 function calculateBrzycki(weight, reps) {
     if (!weight || !reps || reps < 1 || reps > 12) return null;
@@ -5690,6 +5709,51 @@ function generateSmartAlerts() {
     }
     
     container.innerHTML = html;
+    
+    // Remplir aussi la section Top 3 URGENT dans la vue Synthèse
+    generateTop3UrgentAlerts(alerts);
+}
+
+function generateTop3UrgentAlerts(allAlerts) {
+    const container = document.getElementById('top3UrgentAlerts');
+    if (!container) return;
+    
+    // Prendre seulement les 3 alertes les plus urgentes (priorité 1)
+    const urgentAlerts = allAlerts.filter(a => a.priority === 1).slice(0, 3);
+    
+    let html = '';
+    
+    if (urgentAlerts.length === 0) {
+        html = '<div class="alert-item alert-info"><div class="alert-icon">✅</div><div class="alert-content"><h5>Aucune alerte urgente</h5><p>Tout va bien ! Aucune action urgente nécessaire.</p></div></div>';
+    } else {
+        const renderAlert = (alert) => {
+            const iconMap = { critical: '🚨', warning: '⚠️', info: 'ℹ️' };
+            return `
+                <div class="alert-item alert-${alert.type}">
+                    <div class="alert-icon">${iconMap[alert.type]}</div>
+                    <div class="alert-content">
+                        <h5>${alert.title}</h5>
+                        <p>${alert.message}</p>
+                        ${alert.action ? `
+                            <div class="alert-action">
+                                <strong>💪 Action recommandée:</strong> ${alert.action}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        };
+        
+        html = urgentAlerts.map(renderAlert).join('');
+        
+        if (urgentAlerts.length < 3) {
+            html += `<div style="text-align: center; padding: 1rem; color: #666; font-style: italic;">
+                Voir l'onglet "Détails" pour toutes les alertes
+            </div>`;
+        }
+    }
+    
+    container.innerHTML = html;
 }
 
 function exportToCSV() {
@@ -5748,3 +5812,6 @@ window.switchTab = function(tabName) {
         setTimeout(() => updateAnalysePro(), 100);
     }
 };
+
+// Exposer switchAnalyseView au scope global
+window.switchAnalyseView = switchAnalyseView;
