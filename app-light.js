@@ -1729,11 +1729,13 @@ function importData(event) {
             
             const importedTests = data.testsHistory?.length || data.tests?.length || 0;
             
-            alert(`✅ Données importées avec succès !\n\n👤 Profil: ${data.player?.name || 'N/A'}\n📊 Tests: ${importedTests}\n📅 Date export: ${data.exportDate ? new Date(data.exportDate).toLocaleDateString('fr-FR') : 'N/A'}`);
+            alert(`✅ Données importées avec succès !\n\n👤 Profil: ${data.player?.name || 'N/A'}\n📊 Tests: ${importedTests}\n📅 Date export: ${data.exportDate ? new Date(data.exportDate).toLocaleDateString('fr-FR') : 'N/A'}\n\n🔄 La page va se recharger automatiquement...`);
             
-            // Rafraîchir l'affichage
-            switchTab('dashboard');
-            updateDashboard();
+            // Recharger la page pour tout rafraîchir proprement
+            setTimeout(() => {
+                location.reload();
+            }, 500);
+            
         } catch (error) {
             alert('Erreur lors de l\'import');
         }
