@@ -1110,15 +1110,12 @@ img {
 .data-container {
     max-width: 800px;
     margin: 0 auto;
-    min-height: 400px;
-    padding: 2rem 0;
 }
 
 .data-actions {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 2rem;
-    margin-top: 2rem;
 }
 
 .data-action-card {
@@ -1622,20 +1619,6 @@ img {
     animation: fadeIn 0.3s ease-in;
 }
 
-/* Grid 2 colonnes pour vue compacte */
-.two-column-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-@media (max-width: 1024px) {
-    .two-column-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -1648,16 +1631,12 @@ img {
 .golf-performance-card,
 .smart-alerts-card,
 .progression-card,
-.multi-player-card,
-.tpi-score-card,
-.evolution-card,
-.comparison-card,
-.progression-stats-card {
+.multi-player-card {
     background: white;
-    padding: 1.5rem;
-    border-radius: 10px;
+    padding: 2rem;
+    border-radius: 12px;
     box-shadow: var(--shadow-md);
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 .fitness-index-card h4,
@@ -1666,14 +1645,10 @@ img {
 .golf-performance-card h4,
 .smart-alerts-card h4,
 .progression-card h4,
-.multi-player-card h4,
-.tpi-score-card h4,
-.evolution-card h4,
-.comparison-card h4,
-.progression-stats-card h4 {
+.multi-player-card h4 {
     color: var(--primary-color);
-    margin-bottom: 1rem;
-    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
     border-bottom: 2px solid var(--border-color);
     padding-bottom: 0.5rem;
 }
@@ -1681,8 +1656,8 @@ img {
 /* Golf Fitness Index */
 .gfi-score-container {
     display: grid;
-    grid-template-columns: 180px 1fr;
-    gap: 2rem;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 3rem;
     align-items: center;
 }
 
@@ -2254,8 +2229,8 @@ img {
 
 .category-item {
     background: var(--bg-light);
-    padding: 1rem;
-    border-radius: 8px;
+    padding: 1.5rem;
+    border-radius: 10px;
     border-left: 4px solid;
     transition: transform 0.2s, box-shadow 0.2s;
 }
