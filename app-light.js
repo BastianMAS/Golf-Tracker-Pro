@@ -1078,25 +1078,6 @@ function switchTab(tabName) {
     }
 }
 
-// ==================== SWITCH VUE ANALYSE PRO (Synthèse/Détails) ====================
-function switchAnalyseView(view) {
-    console.log('Switching to analyse view:', view);
-    
-    // Update buttons
-    document.getElementById('btnSynthese').classList.remove('active');
-    document.getElementById('btnDetails').classList.remove('active');
-    
-    if (view === 'synthese') {
-        document.getElementById('btnSynthese').classList.add('active');
-        document.getElementById('analyseSynthese').style.display = 'block';
-        document.getElementById('analyseDetails').style.display = 'none';
-    } else {
-        document.getElementById('btnDetails').classList.add('active');
-        document.getElementById('analyseSynthese').style.display = 'none';
-        document.getElementById('analyseDetails').style.display = 'block';
-    }
-}
-
 // ==================== CALCULATEUR 1RM (BRZYCKI) ====================
 function calculateBrzycki(weight, reps) {
     if (!weight || !reps || reps < 1 || reps > 12) return null;
@@ -4051,13 +4032,10 @@ function saveQualityTests(qualityKey) {
 
 // Afficher l'historique
 function displayHistory() {
-    const container = document.getElementById('historyListe');
-    if (!container) return;
-    
     const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
     
     if (history.length === 0) {
-        container.innerHTML = `
+        document.querySelector('.history-container').innerHTML = `
             <div class="alert warning">
                 <div class="alert-title">📋 Aucun test enregistré</div>
                 <p>Commencez par enregistrer vos premiers tests !</p>
@@ -4189,142 +4167,7 @@ function displayHistory() {
     
     html += '</div>';
     
-    container.innerHTML = html;
-}
-
-// ==================== FONCTIONS ÉVOLUTION TEMPORELLE ====================
-
-function switchHistoryView(view) {
-    console.log('Switching to history view:', view);
-    
-    // Update buttons
-    document.getElementById('btnGraphiques').classList.remove('active');
-    document.getElementById('btnListe').classList.remove('active');
-    
-    if (view === 'graphiques') {
-        document.getElementById('btnGraphiques').classList.add('active');
-        document.getElementById('historyGraphiques').style.display = 'block';
-        document.getElementById('historyListe').style.display = 'none';
-        
-        // Charger les graphiques
-        drawEvolutionChart();
-        populateCompareDateSelectors();
-        calculateProgressionStats();
-    } else {
-        document.getElementById('btnListe').classList.add('active');
-        document.getElementById('historyGraphiques').style.display = 'none';
-        document.getElementById('historyListe').style.display = 'block';
-        
-        // Charger la liste
-        displayHistory();
-    }
-}
-
-function drawEvolutionChart() {
-    const canvas = document.getElementById('evolutionChart');
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
-    
-    if (history.length === 0) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.font = '16px Arial';
-        ctx.fillStyle = '#666';
-        ctx.textAlign = 'center';
-        ctx.fillText('Aucune donnée à afficher', canvas.width / 2, canvas.height / 2);
-        return;
-    }
-    
-    // TODO: Implémenter le graphique avec Chart.js ou canvas natif
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.font = '14px Arial';
-    ctx.fillStyle = '#666';
-    ctx.textAlign = 'center';
-    ctx.fillText('Graphique d\'évolution en cours de développement...', canvas.width / 2, canvas.height / 2);
-}
-
-function populateCompareDateSelectors() {
-    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
-    const select1 = document.getElementById('compareDate1');
-    const select2 = document.getElementById('compareDate2');
-    
-    if (!select1 || !select2) return;
-    
-    // Trier par date
-    const sortedHistory = history.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    // Remplir les selects
-    let options = '<option value="">-- Sélectionnez --</option>';
-    sortedHistory.forEach((test, index) => {
-        const date = new Date(test.date).toLocaleDateString('fr-FR');
-        const quality = QUALITY_TESTS[test.quality]?.name || test.quality;
-        options += `<option value="${index}">${date} - ${quality}</option>`;
-    });
-    
-    select1.innerHTML = options;
-    select2.innerHTML = options;
-}
-
-function compareTests() {
-    const select1 = document.getElementById('compareDate1');
-    const select2 = document.getElementById('compareDate2');
-    const resultsContainer = document.getElementById('comparisonResults');
-    
-    if (!select1 || !select2 || !resultsContainer) return;
-    
-    const index1 = parseInt(select1.value);
-    const index2 = parseInt(select2.value);
-    
-    if (isNaN(index1) || isNaN(index2)) {
-        resultsContainer.innerHTML = '<p style="color: #666; text-align: center;">Veuillez sélectionner 2 tests à comparer</p>';
-        return;
-    }
-    
-    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
-    const sortedHistory = history.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    const test1 = sortedHistory[index1];
-    const test2 = sortedHistory[index2];
-    
-    if (!test1 || !test2) {
-        resultsContainer.innerHTML = '<p style="color: #e74c3c;">Erreur lors de la récupération des tests</p>';
-        return;
-    }
-    
-    // TODO: Calculer et afficher les différences
-    resultsContainer.innerHTML = '<p style="color: #666; text-align: center;">Comparaison en cours de développement...</p>';
-}
-
-function calculateProgressionStats() {
-    const container = document.getElementById('progressionStats');
-    if (!container) return;
-    
-    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
-    
-    if (history.length < 2) {
-        container.innerHTML = '<p style="color: #666; text-align: center;">Pas assez de données pour calculer les statistiques (minimum 2 tests)</p>';
-        return;
-    }
-    
-    // TODO: Calculer les stats
-    container.innerHTML = `
-        <div class="stat-box">
-            <div class="stat-icon">📈</div>
-            <div class="stat-value">${history.length}</div>
-            <div class="stat-label">Tests enregistrés</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-icon">📅</div>
-            <div class="stat-value">--</div>
-            <div class="stat-label">Jours de suivi</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-icon">⭐</div>
-            <div class="stat-value">--</div>
-            <div class="stat-label">Meilleure progression</div>
-        </div>
-    `;
+    document.querySelector('.history-container').innerHTML = html;
 }
 
 // Supprimer un test
@@ -5847,51 +5690,6 @@ function generateSmartAlerts() {
     }
     
     container.innerHTML = html;
-    
-    // Remplir aussi la section Top 3 URGENT dans la vue Synthèse
-    generateTop3UrgentAlerts(alerts);
-}
-
-function generateTop3UrgentAlerts(allAlerts) {
-    const container = document.getElementById('top3UrgentAlerts');
-    if (!container) return;
-    
-    // Prendre seulement les 3 alertes les plus urgentes (priorité 1)
-    const urgentAlerts = allAlerts.filter(a => a.priority === 1).slice(0, 3);
-    
-    let html = '';
-    
-    if (urgentAlerts.length === 0) {
-        html = '<div class="alert-item alert-info"><div class="alert-icon">✅</div><div class="alert-content"><h5>Aucune alerte urgente</h5><p>Tout va bien ! Aucune action urgente nécessaire.</p></div></div>';
-    } else {
-        const renderAlert = (alert) => {
-            const iconMap = { critical: '🚨', warning: '⚠️', info: 'ℹ️' };
-            return `
-                <div class="alert-item alert-${alert.type}">
-                    <div class="alert-icon">${iconMap[alert.type]}</div>
-                    <div class="alert-content">
-                        <h5>${alert.title}</h5>
-                        <p>${alert.message}</p>
-                        ${alert.action ? `
-                            <div class="alert-action">
-                                <strong>💪 Action recommandée:</strong> ${alert.action}
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
-        };
-        
-        html = urgentAlerts.map(renderAlert).join('');
-        
-        if (urgentAlerts.length < 3) {
-            html += `<div style="text-align: center; padding: 1rem; color: #666; font-style: italic;">
-                Voir l'onglet "Détails" pour toutes les alertes
-            </div>`;
-        }
-    }
-    
-    container.innerHTML = html;
 }
 
 function exportToCSV() {
@@ -5941,19 +5739,12 @@ function setupAnalyseProEventListeners() {
     }
 }
 
-// Modifier la fonction switchTab pour gérer l'onglet Analyse Pro et Historique
+// Modifier la fonction switchTab pour gérer l'onglet Analyse Pro
 const originalSwitchTab = window.switchTab;
 window.switchTab = function(tabName) {
     originalSwitchTab(tabName);
     
     if (tabName === 'analyse') {
         setTimeout(() => updateAnalysePro(), 100);
-    } else if (tabName === 'history') {
-        setTimeout(() => switchHistoryView('graphiques'), 100);
     }
 };
-
-// Exposer les fonctions au scope global
-window.switchAnalyseView = switchAnalyseView;
-window.switchHistoryView = switchHistoryView;
-window.compareTests = compareTests;
