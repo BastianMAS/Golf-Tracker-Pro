@@ -4051,10 +4051,13 @@ function saveQualityTests(qualityKey) {
 
 // Afficher l'historique
 function displayHistory() {
+    const container = document.getElementById('historyListe');
+    if (!container) return;
+    
     const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
     
     if (history.length === 0) {
-        document.querySelector('.history-container').innerHTML = `
+        container.innerHTML = `
             <div class="alert warning">
                 <div class="alert-title">📋 Aucun test enregistré</div>
                 <p>Commencez par enregistrer vos premiers tests !</p>
@@ -4186,7 +4189,142 @@ function displayHistory() {
     
     html += '</div>';
     
-    document.querySelector('.history-container').innerHTML = html;
+    container.innerHTML = html;
+}
+
+// ==================== FONCTIONS ÉVOLUTION TEMPORELLE ====================
+
+function switchHistoryView(view) {
+    console.log('Switching to history view:', view);
+    
+    // Update buttons
+    document.getElementById('btnGraphiques').classList.remove('active');
+    document.getElementById('btnListe').classList.remove('active');
+    
+    if (view === 'graphiques') {
+        document.getElementById('btnGraphiques').classList.add('active');
+        document.getElementById('historyGraphiques').style.display = 'block';
+        document.getElementById('historyListe').style.display = 'none';
+        
+        // Charger les graphiques
+        drawEvolutionChart();
+        populateCompareDateSelectors();
+        calculateProgressionStats();
+    } else {
+        document.getElementById('btnListe').classList.add('active');
+        document.getElementById('historyGraphiques').style.display = 'none';
+        document.getElementById('historyListe').style.display = 'block';
+        
+        // Charger la liste
+        displayHistory();
+    }
+}
+
+function drawEvolutionChart() {
+    const canvas = document.getElementById('evolutionChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    
+    if (history.length === 0) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = '16px Arial';
+        ctx.fillStyle = '#666';
+        ctx.textAlign = 'center';
+        ctx.fillText('Aucune donnée à afficher', canvas.width / 2, canvas.height / 2);
+        return;
+    }
+    
+    // TODO: Implémenter le graphique avec Chart.js ou canvas natif
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'center';
+    ctx.fillText('Graphique d\'évolution en cours de développement...', canvas.width / 2, canvas.height / 2);
+}
+
+function populateCompareDateSelectors() {
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    const select1 = document.getElementById('compareDate1');
+    const select2 = document.getElementById('compareDate2');
+    
+    if (!select1 || !select2) return;
+    
+    // Trier par date
+    const sortedHistory = history.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Remplir les selects
+    let options = '<option value="">-- Sélectionnez --</option>';
+    sortedHistory.forEach((test, index) => {
+        const date = new Date(test.date).toLocaleDateString('fr-FR');
+        const quality = QUALITY_TESTS[test.quality]?.name || test.quality;
+        options += `<option value="${index}">${date} - ${quality}</option>`;
+    });
+    
+    select1.innerHTML = options;
+    select2.innerHTML = options;
+}
+
+function compareTests() {
+    const select1 = document.getElementById('compareDate1');
+    const select2 = document.getElementById('compareDate2');
+    const resultsContainer = document.getElementById('comparisonResults');
+    
+    if (!select1 || !select2 || !resultsContainer) return;
+    
+    const index1 = parseInt(select1.value);
+    const index2 = parseInt(select2.value);
+    
+    if (isNaN(index1) || isNaN(index2)) {
+        resultsContainer.innerHTML = '<p style="color: #666; text-align: center;">Veuillez sélectionner 2 tests à comparer</p>';
+        return;
+    }
+    
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    const sortedHistory = history.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    const test1 = sortedHistory[index1];
+    const test2 = sortedHistory[index2];
+    
+    if (!test1 || !test2) {
+        resultsContainer.innerHTML = '<p style="color: #e74c3c;">Erreur lors de la récupération des tests</p>';
+        return;
+    }
+    
+    // TODO: Calculer et afficher les différences
+    resultsContainer.innerHTML = '<p style="color: #666; text-align: center;">Comparaison en cours de développement...</p>';
+}
+
+function calculateProgressionStats() {
+    const container = document.getElementById('progressionStats');
+    if (!container) return;
+    
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    
+    if (history.length < 2) {
+        container.innerHTML = '<p style="color: #666; text-align: center;">Pas assez de données pour calculer les statistiques (minimum 2 tests)</p>';
+        return;
+    }
+    
+    // TODO: Calculer les stats
+    container.innerHTML = `
+        <div class="stat-box">
+            <div class="stat-icon">📈</div>
+            <div class="stat-value">${history.length}</div>
+            <div class="stat-label">Tests enregistrés</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-icon">📅</div>
+            <div class="stat-value">--</div>
+            <div class="stat-label">Jours de suivi</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-value">--</div>
+            <div class="stat-label">Meilleure progression</div>
+        </div>
+    `;
 }
 
 // Supprimer un test
@@ -5803,15 +5941,19 @@ function setupAnalyseProEventListeners() {
     }
 }
 
-// Modifier la fonction switchTab pour gérer l'onglet Analyse Pro
+// Modifier la fonction switchTab pour gérer l'onglet Analyse Pro et Historique
 const originalSwitchTab = window.switchTab;
 window.switchTab = function(tabName) {
     originalSwitchTab(tabName);
     
     if (tabName === 'analyse') {
         setTimeout(() => updateAnalysePro(), 100);
+    } else if (tabName === 'history') {
+        setTimeout(() => switchHistoryView('graphiques'), 100);
     }
 };
 
-// Exposer switchAnalyseView au scope global
+// Exposer les fonctions au scope global
 window.switchAnalyseView = switchAnalyseView;
+window.switchHistoryView = switchHistoryView;
+window.compareTests = compareTests;
