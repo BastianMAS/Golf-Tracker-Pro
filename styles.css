@@ -1110,12 +1110,15 @@ img {
 .data-container {
     max-width: 800px;
     margin: 0 auto;
+    min-height: 400px;
+    padding: 2rem 0;
 }
 
 .data-actions {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 2rem;
+    margin-top: 2rem;
 }
 
 .data-action-card {
