@@ -656,61 +656,6 @@ function exportData() {
     alert(`✅ Données exportées avec succès !\n\nFichier: ${filename}\n\nProfil: ${data.currentPlayer ? data.currentPlayer.name : 'Aucun'}\nTests: ${data.testsHistory.length}`);
 }
 
-function importData(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = JSON.parse(e.target.result);
-            
-            // Validation
-            if (!data.version || (!data.currentPlayer && (!data.testsHistory || data.testsHistory.length === 0))) {
-                throw new Error('Fichier invalide');
-            }
-            
-            // Demander confirmation
-            const playerInfo = data.currentPlayer ? `Profil: ${data.currentPlayer.name}` : 'Aucun profil';
-            const testsInfo = `Tests: ${data.testsHistory ? data.testsHistory.length : 0}`;
-            
-            const confirmMsg = `⚠️ ATTENTION !\n\nCette action va REMPLACER toutes vos données actuelles par :\n\n${playerInfo}\n${testsInfo}\n\nÊtes-vous sûr ?`;
-            
-            if (!confirm(confirmMsg)) {
-                event.target.value = ''; // Reset file input
-                return;
-            }
-            
-            // Sauvegarder les données
-            if (data.currentPlayer) {
-                localStorage.setItem('currentPlayer', JSON.stringify(data.currentPlayer));
-                window.currentPlayer = data.currentPlayer;
-            }
-            
-            if (data.testsHistory) {
-                localStorage.setItem('testsHistory', JSON.stringify(data.testsHistory));
-            }
-            
-            alert(`✅ Données importées avec succès !\n\n${playerInfo}\n${testsInfo}\n\nLa page va se recharger...`);
-            
-            // Recharger la page
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-            
-        } catch (error) {
-            alert('❌ Erreur lors de l\'import !\n\nLe fichier semble corrompu ou invalide.\n\nErreur: ' + error.message);
-            event.target.value = ''; // Reset file input
-        }
-    };
-    
-    reader.onerror = function() {
-        alert('❌ Erreur lors de la lecture du fichier !');
-        event.target.value = '';
-    };
-    
-    reader.readAsText(file);
-}
 
 // Sauvegarde automatique à chaque modification
 function autoBackup() {
