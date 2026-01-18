@@ -861,191 +861,8 @@ img {
 
 /* History */
 .history-container {
-    max-width: 1200px;
+    max-width: 1000px;
     margin: 0 auto;
-    padding: 2rem;
-}
-
-.history-container .subtitle {
-    color: var(--text-light);
-    font-size: 0.95rem;
-    margin-bottom: 2rem;
-}
-
-/* Navigation Graphiques/Liste */
-.history-nav-buttons {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    background: var(--bg-light);
-    padding: 0.5rem;
-    border-radius: 12px;
-}
-
-.history-nav-btn {
-    flex: 1;
-    padding: 1rem 2rem;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    background: transparent;
-    color: var(--text-light);
-}
-
-.history-nav-btn:hover {
-    background: white;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.history-nav-btn.active {
-    background: var(--primary-color);
-    color: white;
-    box-shadow: 0 4px 12px rgba(26, 77, 46, 0.3);
-}
-
-.history-view {
-    animation: fadeIn 0.3s ease-in;
-}
-
-/* Cards Évolution */
-.evolution-card,
-.comparison-card,
-.progression-stats-card {
-    background: white;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: var(--shadow-md);
-    margin-bottom: 2rem;
-}
-
-.evolution-card h4,
-.comparison-card h4,
-.progression-stats-card h4 {
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-    font-size: 1.3rem;
-}
-
-.evolution-card .help-text,
-.comparison-card .help-text {
-    color: var(--text-light);
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
-}
-
-/* Comparaison */
-.comparison-selectors {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-end;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-}
-
-.comparison-selectors .form-group {
-    flex: 1;
-    min-width: 200px;
-}
-
-.comparison-arrow {
-    font-size: 2rem;
-    color: var(--primary-color);
-    font-weight: bold;
-    padding-bottom: 0.5rem;
-}
-
-#comparisonResults {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-    margin-top: 1.5rem;
-}
-
-.comparison-item {
-    background: var(--bg-light);
-    padding: 1rem;
-    border-radius: 8px;
-    border-left: 4px solid var(--primary-color);
-}
-
-.comparison-item.positive {
-    border-color: #27ae60;
-    background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%);
-}
-
-.comparison-item.negative {
-    border-color: #e74c3c;
-    background: linear-gradient(135deg, #ffebee 0%, #fff5f5 100%);
-}
-
-.comparison-item .quality-name {
-    font-weight: 700;
-    color: var(--text-dark);
-    margin-bottom: 0.5rem;
-}
-
-.comparison-item .values {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 1.1rem;
-    margin-bottom: 0.5rem;
-}
-
-.comparison-item .diff {
-    font-weight: 600;
-    font-size: 1rem;
-}
-
-.comparison-item .diff.positive {
-    color: #27ae60;
-}
-
-.comparison-item .diff.negative {
-    color: #e74c3c;
-}
-
-/* Stats de progression */
-#progressionStats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1rem;
-}
-
-.stat-box {
-    background: var(--bg-light);
-    padding: 1.5rem;
-    border-radius: 10px;
-    text-align: center;
-    border: 2px solid var(--border-color);
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.stat-box:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.stat-box .stat-icon {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-}
-
-.stat-box .stat-value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-}
-
-.stat-box .stat-label {
-    color: var(--text-light);
-    font-size: 0.9rem;
 }
 
 .history-controls {
@@ -1110,15 +927,12 @@ img {
 .data-container {
     max-width: 800px;
     margin: 0 auto;
-    min-height: 400px;
-    padding: 2rem 0;
 }
 
 .data-actions {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 2rem;
-    margin-top: 2rem;
 }
 
 .data-action-card {
@@ -1583,64 +1397,6 @@ img {
     margin-bottom: 2rem;
 }
 
-/* Navigation Synthèse/Détails */
-.analyse-nav-buttons {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    background: var(--bg-light);
-    padding: 0.5rem;
-    border-radius: 12px;
-}
-
-.analyse-nav-btn {
-    flex: 1;
-    padding: 1rem 2rem;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    background: transparent;
-    color: var(--text-light);
-}
-
-.analyse-nav-btn:hover {
-    background: white;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.analyse-nav-btn.active {
-    background: var(--primary-color);
-    color: white;
-    box-shadow: 0 4px 12px rgba(26, 77, 46, 0.3);
-}
-
-.analyse-view {
-    animation: fadeIn 0.3s ease-in;
-}
-
-/* Grid 2 colonnes pour vue compacte */
-.two-column-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-@media (max-width: 1024px) {
-    .two-column-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
 /* Cards */
 .fitness-index-card,
 .pro-comparison-card,
@@ -1648,16 +1404,12 @@ img {
 .golf-performance-card,
 .smart-alerts-card,
 .progression-card,
-.multi-player-card,
-.tpi-score-card,
-.evolution-card,
-.comparison-card,
-.progression-stats-card {
+.multi-player-card {
     background: white;
-    padding: 1.5rem;
-    border-radius: 10px;
+    padding: 2rem;
+    border-radius: 12px;
     box-shadow: var(--shadow-md);
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 .fitness-index-card h4,
@@ -1666,14 +1418,10 @@ img {
 .golf-performance-card h4,
 .smart-alerts-card h4,
 .progression-card h4,
-.multi-player-card h4,
-.tpi-score-card h4,
-.evolution-card h4,
-.comparison-card h4,
-.progression-stats-card h4 {
+.multi-player-card h4 {
     color: var(--primary-color);
-    margin-bottom: 1rem;
-    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
     border-bottom: 2px solid var(--border-color);
     padding-bottom: 0.5rem;
 }
@@ -1681,8 +1429,8 @@ img {
 /* Golf Fitness Index */
 .gfi-score-container {
     display: grid;
-    grid-template-columns: 180px 1fr;
-    gap: 2rem;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 3rem;
     align-items: center;
 }
 
@@ -2254,8 +2002,8 @@ img {
 
 .category-item {
     background: var(--bg-light);
-    padding: 1rem;
-    border-radius: 8px;
+    padding: 1.5rem;
+    border-radius: 10px;
     border-left: 4px solid;
     transition: transform 0.2s, box-shadow 0.2s;
 }
