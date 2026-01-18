@@ -4236,12 +4236,164 @@ function drawEvolutionChart() {
         return;
     }
     
-    // TODO: Implémenter le graphique avec Chart.js ou canvas natif
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.font = '14px Arial';
+    // Trier par date
+    const sortedHistory = history.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    // Calculer les scores pour chaque test
+    const dataByQuality = {};
+    const qualities = ['force', 'explosivite', 'mobilite', 'core', 'endurance', 'vitesse', 'equilibre'];
+    const colors = {
+        force: '#e74c3c',
+        explosivite: '#f39c12',
+        mobilite: '#3498db',
+        core: '#2ecc71',
+        endurance: '#9b59b6',
+        vitesse: '#1abc9c',
+        equilibre: '#34495e'
+    };
+    
+    qualities.forEach(quality => {
+        dataByQuality[quality] = [];
+    });
+    
+    // Calculer les scores pour chaque date
+    sortedHistory.forEach(test => {
+        qualities.forEach(quality => {
+            if (test.quality === quality) {
+                const score = calculateQualityScore(test.quality, test.tests);
+                if (score !== null) {
+                    dataByQuality[quality].push({
+                        date: new Date(test.date),
+                        score: score
+                    });
+                }
+            }
+        });
+    });
+    
+    // Dimensions du graphique
+    const width = canvas.width;
+    const height = canvas.height;
+    const padding = { top: 40, right: 150, bottom: 60, left: 60 };
+    const graphWidth = width - padding.left - padding.right;
+    const graphHeight = height - padding.top - padding.bottom;
+    
+    ctx.clearRect(0, 0, width, height);
+    
+    // Fond blanc
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, width, height);
+    
+    // Trouver les valeurs min/max
+    let minScore = 0;
+    let maxScore = 20;
+    
+    // Dessiner les axes
+    ctx.strokeStyle = '#ccc';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padding.left, padding.top);
+    ctx.lineTo(padding.left, height - padding.bottom);
+    ctx.lineTo(width - padding.right, height - padding.bottom);
+    ctx.stroke();
+    
+    // Graduations Y (scores)
     ctx.fillStyle = '#666';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 4; i++) {
+        const y = padding.top + (graphHeight / 4) * i;
+        const score = maxScore - (maxScore / 4) * i;
+        
+        // Ligne horizontale
+        ctx.strokeStyle = '#f0f0f0';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(width - padding.right, y);
+        ctx.stroke();
+        
+        // Label
+        ctx.fillText(score.toFixed(0), padding.left - 10, y + 4);
+    }
+    
+    // Label axe Y
+    ctx.save();
+    ctx.translate(20, height / 2);
+    ctx.rotate(-Math.PI / 2);
     ctx.textAlign = 'center';
-    ctx.fillText('Graphique d\'évolution en cours de développement...', canvas.width / 2, canvas.height / 2);
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 14px Arial';
+    ctx.fillText('Score sur 20', 0, 0);
+    ctx.restore();
+    
+    // Label axe X
+    ctx.fillStyle = '#333';
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Temps', width / 2, height - 20);
+    
+    // Dessiner les courbes pour chaque qualité
+    qualities.forEach(quality => {
+        const data = dataByQuality[quality];
+        if (data.length === 0) return;
+        
+        ctx.strokeStyle = colors[quality];
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        
+        data.forEach((point, index) => {
+            // Calculer la position X (répartir uniformément)
+            const x = padding.left + (graphWidth / Math.max(data.length - 1, 1)) * index;
+            const y = padding.top + graphHeight - (point.score / maxScore) * graphHeight;
+            
+            if (index === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+            
+            // Dessiner un point
+            ctx.fillStyle = colors[quality];
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            ctx.fill();
+        });
+        
+        ctx.stroke();
+    });
+    
+    // Légende
+    let legendY = padding.top;
+    qualities.forEach(quality => {
+        const data = dataByQuality[quality];
+        if (data.length === 0) return;
+        
+        const qualityName = QUALITY_TESTS[quality]?.name || quality;
+        const legendX = width - padding.right + 10;
+        
+        // Ligne de couleur
+        ctx.strokeStyle = colors[quality];
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(legendX, legendY);
+        ctx.lineTo(legendX + 30, legendY);
+        ctx.stroke();
+        
+        // Texte
+        ctx.fillStyle = '#333';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText(qualityName, legendX + 35, legendY + 4);
+        
+        legendY += 25;
+    });
+    
+    // Titre
+    ctx.fillStyle = '#1a4d2e';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Évolution des Scores dans le Temps', width / 2, 25);
 }
 
 function populateCompareDateSelectors() {
@@ -4277,7 +4429,12 @@ function compareTests() {
     const index2 = parseInt(select2.value);
     
     if (isNaN(index1) || isNaN(index2)) {
-        resultsContainer.innerHTML = '<p style="color: #666; text-align: center;">Veuillez sélectionner 2 tests à comparer</p>';
+        resultsContainer.innerHTML = '<p style="color: #666; text-align: center; padding: 2rem;">Veuillez sélectionner 2 tests à comparer</p>';
+        return;
+    }
+    
+    if (index1 === index2) {
+        resultsContainer.innerHTML = '<p style="color: #e74c3c; text-align: center; padding: 2rem;">Veuillez sélectionner 2 tests différents</p>';
         return;
     }
     
@@ -4292,8 +4449,91 @@ function compareTests() {
         return;
     }
     
-    // TODO: Calculer et afficher les différences
-    resultsContainer.innerHTML = '<p style="color: #666; text-align: center;">Comparaison en cours de développement...</p>';
+    // Calculer les scores pour chaque qualité
+    const qualities = ['force', 'explosivite', 'mobilite', 'core', 'endurance', 'vitesse', 'equilibre'];
+    const comparisons = [];
+    
+    qualities.forEach(quality => {
+        let score1 = null;
+        let score2 = null;
+        
+        // Chercher dans tout l'historique les tests de cette qualité proches de ces dates
+        const date1 = new Date(test1.date);
+        const date2 = new Date(test2.date);
+        
+        // Prendre le test de cette qualité le plus proche de chaque date
+        const qualityTests = history.filter(h => h.quality === quality);
+        
+        if (qualityTests.length > 0) {
+            // Pour date1
+            const test1Quality = qualityTests.reduce((prev, curr) => {
+                const prevDiff = Math.abs(new Date(prev.date) - date1);
+                const currDiff = Math.abs(new Date(curr.date) - date1);
+                return currDiff < prevDiff ? curr : prev;
+            });
+            
+            // Pour date2
+            const test2Quality = qualityTests.reduce((prev, curr) => {
+                const prevDiff = Math.abs(new Date(prev.date) - date2);
+                const currDiff = Math.abs(new Date(curr.date) - date2);
+                return currDiff < prevDiff ? curr : prev;
+            });
+            
+            score1 = calculateQualityScore(quality, test1Quality.tests);
+            score2 = calculateQualityScore(quality, test2Quality.tests);
+        }
+        
+        if (score1 !== null || score2 !== null) {
+            const diff = score2 !== null && score1 !== null ? score2 - score1 : null;
+            const percentDiff = diff !== null && score1 !== 0 ? (diff / score1) * 100 : null;
+            
+            comparisons.push({
+                quality: quality,
+                name: QUALITY_TESTS[quality]?.name || quality,
+                score1: score1,
+                score2: score2,
+                diff: diff,
+                percentDiff: percentDiff
+            });
+        }
+    });
+    
+    if (comparisons.length === 0) {
+        resultsContainer.innerHTML = '<p style="color: #666; text-align: center; padding: 2rem;">Aucune donnée comparable trouvée</p>';
+        return;
+    }
+    
+    // Afficher les résultats
+    let html = '';
+    comparisons.forEach(comp => {
+        const isPositive = comp.diff > 0;
+        const isNegative = comp.diff < 0;
+        const className = isPositive ? 'positive' : isNegative ? 'negative' : '';
+        
+        const score1Text = comp.score1 !== null ? comp.score1.toFixed(1) : '--';
+        const score2Text = comp.score2 !== null ? comp.score2.toFixed(1) : '--';
+        
+        let diffText = '';
+        if (comp.diff !== null) {
+            const sign = isPositive ? '+' : '';
+            const arrow = isPositive ? '↗' : isNegative ? '↘' : '→';
+            diffText = `<div class="diff ${className}">${arrow} ${sign}${comp.diff.toFixed(1)} (${sign}${comp.percentDiff.toFixed(1)}%)</div>`;
+        }
+        
+        html += `
+            <div class="comparison-item ${className}">
+                <div class="quality-name">${comp.name}</div>
+                <div class="values">
+                    <span style="color: #666;">${score1Text}</span>
+                    <span style="color: #ccc;">→</span>
+                    <span style="font-weight: 700;">${score2Text}</span>
+                </div>
+                ${diffText}
+            </div>
+        `;
+    });
+    
+    resultsContainer.innerHTML = html;
 }
 
 function calculateProgressionStats() {
@@ -4303,28 +4543,119 @@ function calculateProgressionStats() {
     const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
     
     if (history.length < 2) {
-        container.innerHTML = '<p style="color: #666; text-align: center;">Pas assez de données pour calculer les statistiques (minimum 2 tests)</p>';
+        container.innerHTML = '<p style="color: #666; text-align: center; padding: 2rem;">Pas assez de données pour calculer les statistiques (minimum 2 tests)</p>';
         return;
     }
     
-    // TODO: Calculer les stats
-    container.innerHTML = `
+    // Trier par date
+    const sortedHistory = history.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    // Calculer la durée de suivi
+    const firstDate = new Date(sortedHistory[0].date);
+    const lastDate = new Date(sortedHistory[sortedHistory.length - 1].date);
+    const daysDiff = Math.floor((lastDate - firstDate) / (1000 * 60 * 60 * 24));
+    
+    // Calculer les progressions par qualité
+    const qualities = ['force', 'explosivite', 'mobilite', 'core', 'endurance', 'vitesse', 'equilibre'];
+    const progressions = {};
+    
+    qualities.forEach(quality => {
+        const qualityTests = sortedHistory.filter(h => h.quality === quality);
+        if (qualityTests.length >= 2) {
+            const firstScore = calculateQualityScore(quality, qualityTests[0].tests);
+            const lastScore = calculateQualityScore(quality, qualityTests[qualityTests.length - 1].tests);
+            
+            if (firstScore !== null && lastScore !== null) {
+                const diff = lastScore - firstScore;
+                const percentDiff = firstScore !== 0 ? (diff / firstScore) * 100 : 0;
+                progressions[quality] = {
+                    name: QUALITY_TESTS[quality]?.name || quality,
+                    diff: diff,
+                    percentDiff: percentDiff
+                };
+            }
+        }
+    });
+    
+    // Trouver la meilleure progression
+    let bestProgression = null;
+    let bestPercent = -Infinity;
+    Object.keys(progressions).forEach(quality => {
+        if (progressions[quality].percentDiff > bestPercent) {
+            bestPercent = progressions[quality].percentDiff;
+            bestProgression = progressions[quality];
+        }
+    });
+    
+    // Trouver la pire régression
+    let worstRegression = null;
+    let worstPercent = Infinity;
+    Object.keys(progressions).forEach(quality => {
+        if (progressions[quality].percentDiff < worstPercent) {
+            worstPercent = progressions[quality].percentDiff;
+            worstRegression = progressions[quality];
+        }
+    });
+    
+    // Calculer le nombre moyen de tests par mois
+    const monthsDiff = daysDiff / 30;
+    const avgTestsPerMonth = monthsDiff > 0 ? (history.length / monthsDiff).toFixed(1) : 0;
+    
+    // Afficher les stats
+    let html = `
         <div class="stat-box">
-            <div class="stat-icon">📈</div>
+            <div class="stat-icon">📊</div>
             <div class="stat-value">${history.length}</div>
             <div class="stat-label">Tests enregistrés</div>
         </div>
         <div class="stat-box">
             <div class="stat-icon">📅</div>
-            <div class="stat-value">--</div>
+            <div class="stat-value">${daysDiff}</div>
             <div class="stat-label">Jours de suivi</div>
         </div>
         <div class="stat-box">
-            <div class="stat-icon">⭐</div>
-            <div class="stat-value">--</div>
-            <div class="stat-label">Meilleure progression</div>
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-value">${avgTestsPerMonth}</div>
+            <div class="stat-label">Tests / mois</div>
         </div>
     `;
+    
+    if (bestProgression && bestProgression.percentDiff > 0) {
+        html += `
+            <div class="stat-box" style="border-color: #27ae60;">
+                <div class="stat-icon">📈</div>
+                <div class="stat-value" style="color: #27ae60;">+${bestProgression.percentDiff.toFixed(1)}%</div>
+                <div class="stat-label">Meilleure progression<br><small>${bestProgression.name}</small></div>
+            </div>
+        `;
+    }
+    
+    if (worstRegression && worstRegression.percentDiff < 0) {
+        html += `
+            <div class="stat-box" style="border-color: #e74c3c;">
+                <div class="stat-icon">📉</div>
+                <div class="stat-value" style="color: #e74c3c;">${worstRegression.percentDiff.toFixed(1)}%</div>
+                <div class="stat-label">À améliorer<br><small>${worstRegression.name}</small></div>
+            </div>
+        `;
+    }
+    
+    // Tendance générale (moyenne des progressions)
+    const avgProgression = Object.values(progressions).reduce((sum, p) => sum + p.percentDiff, 0) / Object.keys(progressions).length;
+    if (!isNaN(avgProgression)) {
+        const trendIcon = avgProgression > 5 ? '🚀' : avgProgression > 0 ? '📈' : avgProgression > -5 ? '➡️' : '📉';
+        const trendColor = avgProgression > 5 ? '#27ae60' : avgProgression > 0 ? '#2ecc71' : avgProgression > -5 ? '#f39c12' : '#e74c3c';
+        
+        html += `
+            <div class="stat-box" style="border-color: ${trendColor};">
+                <div class="stat-icon">${trendIcon}</div>
+                <div class="stat-value" style="color: ${trendColor};">${avgProgression > 0 ? '+' : ''}${avgProgression.toFixed(1)}%</div>
+                <div class="stat-label">Tendance générale</div>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html;
 }
 
 // Supprimer un test
