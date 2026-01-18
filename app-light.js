@@ -4194,6 +4194,41 @@ function displayHistory() {
 
 // ==================== FONCTIONS ÉVOLUTION TEMPORELLE ====================
 
+// Helper pour calculer le score d'une qualité à partir d'un objet de tests
+function calculateQualityScore(quality, tests) {
+    if (!tests) return null;
+    
+    const testDefinitions = QUALITY_TESTS[quality]?.tests;
+    if (!testDefinitions) return null;
+    
+    const scores = [];
+    testDefinitions.forEach(testDef => {
+        const value = tests[testDef.key];
+        if (value !== undefined && value !== null) {
+            // Si c'est un test bilatéral, prendre la moyenne
+            if (typeof value === 'object' && (value.left !== null || value.right !== null)) {
+                const left = parseFloat(value.left) || 0;
+                const right = parseFloat(value.right) || 0;
+                const count = (value.left !== null ? 1 : 0) + (value.right !== null ? 1 : 0);
+                if (count > 0) {
+                    const avg = (left + right) / count;
+                    const score = calculateScore20(testDef.key, avg);
+                    if (score !== null) scores.push(score);
+                }
+            } else {
+                const score = calculateScore20(testDef.key, value);
+                if (score !== null) scores.push(score);
+            }
+        }
+    });
+    
+    // Calculer la moyenne (besoin d'au moins 50% des tests)
+    const minRequired = Math.ceil(testDefinitions.length * 0.5);
+    if (scores.length < minRequired) return null;
+    
+    return scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+}
+
 function switchHistoryView(view) {
     console.log('Switching to history view:', view);
     
