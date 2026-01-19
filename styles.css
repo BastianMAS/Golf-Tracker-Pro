@@ -1399,6 +1399,7 @@ img {
 
 /* Cards */
 .fitness-index-card,
+.tpi-score-card,
 .pro-comparison-card,
 .weaknesses-card,
 .golf-performance-card,
@@ -1406,13 +1407,14 @@ img {
 .progression-card,
 .multi-player-card {
     background: white;
-    padding: 2rem;
-    border-radius: 12px;
+    padding: 1.5rem;
+    border-radius: 10px;
     box-shadow: var(--shadow-md);
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .fitness-index-card h4,
+.tpi-score-card h4,
 .pro-comparison-card h4,
 .weaknesses-card h4,
 .golf-performance-card h4,
@@ -1420,8 +1422,8 @@ img {
 .progression-card h4,
 .multi-player-card h4 {
     color: var(--primary-color);
-    margin-bottom: 1.5rem;
-    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
     border-bottom: 2px solid var(--border-color);
     padding-bottom: 0.5rem;
 }
@@ -1429,8 +1431,8 @@ img {
 /* Golf Fitness Index */
 .gfi-score-container {
     display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    gap: 3rem;
+    grid-template-columns: 200px 1fr;
+    gap: 2rem;
     align-items: center;
 }
 
@@ -2142,11 +2144,11 @@ img {
 /* Alertes Intelligentes */
 /* Alertes Intelligentes - Améliorées */
 .alert-item {
-    padding: 1.5rem;
+    padding: 1.2rem;
     border-radius: 12px;
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
     display: flex;
-    gap: 1.2rem;
+    gap: 1rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     transition: transform 0.2s, box-shadow 0.2s;
 }
