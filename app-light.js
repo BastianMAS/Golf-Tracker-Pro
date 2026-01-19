@@ -4920,7 +4920,7 @@ function drawRadarChart(canvas, labels, playerData, proData) {
     }
     
     // Labels
-    ctx.font = 'bold 20px Arial';
+    ctx.font = 'bold 24px Arial';
     ctx.fillStyle = '#333';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';

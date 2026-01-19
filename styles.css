@@ -1840,6 +1840,8 @@ img {
     justify-content: center;
     gap: 2rem;
     margin-top: 1rem;
+    font-size: 1.1rem;
+    font-weight: 500;
 }
 
 .legend-color {
