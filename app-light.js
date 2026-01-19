@@ -5559,6 +5559,147 @@ function generateSmartAlerts() {
         }
     });
     
+    // ========== ALERTES DÉSÉQUILIBRES ANTÉRIEUR/POSTÉRIEUR (Push vs Pull) ==========
+    // Récupérer les derniers tests de force
+    const forceTests = allTests.filter(t => t.quality === 'force').sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    if (forceTests.length > 0) {
+        const latestForceTest = forceTests[0];
+        const forceData = latestForceTest.tests;
+        
+        // Développé couché (Push)
+        let benchValue = null;
+        if (forceData.bench) {
+            if (typeof forceData.bench === 'object') {
+                const left = parseFloat(forceData.bench.left) || 0;
+                const right = parseFloat(forceData.bench.right) || 0;
+                benchValue = (left + right) / 2;
+            } else {
+                benchValue = parseFloat(forceData.bench);
+            }
+        }
+        
+        // Tirage dos (Pull)
+        let pullupValue = null;
+        if (forceData.pullup) {
+            if (typeof forceData.pullup === 'object') {
+                const left = parseFloat(forceData.pullup.left) || 0;
+                const right = parseFloat(forceData.pullup.right) || 0;
+                pullupValue = (left + right) / 2;
+            } else {
+                pullupValue = parseFloat(forceData.pullup);
+            }
+        }
+        
+        // Calculer le ratio Pull/Push (idéal = 0.8 à 1.0)
+        if (benchValue && pullupValue && benchValue > 0 && pullupValue > 0) {
+            const ratio = pullupValue / benchValue;
+            
+            // CRITIQUE : Ratio < 0.6 (Pull beaucoup trop faible)
+            if (ratio < 0.6) {
+                const ratioPct = (ratio * 100).toFixed(0);
+                alerts.push({
+                    type: 'critical',
+                    category: 'DÉSÉQUILIBRE PUSH/PULL',
+                    priority: 1, // URGENT
+                    title: `Déséquilibre Chaîne Antérieure/Postérieure Critique`,
+                    message: `Ratio Pull/Push = ${ratioPct}% (Normal: 80-100%). Développé couché: ${benchValue.toFixed(1)}kg, Tirage: ${pullupValue.toFixed(1)}kg.`,
+                    action: 'Renforcer urgence chaîne postérieure (dorsaux, trapèzes, arrière épaules)',
+                    faults: ['Épaules enroulées', 'Posture voutée', 'Risque tendinite épaule', 'Déséquilibre musculaire']
+                });
+            }
+            // SURVEILLANCE : Ratio 0.6-0.75 (Pull un peu faible)
+            else if (ratio < 0.75) {
+                const ratioPct = (ratio * 100).toFixed(0);
+                alerts.push({
+                    type: 'warning',
+                    category: 'DÉSÉQUILIBRE PUSH/PULL',
+                    priority: 2, // IMPORTANT
+                    title: `Déséquilibre Chaîne Antérieure/Postérieure`,
+                    message: `Ratio Pull/Push = ${ratioPct}% (Normal: 80-100%). Développé couché: ${benchValue.toFixed(1)}kg, Tirage: ${pullupValue.toFixed(1)}kg.`,
+                    action: 'Renforcer chaîne postérieure (dorsaux, trapèzes)',
+                    faults: ['Tendance épaules enroulées', 'Posture à surveiller']
+                });
+            }
+            // ALERTE INVERSE : Ratio > 1.2 (Push trop faible par rapport au Pull)
+            else if (ratio > 1.2) {
+                const ratioPct = (ratio * 100).toFixed(0);
+                alerts.push({
+                    type: 'warning',
+                    category: 'DÉSÉQUILIBRE PUSH/PULL',
+                    priority: 2, // IMPORTANT
+                    title: `Déséquilibre Chaîne Antérieure/Postérieure (Push faible)`,
+                    message: `Ratio Pull/Push = ${ratioPct}% (Normal: 80-100%). Développé couché: ${benchValue.toFixed(1)}kg, Tirage: ${pullupValue.toFixed(1)}kg.`,
+                    action: 'Renforcer chaîne antérieure (pectoraux, épaules antérieures)',
+                    faults: ['Déséquilibre inverse', 'Perte de stabilité antérieure']
+                });
+            }
+        }
+    }
+    
+    // ========== DÉSÉQUILIBRES ISCHIO-JAMBIERS/QUADRICEPS (H/Q Ratio) ==========
+    // Récupérer les derniers tests de force
+    if (forceTests.length > 0) {
+        const latestForceTest = forceTests[0];
+        const forceData = latestForceTest.tests;
+        
+        // Squat (dominance Quadriceps)
+        let squatValue = null;
+        if (forceData.squat) {
+            if (typeof forceData.squat === 'object') {
+                const left = parseFloat(forceData.squat.left) || 0;
+                const right = parseFloat(forceData.squat.right) || 0;
+                squatValue = (left + right) / 2;
+            } else {
+                squatValue = parseFloat(forceData.squat);
+            }
+        }
+        
+        // Deadlift (dominance Ischio-jambiers)
+        let deadliftValue = null;
+        if (forceData.deadlift) {
+            if (typeof forceData.deadlift === 'object') {
+                const left = parseFloat(forceData.deadlift.left) || 0;
+                const right = parseFloat(forceData.deadlift.right) || 0;
+                deadliftValue = (left + right) / 2;
+            } else {
+                deadliftValue = parseFloat(forceData.deadlift);
+            }
+        }
+        
+        // Calculer le ratio H/Q (idéal = 0.75 à 1.0 pour sportifs)
+        if (squatValue && deadliftValue && squatValue > 0 && deadliftValue > 0) {
+            const ratio = deadliftValue / squatValue;
+            
+            // CRITIQUE : Ratio < 0.6 (Ischio trop faibles)
+            if (ratio < 0.6) {
+                const ratioPct = (ratio * 100).toFixed(0);
+                alerts.push({
+                    type: 'critical',
+                    category: 'DÉSÉQUILIBRE H/Q',
+                    priority: 1, // URGENT
+                    title: `Déséquilibre Ischio-jambiers/Quadriceps Critique`,
+                    message: `Ratio H/Q = ${ratioPct}% (Normal sportifs: 75-100%). Squat: ${squatValue.toFixed(1)}kg, Deadlift: ${deadliftValue.toFixed(1)}kg.`,
+                    action: 'Renforcer urgence ischio-jambiers (deadlifts, nordics, leg curls)',
+                    faults: ['Risque blessure genou élevé', 'Instabilité ACL', 'Déséquilibre musculaire majeur', 'Risque élongation ischio']
+                });
+            }
+            // SURVEILLANCE : Ratio 0.6-0.75 (Ischio un peu faibles)
+            else if (ratio < 0.75) {
+                const ratioPct = (ratio * 100).toFixed(0);
+                alerts.push({
+                    type: 'warning',
+                    category: 'DÉSÉQUILIBRE H/Q',
+                    priority: 2, // IMPORTANT
+                    title: `Déséquilibre Ischio-jambiers/Quadriceps`,
+                    message: `Ratio H/Q = ${ratioPct}% (Idéal sportifs: 75-100%). Squat: ${squatValue.toFixed(1)}kg, Deadlift: ${deadliftValue.toFixed(1)}kg.`,
+                    action: 'Renforcer ischio-jambiers (deadlifts, nordics)',
+                    faults: ['Stabilité genou à surveiller', 'Risque blessure modéré']
+                });
+            }
+        }
+    }
+    
     // ========== ALERTES COMBINAISONS DE FAIBLESSES ==========
     if (scores) {
         // Combinaison 1: Mobilité thoracique faible + Core faible
