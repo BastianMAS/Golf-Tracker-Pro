@@ -2392,16 +2392,33 @@ img {
         max-width: 100%;
     }
     
+    /* TPI Breakdown - RÉDUIRE LES CASES */
+    .tpi-breakdown {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.4rem;
+        width: 100%;
+        max-width: 100%;
+    }
+    
     .tpi-stat {
-        padding: 0.75rem;
+        padding: 0.5rem;
+        gap: 0.4rem;
+        flex-direction: column;
+        text-align: center;
+        min-width: 0;
+    }
+    
+    .tpi-stat-icon {
+        font-size: 1.3rem;
     }
     
     .tpi-stat-value {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
     }
     
     .tpi-stat-label {
-        font-size: 0.75rem;
+        font-size: 0.65rem;
+        line-height: 1.2;
     }
     
     /* Résumé TPI catégories - 1 colonne */
