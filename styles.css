@@ -595,7 +595,8 @@ img {
 }
 
 .category-content.active {
-    max-height: 2000px;
+    max-height: none;
+    overflow: visible;
     padding: 1.5rem;
 }
 
@@ -2273,24 +2274,55 @@ img {
 
 /* ==================== OPTIMISATION MOBILE COMPLÈTE ==================== */
 @media (max-width: 768px) {
+    /* FIX CRITIQUE - Empêcher débordement */
+    * {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+    }
+    
     /* Container principal */
     .container {
-        padding: 1rem;
+        padding: 0.75rem;
         max-width: 100%;
+        width: 100%;
+        overflow-x: hidden;
+    }
+    
+    /* Section principale */
+    section {
+        padding: 1rem 0.5rem;
+        max-width: 100%;
+    }
+    
+    /* Tab content - FIX SCROLL */
+    .tab-content {
+        max-width: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding: 0.5rem;
     }
     
     /* Navigation onglets */
     .tracker-nav {
         flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: 0.3rem;
         padding: 0.5rem;
+        max-width: 100%;
     }
     
     .tracker-tab {
-        padding: 0.75rem 1rem;
-        font-size: 0.9rem;
+        padding: 0.6rem 0.5rem;
+        font-size: 0.85rem;
         min-width: auto;
-        flex: 1 1 calc(33.333% - 0.5rem); /* 3 colonnes */
+        flex: 1 1 calc(33.333% - 0.3rem); /* 3 colonnes */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     
     /* Titres */
@@ -2315,9 +2347,12 @@ img {
     .smart-alerts-card,
     .progression-card,
     .multi-player-card {
-        padding: 1rem;
+        padding: 0.875rem;
         margin-bottom: 1rem;
         border-radius: 8px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
     }
     
     /* Analyse Pro */
