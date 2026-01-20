@@ -2376,10 +2376,20 @@ img {
         font-size: 0.9rem;
     }
     
+    /* TPI Score Container - Passer en colonne */
+    .tpi-score-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        width: 100%;
+        max-width: 100%;
+    }
+    
     /* TPI Score - Réduire */
     .tpi-stats {
         grid-template-columns: repeat(3, 1fr);
         gap: 0.5rem;
+        width: 100%;
+        max-width: 100%;
     }
     
     .tpi-stat {
