@@ -2357,13 +2357,19 @@ img {
     
     /* Analyse Pro */
     .analyse-container {
-        padding: 1rem;
+        padding: 0.75rem;
+        max-width: 100%;
+        width: 100%;
+        margin: 0;
+        overflow-x: hidden;
     }
     
     /* GFI Score - Passer en colonne */
     .gfi-score-container {
         grid-template-columns: 1fr;
         gap: 1.5rem;
+        width: 100%;
+        max-width: 100%;
     }
     
     .gfi-explanation ul {
@@ -2412,6 +2418,8 @@ img {
         gap: 0.5rem;
         font-size: 0.9rem;
         align-items: center;
+        width: 100%;
+        max-width: 100%;
     }
     
     /* Alertes */
