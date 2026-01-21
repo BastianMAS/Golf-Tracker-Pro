@@ -4061,36 +4061,56 @@ function switchHistoryView(view) {
 
 // Fonction helper : calculer le score d'une qualité à partir d'un objet tests
 function calculateQualityScore(quality, tests) {
-    const baremes = window.BAREMES_TESTS[quality];
-    if (!baremes) return null;
+    console.log('calculateQualityScore appelée avec quality:', quality);
+    console.log('QUALITY_TESTS disponible?', typeof QUALITY_TESTS);
     
-    const testKeys = Object.keys(baremes);
+    if (typeof QUALITY_TESTS === 'undefined') {
+        console.error('QUALITY_TESTS est undefined !');
+        return null;
+    }
+    
+    const qualityDef = QUALITY_TESTS[quality];
+    console.log('qualityDef pour', quality, ':', qualityDef);
+    
+    if (!qualityDef || !qualityDef.tests) return null;
+    
+    const testsList = qualityDef.tests;
     let totalScore = 0;
     let completedTests = 0;
     
-    testKeys.forEach(key => {
-        const value = tests[key];
-        if (value !== undefined && value !== null && value !== '') {
+    testsList.forEach(testDef => {
+        const testValue = tests[testDef.key];
+        
+        if (testValue !== undefined && testValue !== null && testValue !== '') {
             // Gérer les tests bilatéraux
-            if (typeof value === 'object' && value.left !== undefined && value.right !== undefined) {
-                const avgValue = (parseFloat(value.left) + parseFloat(value.right)) / 2;
-                const score = evaluateTest(quality, key, avgValue);
-                if (score !== null) {
-                    totalScore += score;
-                    completedTests++;
+            if (testDef.bilateral && typeof testValue === 'object' && testValue.left !== undefined && testValue.right !== undefined) {
+                const left = parseFloat(testValue.left);
+                const right = parseFloat(testValue.right);
+                
+                if (!isNaN(left) && !isNaN(right) && left > 0 && right > 0) {
+                    const avgValue = (left + right) / 2;
+                    const score = calculateScore20(testDef.key, avgValue);
+                    if (score !== null) {
+                        totalScore += score;
+                        completedTests++;
+                    }
                 }
             } else {
-                const score = evaluateTest(quality, key, value);
-                if (score !== null) {
-                    totalScore += score;
-                    completedTests++;
+                // Test unilatéral
+                const numValue = parseFloat(testValue);
+                if (!isNaN(numValue) && numValue > 0) {
+                    const score = calculateScore20(testDef.key, numValue);
+                    if (score !== null) {
+                        totalScore += score;
+                        completedTests++;
+                    }
                 }
             }
         }
     });
     
     // Retourner la moyenne si au moins 50% des tests sont complétés
-    const minTestsRequired = Math.ceil(testKeys.length * 0.5);
+    const minTestsRequired = Math.ceil(testsList.length * 0.5);
     if (completedTests >= minTestsRequired) {
         return totalScore / completedTests;
     }
