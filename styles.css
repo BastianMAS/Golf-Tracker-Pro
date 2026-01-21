@@ -2556,3 +2556,205 @@ img {
     }
 }
 
+
+/* ==================== HISTORIQUE - ÉVOLUTION TEMPORELLE ==================== */
+
+/* Navigation Historique */
+.history-nav-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.history-nav-btn {
+    padding: 1rem 2rem;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-light);
+    transition: var(--transition);
+}
+
+.history-nav-btn:hover {
+    color: var(--primary-color);
+    background: var(--bg-light);
+}
+
+.history-nav-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+/* Vues Historique */
+.history-view {
+    animation: fadeIn 0.3s;
+}
+
+/* Cards Évolution */
+.evolution-card,
+.comparison-card,
+.progression-stats-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 2rem;
+}
+
+.evolution-card h4,
+.comparison-card h4,
+.progression-stats-card h4 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+/* Graphique */
+.chart-container {
+    position: relative;
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Comparaison */
+.comparison-selectors {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    align-items: end;
+}
+
+.selector-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.selector-group label {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+#comparisonResults {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.comparison-item {
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid;
+    background: var(--bg-light);
+}
+
+.comparison-item.positive {
+    border-color: #22c55e;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+.comparison-item.negative {
+    border-color: #ef4444;
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+}
+
+.comparison-item.stable {
+    border-color: #f59e0b;
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+}
+
+.comparison-item-label {
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+}
+
+.comparison-item-values {
+    font-size: 0.95rem;
+    color: var(--text-light);
+}
+
+.comparison-item-change {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-top: 0.5rem;
+}
+
+/* Stats Progression */
+#progressionStats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.stat-box {
+    padding: 1.5rem;
+    background: var(--bg-light);
+    border-radius: 8px;
+    text-align: center;
+    border: 2px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.stat-box:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+}
+
+.stat-box-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.stat-box-label {
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.stat-box-detail {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-top: 0.5rem;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .history-nav-buttons {
+        gap: 0.5rem;
+    }
+    
+    .history-nav-btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .comparison-selectors {
+        grid-template-columns: 1fr;
+    }
+    
+    .comparison-selectors button {
+        width: 100%;
+    }
+    
+    #comparisonResults {
+        grid-template-columns: 1fr;
+    }
+    
+    #progressionStats {
+        grid-template-columns: 1fr;
+    }
+    
+    #evolutionChart {
+        max-height: 300px !important;
+    }
+}

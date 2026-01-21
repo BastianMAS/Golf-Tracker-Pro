@@ -1186,8 +1186,58 @@
             <!-- Onglet Historique -->
             <div id="history-tab" class="tab-content">
                 <div class="history-container">
-                    <h3>Historique des Tests</h3>
-                    <!-- Le contenu sera généré dynamiquement par displayHistory() -->
+                    <h3>📊 Historique & Progression</h3>
+                    
+                    <!-- Navigation entre vues -->
+                    <div class="history-nav-buttons">
+                        <button class="history-nav-btn active" onclick="switchHistoryView('evolution')">
+                            📈 Évolution
+                        </button>
+                        <button class="history-nav-btn" onclick="switchHistoryView('liste')">
+                            📋 Liste des Tests
+                        </button>
+                    </div>
+                    
+                    <!-- VUE ÉVOLUTION -->
+                    <div id="historyEvolution" class="history-view">
+                        
+                        <!-- 1. Graphique d'évolution -->
+                        <div class="evolution-card">
+                            <h4>📈 Évolution de vos Performances</h4>
+                            <div class="chart-container">
+                                <canvas id="evolutionChart" width="1600" height="600" style="max-width: 100%; max-height: 400px; width: 100%; height: auto;"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- 2. Comparaison de tests -->
+                        <div class="comparison-card">
+                            <h4>🔄 Comparaison entre 2 Tests</h4>
+                            <div class="comparison-selectors">
+                                <div class="selector-group">
+                                    <label>Test 1 (ancien)</label>
+                                    <select id="compareDate1" class="form-control"></select>
+                                </div>
+                                <div class="selector-group">
+                                    <label>Test 2 (récent)</label>
+                                    <select id="compareDate2" class="form-control"></select>
+                                </div>
+                                <button class="btn btn-primary" onclick="compareTests()">Comparer</button>
+                            </div>
+                            <div id="comparisonResults"></div>
+                        </div>
+                        
+                        <!-- 3. Stats de progression -->
+                        <div class="progression-stats-card">
+                            <h4>📊 Statistiques de Progression</h4>
+                            <div id="progressionStats"></div>
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- VUE LISTE (existante) -->
+                    <div id="historyListe" class="history-view" style="display: none;">
+                        <!-- Le contenu sera généré dynamiquement par displayHistory() -->
+                    </div>
                 </div>
             </div>
 

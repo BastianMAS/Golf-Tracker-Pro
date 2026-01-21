@@ -1074,7 +1074,8 @@ function switchTab(tabName) {
     if (tabName === 'dashboard') {
         updateDashboard();
     } else if (tabName === 'history') {
-        displayHistory();
+        // Charger la vue Évolution par défaut
+        switchHistoryView('evolution');
     }
 }
 
@@ -4030,12 +4031,441 @@ function saveQualityTests(qualityKey) {
     });
 }
 
+// ==================== PHASE 3 : ÉVOLUTION TEMPORELLE ====================
+
+// Fonction pour basculer entre les vues Historique
+function switchHistoryView(view) {
+    // Mettre à jour les boutons
+    document.querySelectorAll('.history-nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Afficher/masquer les vues
+    if (view === 'evolution') {
+        document.getElementById('historyEvolution').style.display = 'block';
+        document.getElementById('historyListe').style.display = 'none';
+        
+        // Charger les données d'évolution
+        drawEvolutionChart();
+        populateCompareDateSelectors();
+        calculateProgressionStats();
+    } else {
+        document.getElementById('historyEvolution').style.display = 'none';
+        document.getElementById('historyListe').style.display = 'block';
+        
+        // Charger la liste
+        displayHistory();
+    }
+}
+
+// Fonction helper : calculer le score d'une qualité à partir d'un objet tests
+function calculateQualityScore(quality, tests) {
+    const baremes = window.BAREMES_TESTS[quality];
+    if (!baremes) return null;
+    
+    const testKeys = Object.keys(baremes);
+    let totalScore = 0;
+    let completedTests = 0;
+    
+    testKeys.forEach(key => {
+        const value = tests[key];
+        if (value !== undefined && value !== null && value !== '') {
+            // Gérer les tests bilatéraux
+            if (typeof value === 'object' && value.left !== undefined && value.right !== undefined) {
+                const avgValue = (parseFloat(value.left) + parseFloat(value.right)) / 2;
+                const score = evaluateTest(quality, key, avgValue);
+                if (score !== null) {
+                    totalScore += score;
+                    completedTests++;
+                }
+            } else {
+                const score = evaluateTest(quality, key, value);
+                if (score !== null) {
+                    totalScore += score;
+                    completedTests++;
+                }
+            }
+        }
+    });
+    
+    // Retourner la moyenne si au moins 50% des tests sont complétés
+    const minTestsRequired = Math.ceil(testKeys.length * 0.5);
+    if (completedTests >= minTestsRequired) {
+        return totalScore / completedTests;
+    }
+    
+    return null;
+}
+
+// 1. GRAPHIQUE D'ÉVOLUTION
+function drawEvolutionChart() {
+    const canvas = document.getElementById('evolutionChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    // Récupérer l'historique
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    if (history.length === 0) {
+        ctx.clearRect(0, 0, width, height);
+        ctx.font = '20px Arial';
+        ctx.fillStyle = '#999';
+        ctx.textAlign = 'center';
+        ctx.fillText('Aucun test enregistré', width / 2, height / 2);
+        return;
+    }
+    
+    // Trier par date
+    const sortedHistory = history.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    // Préparer les données par qualité
+    const qualities = ['force', 'explosivite', 'mobilite', 'core', 'endurance', 'vitesse', 'equilibre'];
+    const qualityLabels = ['Force', 'Explosivité', 'Mobilité', 'Core', 'Endurance', 'Vitesse', 'Équilibre'];
+    const qualityColors = [
+        '#ef4444', // Force - Rouge
+        '#f59e0b', // Explosivité - Orange
+        '#22c55e', // Mobilité - Vert
+        '#3b82f6', // Core - Bleu
+        '#8b5cf6', // Endurance - Violet
+        '#ec4899', // Vitesse - Rose
+        '#14b8a6'  // Équilibre - Turquoise
+    ];
+    
+    // Pour chaque test, calculer les scores
+    const dataPoints = sortedHistory.map(test => {
+        const scores = {};
+        qualities.forEach(quality => {
+            if (test.quality === quality) {
+                scores[quality] = calculateQualityScore(quality, test.tests);
+            }
+        });
+        return {
+            date: new Date(test.date),
+            scores: scores
+        };
+    });
+    
+    // Grouper par qualité
+    const qualityData = {};
+    qualities.forEach((quality, idx) => {
+        qualityData[quality] = dataPoints
+            .filter(dp => dp.scores[quality] !== undefined && dp.scores[quality] !== null)
+            .map(dp => ({ date: dp.date, score: dp.scores[quality] }));
+    });
+    
+    // Dessiner
+    ctx.clearRect(0, 0, width, height);
+    
+    const padding = 80;
+    const chartWidth = width - 2 * padding;
+    const chartHeight = height - 2 * padding;
+    
+    // Axes
+    ctx.strokeStyle = '#ddd';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padding, padding);
+    ctx.lineTo(padding, height - padding);
+    ctx.lineTo(width - padding, height - padding);
+    ctx.stroke();
+    
+    // Graduations Y (scores 0-20)
+    ctx.fillStyle = '#666';
+    ctx.font = '14px Arial';
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 20; i += 5) {
+        const y = height - padding - (i / 20) * chartHeight;
+        ctx.fillText(i, padding - 10, y + 5);
+        
+        // Lignes horizontales
+        ctx.strokeStyle = '#f0f0f0';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(width - padding, y);
+        ctx.stroke();
+    }
+    
+    // Dessiner les courbes
+    qualities.forEach((quality, idx) => {
+        const data = qualityData[quality];
+        if (data.length === 0) return;
+        
+        ctx.strokeStyle = qualityColors[idx];
+        ctx.fillStyle = qualityColors[idx];
+        ctx.lineWidth = 3;
+        
+        ctx.beginPath();
+        data.forEach((point, i) => {
+            const x = padding + (i / Math.max(data.length - 1, 1)) * chartWidth;
+            const y = height - padding - (point.score / 20) * chartHeight;
+            
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        });
+        ctx.stroke();
+        
+        // Points
+        data.forEach((point, i) => {
+            const x = padding + (i / Math.max(data.length - 1, 1)) * chartWidth;
+            const y = height - padding - (point.score / 20) * chartHeight;
+            
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            ctx.fill();
+        });
+    });
+    
+    // Légende
+    const legendX = padding;
+    const legendY = 30;
+    ctx.font = '14px Arial';
+    qualities.forEach((quality, idx) => {
+        const x = legendX + (idx * 130);
+        ctx.fillStyle = qualityColors[idx];
+        ctx.fillRect(x, legendY, 15, 15);
+        ctx.fillStyle = '#333';
+        ctx.textAlign = 'left';
+        ctx.fillText(qualityLabels[idx], x + 20, legendY + 12);
+    });
+}
+
+// 2. COMPARAISON DE TESTS
+function populateCompareDateSelectors() {
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    if (history.length === 0) return;
+    
+    const sortedHistory = history.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    const select1 = document.getElementById('compareDate1');
+    const select2 = document.getElementById('compareDate2');
+    
+    if (!select1 || !select2) return;
+    
+    select1.innerHTML = '<option value="">Sélectionner...</option>';
+    select2.innerHTML = '<option value="">Sélectionner...</option>';
+    
+    sortedHistory.forEach((test, idx) => {
+        const date = new Date(test.date).toLocaleDateString('fr-FR');
+        const qualityLabel = test.quality.charAt(0).toUpperCase() + test.quality.slice(1);
+        const option1 = `<option value="${idx}">${date} - ${qualityLabel}</option>`;
+        const option2 = `<option value="${idx}">${date} - ${qualityLabel}</option>`;
+        
+        select1.innerHTML += option1;
+        select2.innerHTML += option2;
+    });
+}
+
+function compareTests() {
+    const select1 = document.getElementById('compareDate1');
+    const select2 = document.getElementById('compareDate2');
+    const resultsDiv = document.getElementById('comparisonResults');
+    
+    if (!select1 || !select2 || !resultsDiv) return;
+    
+    const idx1 = parseInt(select1.value);
+    const idx2 = parseInt(select2.value);
+    
+    if (isNaN(idx1) || isNaN(idx2)) {
+        resultsDiv.innerHTML = '<p style="color: #999;">Sélectionnez 2 tests pour comparer.</p>';
+        return;
+    }
+    
+    if (idx1 === idx2) {
+        resultsDiv.innerHTML = '<p style="color: #ef4444;">Veuillez sélectionner 2 tests différents.</p>';
+        return;
+    }
+    
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    const sortedHistory = history.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    const test1 = sortedHistory[idx1];
+    const test2 = sortedHistory[idx2];
+    
+    // Calculer les scores pour chaque qualité
+    const qualities = ['force', 'explosivite', 'mobilite', 'core', 'endurance', 'vitesse', 'equilibre'];
+    const qualityLabels = ['Force', 'Explosivité', 'Mobilité', 'Core', 'Endurance', 'Vitesse', 'Équilibre'];
+    
+    let html = '';
+    
+    qualities.forEach((quality, idx) => {
+        // Trouver le test le plus proche de cette qualité pour chaque date
+        const test1Quality = sortedHistory.find((t, i) => i >= idx1 && t.quality === quality);
+        const test2Quality = sortedHistory.find((t, i) => i >= idx2 && t.quality === quality);
+        
+        if (!test1Quality || !test2Quality) return;
+        
+        const score1 = calculateQualityScore(quality, test1Quality.tests);
+        const score2 = calculateQualityScore(quality, test2Quality.tests);
+        
+        if (score1 === null || score2 === null) return;
+        
+        const diff = score2 - score1;
+        const diffPercent = ((diff / score1) * 100).toFixed(1);
+        const arrow = diff > 0 ? '↗️' : diff < 0 ? '↘️' : '→';
+        const cssClass = diff > 0 ? 'positive' : diff < 0 ? 'negative' : 'stable';
+        
+        html += `
+            <div class="comparison-item ${cssClass}">
+                <div class="comparison-item-label">${qualityLabels[idx]}</div>
+                <div class="comparison-item-values">${score1.toFixed(1)} → ${score2.toFixed(1)}</div>
+                <div class="comparison-item-change">${arrow} ${diffPercent > 0 ? '+' : ''}${diffPercent}%</div>
+            </div>
+        `;
+    });
+    
+    resultsDiv.innerHTML = html || '<p style="color: #999;">Pas de données comparables pour ces tests.</p>';
+}
+
+// 3. STATS DE PROGRESSION
+function calculateProgressionStats() {
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    const statsDiv = document.getElementById('progressionStats');
+    
+    if (!statsDiv) return;
+    
+    if (history.length === 0) {
+        statsDiv.innerHTML = '<p style="color: #999;">Aucune donnée disponible.</p>';
+        return;
+    }
+    
+    // Total tests
+    const totalTests = history.length;
+    
+    // Période de suivi
+    const dates = history.map(t => new Date(t.date)).sort((a, b) => a - b);
+    const firstDate = dates[0];
+    const lastDate = dates[dates.length - 1];
+    const daysDiff = Math.floor((lastDate - firstDate) / (1000 * 60 * 60 * 24));
+    const monthsDiff = (daysDiff / 30).toFixed(1);
+    
+    // Moyenne tests/mois
+    const testsPerMonth = monthsDiff > 0 ? (totalTests / monthsDiff).toFixed(1) : totalTests;
+    
+    // Calculer meilleure progression et pire régression
+    const qualities = ['force', 'explosivite', 'mobilite', 'core', 'endurance', 'vitesse', 'equilibre'];
+    const qualityLabels = ['Force', 'Explosivité', 'Mobilité', 'Core', 'Endurance', 'Vitesse', 'Équilibre'];
+    
+    let progressions = [];
+    
+    qualities.forEach((quality, idx) => {
+        const qualityTests = history.filter(t => t.quality === quality).sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        if (qualityTests.length >= 2) {
+            const firstScore = calculateQualityScore(quality, qualityTests[0].tests);
+            const lastScore = calculateQualityScore(quality, qualityTests[qualityTests.length - 1].tests);
+            
+            if (firstScore !== null && lastScore !== null) {
+                const diff = lastScore - firstScore;
+                const diffPercent = ((diff / firstScore) * 100);
+                
+                progressions.push({
+                    quality: qualityLabels[idx],
+                    percent: diffPercent
+                });
+            }
+        }
+    });
+    
+    let bestProgression = null;
+    let worstRegression = null;
+    
+    if (progressions.length > 0) {
+        progressions.sort((a, b) => b.percent - a.percent);
+        bestProgression = progressions[0];
+        worstRegression = progressions[progressions.length - 1];
+    }
+    
+    // Tendance globale
+    const avgProgression = progressions.length > 0 
+        ? progressions.reduce((sum, p) => sum + p.percent, 0) / progressions.length 
+        : 0;
+    
+    let trend = '➡️ Stable';
+    let trendColor = '#f59e0b';
+    if (avgProgression > 5) {
+        trend = '🚀 Excellent';
+        trendColor = '#22c55e';
+    } else if (avgProgression > 0) {
+        trend = '📈 Positif';
+        trendColor = '#22c55e';
+    } else if (avgProgression < -5) {
+        trend = '📉 Négatif';
+        trendColor = '#ef4444';
+    }
+    
+    // Afficher
+    let html = `
+        <div class="stat-box">
+            <div class="stat-box-value">${totalTests}</div>
+            <div class="stat-box-label">Tests enregistrés</div>
+        </div>
+        
+        <div class="stat-box">
+            <div class="stat-box-value">${monthsDiff}</div>
+            <div class="stat-box-label">Mois de suivi</div>
+            <div class="stat-box-detail">${daysDiff} jours</div>
+        </div>
+        
+        <div class="stat-box">
+            <div class="stat-box-value">${testsPerMonth}</div>
+            <div class="stat-box-label">Tests/mois (moyenne)</div>
+        </div>
+    `;
+    
+    if (bestProgression) {
+        html += `
+            <div class="stat-box">
+                <div class="stat-box-value" style="color: #22c55e;">+${bestProgression.percent.toFixed(1)}%</div>
+                <div class="stat-box-label">Meilleure progression</div>
+                <div class="stat-box-detail">${bestProgression.quality}</div>
+            </div>
+        `;
+    }
+    
+    if (worstRegression && worstRegression.percent < 0) {
+        html += `
+            <div class="stat-box">
+                <div class="stat-box-value" style="color: #ef4444;">${worstRegression.percent.toFixed(1)}%</div>
+                <div class="stat-box-label">À surveiller</div>
+                <div class="stat-box-detail">${worstRegression.quality}</div>
+            </div>
+        `;
+    }
+    
+    html += `
+        <div class="stat-box">
+            <div class="stat-box-value" style="color: ${trendColor};">${trend}</div>
+            <div class="stat-box-label">Tendance globale</div>
+            <div class="stat-box-detail">${avgProgression.toFixed(1)}% en moyenne</div>
+        </div>
+    `;
+    
+    statsDiv.innerHTML = html;
+}
+
+// Exposer les fonctions globalement
+window.switchHistoryView = switchHistoryView;
+window.compareTests = compareTests;
+
 // Afficher l'historique
 function displayHistory() {
     const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    const container = document.getElementById('historyListe');
+    
+    if (!container) {
+        console.error('Container #historyListe not found');
+        return;
+    }
     
     if (history.length === 0) {
-        document.querySelector('.history-container').innerHTML = `
+        container.innerHTML = `
             <div class="alert warning">
                 <div class="alert-title">📋 Aucun test enregistré</div>
                 <p>Commencez par enregistrer vos premiers tests !</p>
@@ -4167,7 +4597,7 @@ function displayHistory() {
     
     html += '</div>';
     
-    document.querySelector('.history-container').innerHTML = html;
+    container.innerHTML = html;
 }
 
 // Supprimer un test
