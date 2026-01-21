@@ -4061,17 +4061,12 @@ function switchHistoryView(view) {
 
 // Fonction helper : calculer le score d'une qualité à partir d'un objet tests
 function calculateQualityScore(quality, tests) {
-    console.log('calculateQualityScore appelée avec quality:', quality);
-    console.log('QUALITY_TESTS disponible?', typeof QUALITY_TESTS);
-    
     if (typeof QUALITY_TESTS === 'undefined') {
         console.error('QUALITY_TESTS est undefined !');
         return null;
     }
     
     const qualityDef = QUALITY_TESTS[quality];
-    console.log('qualityDef pour', quality, ':', qualityDef);
-    
     if (!qualityDef || !qualityDef.tests) return null;
     
     const testsList = qualityDef.tests;
