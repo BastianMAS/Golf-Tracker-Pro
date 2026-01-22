@@ -1030,6 +1030,19 @@
                     <h3>🎯 Analyse Professionnelle</h3>
                     <p class="subtitle">Vue d'ensemble approfondie des performances physiques et corrélations avec le golf</p>
                     
+                    <!-- Navigation entre vues -->
+                    <div class="analyse-nav-buttons">
+                        <button class="analyse-nav-btn active" onclick="switchAnalyseView('synthese')">
+                            📊 Synthèse
+                        </button>
+                        <button class="analyse-nav-btn" onclick="switchAnalyseView('details')">
+                            📋 Détails
+                        </button>
+                    </div>
+                    
+                    <!-- VUE SYNTHÈSE -->
+                    <div id="analyseSynthese" class="analyse-view">
+                    
                     <!-- Golf Fitness Index -->
                     <div class="fitness-index-card">
                         <h4>Golf Fitness Index</h4>
@@ -1125,6 +1138,18 @@
                             <span style="color: #f39c12; font-weight: 600;">? = Données insuffisantes (minimum 50% des tests requis)</span>
                         </div>
                     </div>
+                    
+                    <!-- Top Alertes URGENTES (Synthèse uniquement) -->
+                    <div class="smart-alerts-card">
+                        <h4>🚨 Alertes Prioritaires</h4>
+                        <p class="help-text">Top 3-5 alertes urgentes nécessitant une attention immédiate</p>
+                        <div id="top3UrgentAlerts"></div>
+                    </div>
+                    
+                    </div><!-- Fin Vue Synthèse -->
+                    
+                    <!-- VUE DÉTAILS -->
+                    <div id="analyseDetails" class="analyse-view" style="display: none;">
 
                     <!-- Top 3 Faiblesses -->
                     <div class="weaknesses-card">
@@ -1180,6 +1205,9 @@
                             <button class="btn btn-secondary" id="exportCSV">📊 Exporter en CSV</button>
                         </div>
                     </div>
+                    
+                    </div><!-- Fin Vue Détails -->
+                    
                 </div>
             </div>
 

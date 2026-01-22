@@ -1076,6 +1076,9 @@ function switchTab(tabName) {
     } else if (tabName === 'history') {
         // Charger la vue Évolution par défaut
         switchHistoryView('evolution');
+    } else if (tabName === 'analyse') {
+        // Charger la vue Synthèse par défaut
+        switchAnalyseView('synthese');
     }
 }
 
@@ -5803,6 +5806,229 @@ function createContributionBar(label, score, contribution, maxContribution) {
         </div>
     `;
 }
+
+// ==================== PHASE 2 : SIMPLIFICATION ANALYSE PRO ====================
+
+// Basculer entre vues Synthèse/Détails
+function switchAnalyseView(view) {
+    // Mettre à jour les boutons
+    document.querySelectorAll('.analyse-nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Afficher/masquer les vues
+    if (view === 'synthese') {
+        document.getElementById('analyseSynthese').style.display = 'block';
+        document.getElementById('analyseDetails').style.display = 'none';
+        
+        // Générer le top 3-5 alertes urgentes
+        generateTop3UrgentAlerts();
+    } else {
+        document.getElementById('analyseSynthese').style.display = 'none';
+        document.getElementById('analyseDetails').style.display = 'block';
+    }
+}
+
+// Générer Top 3-5 Alertes Urgentes (priorité 1 uniquement)
+function generateTop3UrgentAlerts() {
+    const container = document.getElementById('top3UrgentAlerts');
+    if (!container) return;
+    
+    // Récupérer toutes les alertes de generateSmartAlerts
+    const allAlerts = getAllSmartAlerts();
+    
+    // Filtrer priorité 1 uniquement et prendre top 5
+    const urgentAlerts = allAlerts.filter(a => a.priority === 1).slice(0, 5);
+    
+    if (urgentAlerts.length === 0) {
+        container.innerHTML = `
+            <div class="alert-item alert-info">
+                <div class="alert-icon">✅</div>
+                <div class="alert-content">
+                    <h5>Aucune alerte urgente</h5>
+                    <p>Votre profil ne présente pas de limitation critique détectée.</p>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    const iconMap = { critical: '🚨', warning: '⚠️', info: 'ℹ️' };
+    
+    let html = '';
+    urgentAlerts.forEach(alert => {
+        html += `
+            <div class="alert-item alert-${alert.type}">
+                <div class="alert-icon">${iconMap[alert.type]}</div>
+                <div class="alert-content">
+                    <h5>${alert.title}</h5>
+                    <p>${alert.message}</p>
+                    ${alert.action ? `
+                        <div class="alert-action">
+                            <strong>💪 Action recommandée:</strong> ${alert.action}
+                        </div>
+                    ` : ''}
+                    ${alert.faults && alert.faults.length > 0 ? `
+                        <div class="swing-fault">
+                            <strong>Impacts potentiels:</strong>
+                            <ul>
+                                ${alert.faults.map(f => `<li>${f}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Fonction helper : récupérer toutes les alertes (copie logique de generateSmartAlerts)
+function getAllSmartAlerts() {
+    const alerts = [];
+    const scores = calculateQualityScores();
+    
+    // ========== ALERTES PHYSIQUES (Scores faibles) ==========
+    if (scores && scores.mobilite !== null && scores.mobilite < 10) {
+        alerts.push({
+            priority: 1,
+            type: 'critical',
+            title: 'Mobilité Insuffisante',
+            message: `Score mobilité: ${scores.mobilite.toFixed(1)}/20 (objectif: >14)`,
+            action: 'Renforcer mobilité (étirements dynamiques, yoga golf)',
+            faults: ['Perte d\'amplitude en backswing', 'Early extension', 'Sway']
+        });
+    }
+    
+    if (scores && scores.core !== null && scores.core < 10) {
+        alerts.push({
+            priority: 1,
+            type: 'critical',
+            title: 'Core À Améliorer',
+            message: `Score Core: ${scores.core.toFixed(1)}/20 (objectif: >14)`,
+            action: 'Renforcer core (planches, rotations, dead bugs)',
+            faults: ['Early extension', 'Loss of posture', 'Slide']
+        });
+    }
+    
+    if (scores && scores.force !== null && scores.force < 10) {
+        alerts.push({
+            priority: 1,
+            type: 'critical',
+            title: 'Force Insuffisante',
+            message: `Score Force: ${scores.force.toFixed(1)}/20 (objectif: >14)`,
+            action: 'Programme force (squats, deadlifts, presses)',
+            faults: ['Loss of distance', 'Faible vitesse de club']
+        });
+    }
+    
+    // ========== ASYMÉTRIES CRITIQUES >15% ==========
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    const allTests = history.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    const bilateralTests = ['legext', 'press', 'hipflexor', 'singleleg'];
+    
+    bilateralTests.forEach(testKey => {
+        const recentTest = allTests.find(t => t.tests && t.tests[testKey]);
+        
+        if (recentTest && recentTest.tests[testKey]) {
+            const data = recentTest.tests[testKey];
+            if (data && typeof data === 'object' && data.left !== undefined && data.right !== undefined) {
+                const left = parseFloat(data.left);
+                const right = parseFloat(data.right);
+                
+                if (!isNaN(left) && !isNaN(right) && left > 0 && right > 0) {
+                    const asymmetry = Math.abs(((left - right) / Math.max(left, right)) * 100);
+                    const weakerSide = left < right ? 'Gauche' : 'Droite';
+                    
+                    if (asymmetry > 15) {
+                        alerts.push({
+                            priority: 1,
+                            type: 'critical',
+                            title: `${testKey.toUpperCase()}: Asymétrie ${asymmetry.toFixed(1)}% (${weakerSide})`,
+                            message: `Risque blessure élevé`,
+                            action: `Renforcer côté ${weakerSide}`,
+                            faults: ['Déséquilibre G/D', 'Compensation swing']
+                        });
+                    }
+                }
+            }
+        }
+    });
+    
+    // ========== DÉSÉQUILIBRES PUSH/PULL & ISCHIO/QUAD ==========
+    const forceTests = allTests.filter(t => t.quality === 'force').sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    if (forceTests.length > 0) {
+        const latestForceTest = forceTests[0];
+        const forceData = latestForceTest.tests;
+        
+        // Push/Pull
+        let benchValue = null;
+        if (forceData.bench) {
+            benchValue = typeof forceData.bench === 'object' 
+                ? (parseFloat(forceData.bench.left || 0) + parseFloat(forceData.bench.right || 0)) / 2 
+                : parseFloat(forceData.bench);
+        }
+        
+        let pullupValue = null;
+        if (forceData.pullup) {
+            pullupValue = typeof forceData.pullup === 'object' 
+                ? (parseFloat(forceData.pullup.left || 0) + parseFloat(forceData.pullup.right || 0)) / 2 
+                : parseFloat(forceData.pullup);
+        }
+        
+        if (benchValue && pullupValue && benchValue > 0 && pullupValue > 0) {
+            const ratio = pullupValue / benchValue;
+            if (ratio < 0.6) {
+                alerts.push({
+                    priority: 1,
+                    type: 'critical',
+                    title: `Déséquilibre Chaîne Antérieure/Postérieure Critique`,
+                    message: `Ratio Pull/Push = ${(ratio * 100).toFixed(0)}% (Normal: 80-100%)`,
+                    action: 'Renforcer chaîne postérieure (dorsaux, trapèzes)',
+                    faults: ['Épaules enroulées', 'Posture voutée', 'Risque tendinite']
+                });
+            }
+        }
+        
+        // Ischio/Quad
+        let squatValue = null;
+        if (forceData.squat) {
+            squatValue = typeof forceData.squat === 'object' 
+                ? (parseFloat(forceData.squat.left || 0) + parseFloat(forceData.squat.right || 0)) / 2 
+                : parseFloat(forceData.squat);
+        }
+        
+        let deadliftValue = null;
+        if (forceData.deadlift) {
+            deadliftValue = typeof forceData.deadlift === 'object' 
+                ? (parseFloat(forceData.deadlift.left || 0) + parseFloat(forceData.deadlift.right || 0)) / 2 
+                : parseFloat(forceData.deadlift);
+        }
+        
+        if (squatValue && deadliftValue && squatValue > 0 && deadliftValue > 0) {
+            const ratio = deadliftValue / squatValue;
+            if (ratio < 0.6) {
+                alerts.push({
+                    priority: 1,
+                    type: 'critical',
+                    title: `Déséquilibre Ischio-jambiers/Quadriceps Critique`,
+                    message: `Ratio H/Q = ${(ratio * 100).toFixed(0)}% (Normal: 75-100%)`,
+                    action: 'Renforcer ischio-jambiers (deadlifts, nordics, leg curls)',
+                    faults: ['Risque blessure genou', 'Instabilité ACL', 'Risque élongation']
+                });
+            }
+        }
+    }
+    
+    return alerts;
+}
+
+// Exposer globalement
+window.switchAnalyseView = switchAnalyseView;
 
 
 function generateSmartAlerts() {
