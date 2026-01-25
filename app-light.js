@@ -1074,7 +1074,11 @@ function switchTab(tabName) {
     if (tabName === 'dashboard') {
         updateDashboard();
     } else if (tabName === 'history') {
-        displayHistory();
+        // Charger la vue Évolution par défaut
+        switchHistoryView('evolution');
+    } else if (tabName === 'analyse') {
+        // Charger la vue Synthèse par défaut
+        switchAnalyseView('synthese');
     }
 }
 
@@ -4030,12 +4034,456 @@ function saveQualityTests(qualityKey) {
     });
 }
 
+// ==================== PHASE 3 : ÉVOLUTION TEMPORELLE ====================
+
+// Fonction pour basculer entre les vues Historique
+function switchHistoryView(view) {
+    // Mettre à jour les boutons
+    document.querySelectorAll('.history-nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Afficher/masquer les vues
+    if (view === 'evolution') {
+        document.getElementById('historyEvolution').style.display = 'block';
+        document.getElementById('historyListe').style.display = 'none';
+        
+        // Charger les données d'évolution
+        drawEvolutionChart();
+        populateCompareDateSelectors();
+        calculateProgressionStats();
+    } else {
+        document.getElementById('historyEvolution').style.display = 'none';
+        document.getElementById('historyListe').style.display = 'block';
+        
+        // Charger la liste
+        displayHistory();
+    }
+}
+
+// Fonction helper : calculer le score d'une qualité à partir d'un objet tests
+function calculateQualityScore(quality, tests) {
+    if (typeof QUALITY_TESTS === 'undefined') {
+        console.error('QUALITY_TESTS est undefined !');
+        return null;
+    }
+    
+    const qualityDef = QUALITY_TESTS[quality];
+    if (!qualityDef || !qualityDef.tests) return null;
+    
+    const testsList = qualityDef.tests;
+    let totalScore = 0;
+    let completedTests = 0;
+    
+    testsList.forEach(testDef => {
+        const testValue = tests[testDef.key];
+        
+        if (testValue !== undefined && testValue !== null && testValue !== '') {
+            // Gérer les tests bilatéraux
+            if (testDef.bilateral && typeof testValue === 'object' && testValue.left !== undefined && testValue.right !== undefined) {
+                const left = parseFloat(testValue.left);
+                const right = parseFloat(testValue.right);
+                
+                if (!isNaN(left) && !isNaN(right) && left > 0 && right > 0) {
+                    const avgValue = (left + right) / 2;
+                    const score = calculateScore20(testDef.key, avgValue);
+                    if (score !== null) {
+                        totalScore += score;
+                        completedTests++;
+                    }
+                }
+            } else {
+                // Test unilatéral
+                const numValue = parseFloat(testValue);
+                if (!isNaN(numValue) && numValue > 0) {
+                    const score = calculateScore20(testDef.key, numValue);
+                    if (score !== null) {
+                        totalScore += score;
+                        completedTests++;
+                    }
+                }
+            }
+        }
+    });
+    
+    // Retourner la moyenne si au moins 50% des tests sont complétés
+    const minTestsRequired = Math.ceil(testsList.length * 0.5);
+    if (completedTests >= minTestsRequired) {
+        return totalScore / completedTests;
+    }
+    
+    return null;
+}
+
+// 1. GRAPHIQUE D'ÉVOLUTION
+function drawEvolutionChart() {
+    const canvas = document.getElementById('evolutionChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    // Récupérer l'historique
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    if (history.length === 0) {
+        ctx.clearRect(0, 0, width, height);
+        ctx.font = '20px Arial';
+        ctx.fillStyle = '#999';
+        ctx.textAlign = 'center';
+        ctx.fillText('Aucun test enregistré', width / 2, height / 2);
+        return;
+    }
+    
+    // Trier par date
+    const sortedHistory = history.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    // Préparer les données par qualité
+    const qualities = ['force', 'explosivite', 'mobilite', 'core', 'endurance', 'vitesse', 'equilibre'];
+    const qualityLabels = ['Force', 'Explosivité', 'Mobilité', 'Core', 'Endurance', 'Vitesse', 'Équilibre'];
+    const qualityColors = [
+        '#ef4444', // Force - Rouge
+        '#f59e0b', // Explosivité - Orange
+        '#22c55e', // Mobilité - Vert
+        '#3b82f6', // Core - Bleu
+        '#8b5cf6', // Endurance - Violet
+        '#ec4899', // Vitesse - Rose
+        '#14b8a6'  // Équilibre - Turquoise
+    ];
+    
+    // Pour chaque test, calculer les scores
+    const dataPoints = sortedHistory.map(test => {
+        const scores = {};
+        qualities.forEach(quality => {
+            if (test.quality === quality) {
+                scores[quality] = calculateQualityScore(quality, test.tests);
+            }
+        });
+        return {
+            date: new Date(test.date),
+            scores: scores
+        };
+    });
+    
+    // Grouper par qualité
+    const qualityData = {};
+    qualities.forEach((quality, idx) => {
+        qualityData[quality] = dataPoints
+            .filter(dp => dp.scores[quality] !== undefined && dp.scores[quality] !== null)
+            .map(dp => ({ date: dp.date, score: dp.scores[quality] }));
+    });
+    
+    // Dessiner
+    ctx.clearRect(0, 0, width, height);
+    
+    const padding = 80;
+    const chartWidth = width - 2 * padding;
+    const chartHeight = height - 2 * padding;
+    
+    // Axes
+    ctx.strokeStyle = '#ddd';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padding, padding);
+    ctx.lineTo(padding, height - padding);
+    ctx.lineTo(width - padding, height - padding);
+    ctx.stroke();
+    
+    // Graduations Y (scores 0-20)
+    ctx.fillStyle = '#666';
+    ctx.font = '14px Arial';
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= 20; i += 5) {
+        const y = height - padding - (i / 20) * chartHeight;
+        ctx.fillText(i, padding - 10, y + 5);
+        
+        // Lignes horizontales
+        ctx.strokeStyle = '#f0f0f0';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(width - padding, y);
+        ctx.stroke();
+    }
+    
+    // Dessiner les courbes
+    qualities.forEach((quality, idx) => {
+        const data = qualityData[quality];
+        if (data.length === 0) return;
+        
+        ctx.strokeStyle = qualityColors[idx];
+        ctx.fillStyle = qualityColors[idx];
+        ctx.lineWidth = 3;
+        
+        ctx.beginPath();
+        data.forEach((point, i) => {
+            const x = padding + (i / Math.max(data.length - 1, 1)) * chartWidth;
+            const y = height - padding - (point.score / 20) * chartHeight;
+            
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        });
+        ctx.stroke();
+        
+        // Points
+        data.forEach((point, i) => {
+            const x = padding + (i / Math.max(data.length - 1, 1)) * chartWidth;
+            const y = height - padding - (point.score / 20) * chartHeight;
+            
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            ctx.fill();
+        });
+    });
+    
+    // Légende
+    const legendX = padding;
+    const legendY = 30;
+    ctx.font = '14px Arial';
+    qualities.forEach((quality, idx) => {
+        const x = legendX + (idx * 130);
+        ctx.fillStyle = qualityColors[idx];
+        ctx.fillRect(x, legendY, 15, 15);
+        ctx.fillStyle = '#333';
+        ctx.textAlign = 'left';
+        ctx.fillText(qualityLabels[idx], x + 20, legendY + 12);
+    });
+}
+
+// 2. COMPARAISON DE TESTS
+function populateCompareDateSelectors() {
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    if (history.length === 0) return;
+    
+    const sortedHistory = history.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    const select1 = document.getElementById('compareDate1');
+    const select2 = document.getElementById('compareDate2');
+    
+    if (!select1 || !select2) return;
+    
+    select1.innerHTML = '<option value="">Sélectionner...</option>';
+    select2.innerHTML = '<option value="">Sélectionner...</option>';
+    
+    sortedHistory.forEach((test, idx) => {
+        const date = new Date(test.date).toLocaleDateString('fr-FR');
+        const qualityLabel = test.quality.charAt(0).toUpperCase() + test.quality.slice(1);
+        const option1 = `<option value="${idx}">${date} - ${qualityLabel}</option>`;
+        const option2 = `<option value="${idx}">${date} - ${qualityLabel}</option>`;
+        
+        select1.innerHTML += option1;
+        select2.innerHTML += option2;
+    });
+}
+
+function compareTests() {
+    const select1 = document.getElementById('compareDate1');
+    const select2 = document.getElementById('compareDate2');
+    const resultsDiv = document.getElementById('comparisonResults');
+    
+    if (!select1 || !select2 || !resultsDiv) return;
+    
+    const idx1 = parseInt(select1.value);
+    const idx2 = parseInt(select2.value);
+    
+    if (isNaN(idx1) || isNaN(idx2)) {
+        resultsDiv.innerHTML = '<p style="color: #999;">Sélectionnez 2 tests pour comparer.</p>';
+        return;
+    }
+    
+    if (idx1 === idx2) {
+        resultsDiv.innerHTML = '<p style="color: #ef4444;">Veuillez sélectionner 2 tests différents.</p>';
+        return;
+    }
+    
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    const sortedHistory = history.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    const test1 = sortedHistory[idx1];
+    const test2 = sortedHistory[idx2];
+    
+    // Calculer les scores pour chaque qualité
+    const qualities = ['force', 'explosivite', 'mobilite', 'core', 'endurance', 'vitesse', 'equilibre'];
+    const qualityLabels = ['Force', 'Explosivité', 'Mobilité', 'Core', 'Endurance', 'Vitesse', 'Équilibre'];
+    
+    let html = '';
+    
+    qualities.forEach((quality, idx) => {
+        // Trouver le test le plus proche de cette qualité pour chaque date
+        const test1Quality = sortedHistory.find((t, i) => i >= idx1 && t.quality === quality);
+        const test2Quality = sortedHistory.find((t, i) => i >= idx2 && t.quality === quality);
+        
+        if (!test1Quality || !test2Quality) return;
+        
+        const score1 = calculateQualityScore(quality, test1Quality.tests);
+        const score2 = calculateQualityScore(quality, test2Quality.tests);
+        
+        if (score1 === null || score2 === null) return;
+        
+        const diff = score2 - score1;
+        const diffPercent = ((diff / score1) * 100).toFixed(1);
+        const arrow = diff > 0 ? '↗️' : diff < 0 ? '↘️' : '→';
+        const cssClass = diff > 0 ? 'positive' : diff < 0 ? 'negative' : 'stable';
+        
+        html += `
+            <div class="comparison-item ${cssClass}">
+                <div class="comparison-item-label">${qualityLabels[idx]}</div>
+                <div class="comparison-item-values">${score1.toFixed(1)} → ${score2.toFixed(1)}</div>
+                <div class="comparison-item-change">${arrow} ${diffPercent > 0 ? '+' : ''}${diffPercent}%</div>
+            </div>
+        `;
+    });
+    
+    resultsDiv.innerHTML = html || '<p style="color: #999;">Pas de données comparables pour ces tests.</p>';
+}
+
+// 3. STATS DE PROGRESSION
+function calculateProgressionStats() {
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    const statsDiv = document.getElementById('progressionStats');
+    
+    if (!statsDiv) return;
+    
+    if (history.length === 0) {
+        statsDiv.innerHTML = '<p style="color: #999;">Aucune donnée disponible.</p>';
+        return;
+    }
+    
+    // Total tests
+    const totalTests = history.length;
+    
+    // Période de suivi
+    const dates = history.map(t => new Date(t.date)).sort((a, b) => a - b);
+    const firstDate = dates[0];
+    const lastDate = dates[dates.length - 1];
+    const daysDiff = Math.floor((lastDate - firstDate) / (1000 * 60 * 60 * 24));
+    const monthsDiff = (daysDiff / 30).toFixed(1);
+    
+    // Moyenne tests/mois
+    const testsPerMonth = monthsDiff > 0 ? (totalTests / monthsDiff).toFixed(1) : totalTests;
+    
+    // Calculer meilleure progression et pire régression
+    const qualities = ['force', 'explosivite', 'mobilite', 'core', 'endurance', 'vitesse', 'equilibre'];
+    const qualityLabels = ['Force', 'Explosivité', 'Mobilité', 'Core', 'Endurance', 'Vitesse', 'Équilibre'];
+    
+    let progressions = [];
+    
+    qualities.forEach((quality, idx) => {
+        const qualityTests = history.filter(t => t.quality === quality).sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        if (qualityTests.length >= 2) {
+            const firstScore = calculateQualityScore(quality, qualityTests[0].tests);
+            const lastScore = calculateQualityScore(quality, qualityTests[qualityTests.length - 1].tests);
+            
+            if (firstScore !== null && lastScore !== null) {
+                const diff = lastScore - firstScore;
+                const diffPercent = ((diff / firstScore) * 100);
+                
+                progressions.push({
+                    quality: qualityLabels[idx],
+                    percent: diffPercent
+                });
+            }
+        }
+    });
+    
+    let bestProgression = null;
+    let worstRegression = null;
+    
+    if (progressions.length > 0) {
+        progressions.sort((a, b) => b.percent - a.percent);
+        bestProgression = progressions[0];
+        worstRegression = progressions[progressions.length - 1];
+    }
+    
+    // Tendance globale
+    const avgProgression = progressions.length > 0 
+        ? progressions.reduce((sum, p) => sum + p.percent, 0) / progressions.length 
+        : 0;
+    
+    let trend = '➡️ Stable';
+    let trendColor = '#f59e0b';
+    if (avgProgression > 5) {
+        trend = '🚀 Excellent';
+        trendColor = '#22c55e';
+    } else if (avgProgression > 0) {
+        trend = '📈 Positif';
+        trendColor = '#22c55e';
+    } else if (avgProgression < -5) {
+        trend = '📉 Négatif';
+        trendColor = '#ef4444';
+    }
+    
+    // Afficher
+    let html = `
+        <div class="stat-box">
+            <div class="stat-box-value">${totalTests}</div>
+            <div class="stat-box-label">Tests enregistrés</div>
+        </div>
+        
+        <div class="stat-box">
+            <div class="stat-box-value">${monthsDiff}</div>
+            <div class="stat-box-label">Mois de suivi</div>
+            <div class="stat-box-detail">${daysDiff} jours</div>
+        </div>
+        
+        <div class="stat-box">
+            <div class="stat-box-value">${testsPerMonth}</div>
+            <div class="stat-box-label">Tests/mois (moyenne)</div>
+        </div>
+    `;
+    
+    if (bestProgression) {
+        html += `
+            <div class="stat-box">
+                <div class="stat-box-value" style="color: #22c55e;">+${bestProgression.percent.toFixed(1)}%</div>
+                <div class="stat-box-label">Meilleure progression</div>
+                <div class="stat-box-detail">${bestProgression.quality}</div>
+            </div>
+        `;
+    }
+    
+    if (worstRegression && worstRegression.percent < 0) {
+        html += `
+            <div class="stat-box">
+                <div class="stat-box-value" style="color: #ef4444;">${worstRegression.percent.toFixed(1)}%</div>
+                <div class="stat-box-label">À surveiller</div>
+                <div class="stat-box-detail">${worstRegression.quality}</div>
+            </div>
+        `;
+    }
+    
+    html += `
+        <div class="stat-box">
+            <div class="stat-box-value" style="color: ${trendColor};">${trend}</div>
+            <div class="stat-box-label">Tendance globale</div>
+            <div class="stat-box-detail">${avgProgression.toFixed(1)}% en moyenne</div>
+        </div>
+    `;
+    
+    statsDiv.innerHTML = html;
+}
+
+// Exposer les fonctions globalement
+window.switchHistoryView = switchHistoryView;
+window.compareTests = compareTests;
+
 // Afficher l'historique
 function displayHistory() {
     const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    const container = document.getElementById('historyListe');
+    
+    if (!container) {
+        console.error('Container #historyListe not found');
+        return;
+    }
     
     if (history.length === 0) {
-        document.querySelector('.history-container').innerHTML = `
+        container.innerHTML = `
             <div class="alert warning">
                 <div class="alert-title">📋 Aucun test enregistré</div>
                 <p>Commencez par enregistrer vos premiers tests !</p>
@@ -4167,7 +4615,7 @@ function displayHistory() {
     
     html += '</div>';
     
-    document.querySelector('.history-container').innerHTML = html;
+    container.innerHTML = html;
 }
 
 // Supprimer un test
@@ -5080,42 +5528,114 @@ function displayGolfCorrelations(golfData) {
         return;
     }
     
-    let html = '<h5 style="margin: 1.5rem 0 1rem 0;">📊 Corrélations Physique ↔ Golf</h5>';
+    let html = '<h5 style="margin: 1.5rem 0 1rem 0;">📊 Corrélations Physique ↔ Golf (Basées sur la Science)</h5>';
     
     // ========== VITESSE DRIVER ==========
     if (golfData.driverSpeed) {
-        // Récupérer le sexe du joueur
         const gender = currentPlayer ? currentPlayer.gender : 'M';
-        const proNorms = getProNorms(gender);
+        const age = currentPlayer ? currentPlayer.age : 25;
+        const handicap = currentPlayer ? (currentPlayer.handicap || 10) : 10;
         
-        // Formule réaliste adaptée au sexe
-        // Hommes: Base 90, Femmes: Base 70
-        const baseSpeed = gender === 'F' ? 70 : 90;
-        const forceContribution = (scores.force || 10) * 0.9;
-        const explosiviteContribution = (scores.explosivite || 10) * 0.7;
-        const mobiliteContribution = (scores.mobilite || 10) * 0.3;
+        // ========== ÉTAPE 1 : DÉTERMINER BASE RÉALISTE SELON NIVEAU ==========
+        let baseSpeed;
+        let levelDescription;
         
-        const predictedSpeed = baseSpeed + forceContribution + explosiviteContribution + mobiliteContribution;
+        if (gender === 'F') {
+            // FEMMES - Basé sur données LPGA et amateures
+            if (handicap <= 0) {
+                baseSpeed = 92; // Scratch F
+                levelDescription = "Amateur Elite Femme";
+            } else if (handicap <= 5) {
+                baseSpeed = 85; // HCP 0-5
+                levelDescription = "Très Bonne Amateure";
+            } else if (handicap <= 10) {
+                baseSpeed = 80; // HCP 5-10
+                levelDescription = "Bonne Amateure";
+            } else if (handicap <= 15) {
+                baseSpeed = 75; // HCP 10-15
+                levelDescription = "Amateure Solide";
+            } else {
+                baseSpeed = 70; // HCP 15+
+                levelDescription = "Amateure en Progression";
+            }
+        } else {
+            // HOMMES - Basé sur données PGA et amateurs
+            if (handicap <= 0) {
+                baseSpeed = 107; // Scratch M
+                levelDescription = "Amateur Elite";
+            } else if (handicap <= 5) {
+                baseSpeed = 102; // HCP 0-5
+                levelDescription = "Très Bon Amateur";
+            } else if (handicap <= 10) {
+                baseSpeed = 98; // HCP 5-10
+                levelDescription = "Bon Amateur";
+            } else if (handicap <= 15) {
+                baseSpeed = 93; // HCP 10-15
+                levelDescription = "Amateur Solide";
+            } else {
+                baseSpeed = 88; // HCP 15+
+                levelDescription = "Amateur en Progression";
+            }
+        }
+        
+        // ========== ÉTAPE 2 : COEFFICIENTS SCIENTIFIQUES (Méta-analyses) ==========
+        // Source: Sports Medicine 2024 - Meta-analysis
+        // Upper body explosive power: r = 0.67
+        // Lower body strength: r = 0.46
+        // Jump impulse (explosivité): r = 0.82 (le plus fort)
+        // Mobilité: r = 0.03 (NON SIGNIFICATIF - retiré)
+        
+        const explosiviteScore = scores.explosivite || 10;
+        const forceScore = scores.force || 10;
+        
+        // Normaliser scores (10 = base amateur, 18 = pro)
+        const explosiviteNorm = (explosiviteScore - 10) / 8; // 0 = amateur moyen, 1 = pro
+        const forceNorm = (forceScore - 10) / 8;
+        
+        // Contribution physique (basée sur corrélations scientifiques)
+        // Explosivité = 0.82 * 12 mph = ~10 mph max
+        // Force = 0.46 * 12 mph = ~5.5 mph max
+        const explosiviteContribution = explosiviteNorm * 10;
+        const forceContribution = forceNorm * 5.5;
+        
+        const predictedSpeed = baseSpeed + explosiviteContribution + forceContribution;
         const diff = golfData.driverSpeed - predictedSpeed;
         const percentDiff = (diff / golfData.driverSpeed) * 100;
         
-        // Potentiel gain réaliste adapté (max 8 mph hommes, 6 mph femmes)
-        const maxGain = gender === 'F' ? 6 : 8;
-        const forceGap = Math.max(0, proNorms.force - (scores.force || 0));
-        const explosiviteGap = Math.max(0, proNorms.explosivite - (scores.explosivite || 0));
-        const mobiliteGap = Math.max(0, proNorms.mobilite - (scores.mobilite || 0));
-        const potentialGainSpeed = Math.min(maxGain, (forceGap * 0.9) + (explosiviteGap * 0.7) + (mobiliteGap * 0.3));
+        // ========== ÉTAPE 3 : POTENTIEL RÉALISTE (Littérature) ==========
+        // Source: Fit For Golf, Journal of Strength & Conditioning Research
+        // Gains réalistes: 3-10 mph sur 6-12 mois selon niveau initial
         
-        // Contexte performance adapté au sexe (TrackMan 2023)
+        const proNorms = getProNorms(gender);
+        const explosiviteGap = Math.max(0, proNorms.explosivite - explosiviteScore);
+        const forceGap = Math.max(0, proNorms.force - forceScore);
+        
+        // Potentiel court terme (3-6 mois) - Speed training seul
+        const shortTermGain = Math.min(5, explosiviteGap * 0.4 + forceGap * 0.2);
+        
+        // Potentiel moyen terme (12-18 mois) - Force + Speed + Technique
+        const mediumTermGain = Math.min(10, explosiviteGap * 0.8 + forceGap * 0.4);
+        
+        // Potentiel long terme (2-3 ans) - Programme complet
+        const longTermGain = Math.min(15, explosiviteGap * 1.2 + forceGap * 0.7);
+        
+        // Maximum théorique selon niveau
+        let maxTheoreticalSpeed;
+        if (gender === 'F') {
+            maxTheoreticalSpeed = handicap <= 0 ? 100 : handicap <= 5 ? 92 : handicap <= 10 ? 87 : 82;
+        } else {
+            maxTheoreticalSpeed = handicap <= 0 ? 115 : handicap <= 5 ? 110 : handicap <= 10 ? 105 : 100;
+        }
+        
+        // ========== CONTEXTE PERFORMANCE ==========
         let performanceContext = '';
         if (gender === 'F') {
-            // LPGA Tour - Moyenne 96 mph
             if (golfData.driverSpeed >= 105) {
                 performanceContext = '🏆 <strong>Niveau Elite Mondial LPGA</strong> (Top 3-5 LPGA)';
             } else if (golfData.driverSpeed >= 100) {
                 performanceContext = '🌟 <strong>Niveau Elite Tour LPGA</strong> (Top 10-20 LPGA)';
             } else if (golfData.driverSpeed >= 96) {
-                performanceContext = '✅ <strong>Niveau Moyenne LPGA Tour</strong> (Moyenne LPGA 2023 = 96 mph TrackMan)';
+                performanceContext = '✅ <strong>Niveau Moyenne LPGA Tour</strong> (Moyenne LPGA = 96 mph)';
             } else if (golfData.driverSpeed >= 90) {
                 performanceContext = '📈 <strong>Bon niveau Pro Femmes</strong> (90-96 mph)';
             } else if (golfData.driverSpeed >= 85) {
@@ -5128,13 +5648,12 @@ function displayGolfCorrelations(golfData) {
                 performanceContext = '📚 <strong>Amateure en progression</strong> (HCP 15+)';
             }
         } else {
-            // PGA Tour - Moyenne 115 mph
             if (golfData.driverSpeed >= 125) {
-                performanceContext = '🏆 <strong>Niveau Elite Mondial</strong> (Top 3-5 PGA - Bryson 125-128, Champ 127-129 mph)';
+                performanceContext = '🏆 <strong>Niveau Elite Mondial</strong> (Top PGA - Bryson 125-128 mph)';
             } else if (golfData.driverSpeed >= 120) {
-                performanceContext = '🌟 <strong>Niveau Elite Tour</strong> (Top 10-20 PGA - Rory 122-124, DJ 120-122 mph)';
+                performanceContext = '🌟 <strong>Niveau Elite Tour</strong> (Top 10-20 PGA - Rory 122-124 mph)';
             } else if (golfData.driverSpeed >= 115) {
-                performanceContext = '✅ <strong>Niveau Moyenne PGA Tour</strong> (Moyenne PGA 2023 = 115 mph TrackMan)';
+                performanceContext = '✅ <strong>Niveau Moyenne PGA Tour</strong> (Moyenne PGA = 115 mph)';
             } else if (golfData.driverSpeed >= 110) {
                 performanceContext = '📈 <strong>Bon niveau Tour Européen</strong> (110-115 mph)';
             } else if (golfData.driverSpeed >= 105) {
@@ -5148,17 +5667,16 @@ function displayGolfCorrelations(golfData) {
             }
         }
         
-        // Référence tour adaptée
-        const tourReference = gender === 'F' ? 
-            'ℹ️ Référence: Moyenne Top 10 LPGA = 100-104 mph | Top 50 = 94-98 mph' :
-            'ℹ️ Référence: Moyenne Top 10 PGA = 121-123 mph | Top 50 = 116-118 mph';
-        
+        // ========== AFFICHAGE ==========
         html += `
             <div class="correlation-item">
                 <h5>🏌️ Vitesse Driver: ${golfData.driverSpeed} mph</h5>
                 
                 <div style="background: #e8f5e9; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
                     ${performanceContext}
+                    <div style="margin-top: 0.5rem; color: #666; font-size: 0.9rem;">
+                        📊 Votre niveau: ${levelDescription} (HCP ${handicap})
+                    </div>
                 </div>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
@@ -5172,40 +5690,71 @@ function displayGolfCorrelations(golfData) {
                     </div>
                 </div>
                 
-                <div style="background: ${Math.abs(percentDiff) < 5 ? '#e8f5e9' : percentDiff > 0 ? '#e3f2fd' : '#fff3e0'}; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
-                    ${Math.abs(percentDiff) < 5 ? 
-                        '<strong>✅ Optimisation excellente !</strong><br>Votre technique exploite parfaitement votre potentiel physique.' :
-                        percentDiff > 5 ? 
-                        '<strong>🌟 Technique exceptionnelle !</strong><br>Vous surpassez votre potentiel physique de ' + percentDiff.toFixed(1) + '%. Excellente efficacité technique !' :
-                        '<strong>⚠️ Potentiel inexploité</strong><br>Votre physique permettrait ' + Math.abs(diff).toFixed(0) + ' mph de plus. Travaillez la technique et le timing.'
+                <div style="background: ${Math.abs(percentDiff) < 3 ? '#e8f5e9' : percentDiff > 0 ? '#e3f2fd' : '#fff3e0'}; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
+                    ${Math.abs(percentDiff) < 3 ? 
+                        '<strong>✅ Optimisation excellente !</strong><br>Votre technique exploite parfaitement votre potentiel physique actuel.' :
+                        percentDiff > 3 ? 
+                        '<strong>🌟 Technique exceptionnelle !</strong><br>Vous surpassez votre potentiel physique de ' + percentDiff.toFixed(1) + '%. Excellente efficacité technique ! Votre physique est le limitant.' :
+                        '<strong>⚠️ Potentiel inexploité</strong><br>Votre physique permettrait ' + Math.abs(diff).toFixed(1) + ' mph de plus. Travaillez la technique, le timing et la séquence.'
                     }
                 </div>
                 
-                <div style="margin-top: 1rem;">
-                    <strong>💡 Contributions physiques à la vitesse:</strong>
-                    <div style="margin-top: 0.5rem;">
-                        ${createContributionBar('Force', scores.force || 0, forceContribution, 18)}
-                        ${createContributionBar('Explosivité', scores.explosivite || 0, explosiviteContribution, 14)}
-                        ${createContributionBar('Mobilité', scores.mobilite || 0, mobiliteContribution, 6)}
+                <div style="margin-top: 1.5rem; padding: 1rem; background: #f5f5f5; border-radius: 6px;">
+                    <strong>💡 Contributions physiques (Corrélations Scientifiques):</strong>
+                    <div style="margin-top: 1rem;">
+                        ${createScientificContributionBar('Explosivité', explosiviteScore, explosiviteContribution, 10, 0.82)}
+                        ${createScientificContributionBar('Force Jambes', forceScore, forceContribution, 5.5, 0.46)}
+                    </div>
+                    <div style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
+                        <em>Coefficients basés sur méta-analyses (Sports Medicine 2024)</em>
                     </div>
                 </div>
                 
-                ${potentialGainSpeed > 2 ? `
-                    <div style="background: #fff3e0; padding: 1rem; border-radius: 6px; margin-top: 1rem; border-left: 4px solid #f39c12;">
-                        <strong>🎯 Potentiel d'amélioration physique: +${potentialGainSpeed.toFixed(1)} mph</strong><br>
-                        <small>En atteignant des scores pro (${proNorms.force}-${proNorms.explosivite}/20), vous pourriez gagner <strong>${potentialGainSpeed.toFixed(0)} mph</strong> sur 12-18 mois d'entraînement intensif.</small><br>
-                        <small style="color: #666; margin-top: 0.5rem; display: block;">
-                            ${tourReference}
-                        </small>
+                ${(shortTermGain > 1 || mediumTermGain > 1 || longTermGain > 1) ? `
+                    <div style="background: #fff3e0; padding: 1.5rem; border-radius: 6px; margin-top: 1rem; border-left: 4px solid #f39c12;">
+                        <strong>🎯 Potentiel d'Amélioration RÉALISTE</strong>
+                        <div style="margin-top: 1rem; font-size: 0.95rem;">
+                            ${shortTermGain > 1 ? `
+                                <div style="margin-bottom: 0.8rem;">
+                                    <strong style="color: #f39c12;">Court terme (3-6 mois)</strong> - Speed training
+                                    <div style="margin-left: 1rem; color: #666;">
+                                        +${shortTermGain.toFixed(1)} mph → ${(golfData.driverSpeed + shortTermGain).toFixed(0)} mph
+                                        <br><small>Speed training 2-3x/semaine (SuperSpeed, Stack, driver swings max)</small>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${mediumTermGain > shortTermGain + 1 ? `
+                                <div style="margin-bottom: 0.8rem;">
+                                    <strong style="color: #f39c12;">Moyen terme (12-18 mois)</strong> - Force + Speed + Technique
+                                    <div style="margin-left: 1rem; color: #666;">
+                                        +${mediumTermGain.toFixed(1)} mph → ${(golfData.driverSpeed + mediumTermGain).toFixed(0)} mph
+                                        <br><small>Programme complet : Gym 3x/sem + Speed 2x/sem + Coaching technique</small>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${longTermGain > mediumTermGain + 1 ? `
+                                <div>
+                                    <strong style="color: #f39c12;">Long terme (2-3 ans)</strong> - Programme Pro
+                                    <div style="margin-left: 1rem; color: #666;">
+                                        +${longTermGain.toFixed(1)} mph → ${(golfData.driverSpeed + longTermGain).toFixed(0)} mph
+                                        <br><small>Entraînement type Tour : Force, Explosivité, Speed, Mobilité, Technique</small>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div style="margin-top: 1rem; padding: 0.8rem; background: white; border-radius: 4px; font-size: 0.9rem;">
+                            <strong>📌 Maximum théorique:</strong> ${maxTheoreticalSpeed} mph (niveau ${handicap <= 0 ? 'scratch-pro' : 'amateur optimisé'})
+                            <br><small style="color: #666;">Chaque mph = ~2,5 yards de distance (Source: TrackMan)</small>
+                        </div>
                     </div>
                 ` : `
                     <div style="background: #e8f5e9; padding: 1rem; border-radius: 6px; margin-top: 1rem; border-left: 4px solid #27ae60;">
-                        <strong>✅ Physique optimal</strong><br>
-                        <small>Votre développement physique est excellent. Focus sur la technique pour progresser.</small>
+                        <strong>✅ Physique proche de l'optimal</strong><br>
+                        <small>Votre développement physique est excellent pour votre niveau. Focus sur la technique et la consistance pour progresser.</small>
                     </div>
-                `}
-            </div>
-        `;
     }
     
     // ========== DISTANCE DRIVER ==========
@@ -5358,6 +5907,246 @@ function createContributionBar(label, score, contribution, maxContribution) {
         </div>
     `;
 }
+
+// Fonction avec corrélation scientifique affichée
+function createScientificContributionBar(label, score, contribution, maxContribution, correlation) {
+    const percent = (contribution / maxContribution) * 100;
+    
+    return `
+        <div style="margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem; font-size: 0.9rem;">
+                <span><strong>${label}</strong> (${score.toFixed(1)}/20)</span>
+                <span style="color: #1a4d2e; font-weight: 600;">+${contribution.toFixed(1)} mph <small style="color: #999;">(r=${correlation})</small></span>
+            </div>
+            <div style="background: #e0e0e0; height: 24px; border-radius: 12px; overflow: hidden;">
+                <div style="background: linear-gradient(90deg, #1a4d2e, #27ae60); height: 100%; width: ${percent}%; transition: width 0.3s;"></div>
+            </div>
+        </div>
+    `;
+}
+
+// ==================== PHASE 2 : SIMPLIFICATION ANALYSE PRO ====================
+
+// Basculer entre vues Synthèse/Détails
+function switchAnalyseView(view) {
+    // Mettre à jour les boutons
+    document.querySelectorAll('.analyse-nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Afficher/masquer les vues
+    if (view === 'synthese') {
+        document.getElementById('analyseSynthese').style.display = 'block';
+        document.getElementById('analyseDetails').style.display = 'none';
+        
+        // Générer le top 3-5 alertes urgentes
+        generateTop3UrgentAlerts();
+    } else {
+        document.getElementById('analyseSynthese').style.display = 'none';
+        document.getElementById('analyseDetails').style.display = 'block';
+    }
+}
+
+// Générer Top 3-5 Alertes Urgentes (priorité 1 uniquement)
+function generateTop3UrgentAlerts() {
+    const container = document.getElementById('top3UrgentAlerts');
+    if (!container) return;
+    
+    // Récupérer toutes les alertes de generateSmartAlerts
+    const allAlerts = getAllSmartAlerts();
+    
+    // Filtrer priorité 1 uniquement et prendre top 5
+    const urgentAlerts = allAlerts.filter(a => a.priority === 1).slice(0, 5);
+    
+    if (urgentAlerts.length === 0) {
+        container.innerHTML = `
+            <div class="alert-item alert-info">
+                <div class="alert-icon">✅</div>
+                <div class="alert-content">
+                    <h5>Aucune alerte urgente</h5>
+                    <p>Votre profil ne présente pas de limitation critique détectée.</p>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    const iconMap = { critical: '🚨', warning: '⚠️', info: 'ℹ️' };
+    
+    let html = '';
+    urgentAlerts.forEach(alert => {
+        html += `
+            <div class="alert-item alert-${alert.type}">
+                <div class="alert-icon">${iconMap[alert.type]}</div>
+                <div class="alert-content">
+                    <h5>${alert.title}</h5>
+                    <p>${alert.message}</p>
+                    ${alert.action ? `
+                        <div class="alert-action">
+                            <strong>💪 Action recommandée:</strong> ${alert.action}
+                        </div>
+                    ` : ''}
+                    ${alert.faults && alert.faults.length > 0 ? `
+                        <div class="swing-fault">
+                            <strong>Impacts potentiels:</strong>
+                            <ul>
+                                ${alert.faults.map(f => `<li>${f}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Fonction helper : récupérer toutes les alertes (copie logique de generateSmartAlerts)
+function getAllSmartAlerts() {
+    const alerts = [];
+    const scores = calculateQualityScores();
+    
+    // ========== ALERTES PHYSIQUES (Scores faibles) ==========
+    if (scores && scores.mobilite !== null && scores.mobilite < 10) {
+        alerts.push({
+            priority: 1,
+            type: 'critical',
+            title: 'Mobilité Insuffisante',
+            message: `Score mobilité: ${scores.mobilite.toFixed(1)}/20 (objectif: >14)`,
+            action: 'Renforcer mobilité (étirements dynamiques, yoga golf)',
+            faults: ['Perte d\'amplitude en backswing', 'Early extension', 'Sway']
+        });
+    }
+    
+    if (scores && scores.core !== null && scores.core < 10) {
+        alerts.push({
+            priority: 1,
+            type: 'critical',
+            title: 'Core À Améliorer',
+            message: `Score Core: ${scores.core.toFixed(1)}/20 (objectif: >14)`,
+            action: 'Renforcer core (planches, rotations, dead bugs)',
+            faults: ['Early extension', 'Loss of posture', 'Slide']
+        });
+    }
+    
+    if (scores && scores.force !== null && scores.force < 10) {
+        alerts.push({
+            priority: 1,
+            type: 'critical',
+            title: 'Force Insuffisante',
+            message: `Score Force: ${scores.force.toFixed(1)}/20 (objectif: >14)`,
+            action: 'Programme force (squats, deadlifts, presses)',
+            faults: ['Loss of distance', 'Faible vitesse de club']
+        });
+    }
+    
+    // ========== ASYMÉTRIES CRITIQUES >15% ==========
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    const allTests = history.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    const bilateralTests = ['legext', 'press', 'hipflexor', 'singleleg'];
+    
+    bilateralTests.forEach(testKey => {
+        const recentTest = allTests.find(t => t.tests && t.tests[testKey]);
+        
+        if (recentTest && recentTest.tests[testKey]) {
+            const data = recentTest.tests[testKey];
+            if (data && typeof data === 'object' && data.left !== undefined && data.right !== undefined) {
+                const left = parseFloat(data.left);
+                const right = parseFloat(data.right);
+                
+                if (!isNaN(left) && !isNaN(right) && left > 0 && right > 0) {
+                    const asymmetry = Math.abs(((left - right) / Math.max(left, right)) * 100);
+                    const weakerSide = left < right ? 'Gauche' : 'Droite';
+                    
+                    if (asymmetry > 15) {
+                        alerts.push({
+                            priority: 1,
+                            type: 'critical',
+                            title: `${testKey.toUpperCase()}: Asymétrie ${asymmetry.toFixed(1)}% (${weakerSide})`,
+                            message: `Risque blessure élevé`,
+                            action: `Renforcer côté ${weakerSide}`,
+                            faults: ['Déséquilibre G/D', 'Compensation swing']
+                        });
+                    }
+                }
+            }
+        }
+    });
+    
+    // ========== DÉSÉQUILIBRES PUSH/PULL & ISCHIO/QUAD ==========
+    const forceTests = allTests.filter(t => t.quality === 'force').sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    if (forceTests.length > 0) {
+        const latestForceTest = forceTests[0];
+        const forceData = latestForceTest.tests;
+        
+        // Push/Pull
+        let benchValue = null;
+        if (forceData.bench) {
+            benchValue = typeof forceData.bench === 'object' 
+                ? (parseFloat(forceData.bench.left || 0) + parseFloat(forceData.bench.right || 0)) / 2 
+                : parseFloat(forceData.bench);
+        }
+        
+        let pullupValue = null;
+        if (forceData.pullup) {
+            pullupValue = typeof forceData.pullup === 'object' 
+                ? (parseFloat(forceData.pullup.left || 0) + parseFloat(forceData.pullup.right || 0)) / 2 
+                : parseFloat(forceData.pullup);
+        }
+        
+        if (benchValue && pullupValue && benchValue > 0 && pullupValue > 0) {
+            const ratio = pullupValue / benchValue;
+            if (ratio < 0.6) {
+                alerts.push({
+                    priority: 1,
+                    type: 'critical',
+                    title: `Déséquilibre Chaîne Antérieure/Postérieure Critique`,
+                    message: `Ratio Pull/Push = ${(ratio * 100).toFixed(0)}% (Normal: 80-100%)`,
+                    action: 'Renforcer chaîne postérieure (dorsaux, trapèzes)',
+                    faults: ['Épaules enroulées', 'Posture voutée', 'Risque tendinite']
+                });
+            }
+        }
+        
+        // Ischio/Quad
+        let squatValue = null;
+        if (forceData.squat) {
+            squatValue = typeof forceData.squat === 'object' 
+                ? (parseFloat(forceData.squat.left || 0) + parseFloat(forceData.squat.right || 0)) / 2 
+                : parseFloat(forceData.squat);
+        }
+        
+        let deadliftValue = null;
+        if (forceData.deadlift) {
+            deadliftValue = typeof forceData.deadlift === 'object' 
+                ? (parseFloat(forceData.deadlift.left || 0) + parseFloat(forceData.deadlift.right || 0)) / 2 
+                : parseFloat(forceData.deadlift);
+        }
+        
+        if (squatValue && deadliftValue && squatValue > 0 && deadliftValue > 0) {
+            const ratio = deadliftValue / squatValue;
+            if (ratio < 0.6) {
+                alerts.push({
+                    priority: 1,
+                    type: 'critical',
+                    title: `Déséquilibre Ischio-jambiers/Quadriceps Critique`,
+                    message: `Ratio H/Q = ${(ratio * 100).toFixed(0)}% (Normal: 75-100%)`,
+                    action: 'Renforcer ischio-jambiers (deadlifts, nordics, leg curls)',
+                    faults: ['Risque blessure genou', 'Instabilité ACL', 'Risque élongation']
+                });
+            }
+        }
+    }
+    
+    return alerts;
+}
+
+// Exposer globalement
+window.switchAnalyseView = switchAnalyseView;
 
 
 function generateSmartAlerts() {

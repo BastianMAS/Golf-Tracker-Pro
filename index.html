@@ -1030,12 +1030,25 @@
                     <h3>🎯 Analyse Professionnelle</h3>
                     <p class="subtitle">Vue d'ensemble approfondie des performances physiques et corrélations avec le golf</p>
                     
+                    <!-- Navigation entre vues -->
+                    <div class="analyse-nav-buttons">
+                        <button class="analyse-nav-btn active" onclick="switchAnalyseView('synthese')">
+                            📊 Synthèse
+                        </button>
+                        <button class="analyse-nav-btn" onclick="switchAnalyseView('details')">
+                            📋 Détails
+                        </button>
+                    </div>
+                    
+                    <!-- VUE SYNTHÈSE -->
+                    <div id="analyseSynthese" class="analyse-view">
+                    
                     <!-- Golf Fitness Index -->
                     <div class="fitness-index-card">
                         <h4>Golf Fitness Index</h4>
                         <div class="gfi-score-container">
                             <div class="gfi-gauge">
-                                <canvas id="gfiGauge" width="200" height="120"></canvas>
+                                <canvas id="gfiGauge" width="400" height="240" style="max-width: 200px; max-height: 120px; width: 100%; height: auto;"></canvas>
                                 <div class="gfi-score" id="gfiScore">--</div>
                                 <div class="gfi-level" id="gfiLevel">--</div>
                             </div>
@@ -1061,7 +1074,7 @@
                         
                         <div class="tpi-score-container">
                             <div class="tpi-gauge">
-                                <canvas id="tpiDonutChart" width="220" height="220"></canvas>
+                                <canvas id="tpiDonutChart" width="440" height="440" style="max-width: 180px; max-height: 180px; width: 100%; height: auto;"></canvas>
                                 <div class="tpi-score-display">
                                     <div class="tpi-percentage" id="tpiPercentage">--</div>
                                     <div class="tpi-fraction" id="tpiFraction">-- / 16 tests</div>
@@ -1117,7 +1130,7 @@
                     <div class="pro-comparison-card">
                         <h4>📊 Profil Athlétique vs Normes Pro</h4>
                         <div class="radar-comparison">
-                            <canvas id="proRadarChart" width="500" height="500"></canvas>
+                            <canvas id="proRadarChart" width="1000" height="1000" style="max-width: 400px; max-height: 400px; width: 100%; height: auto;"></canvas>
                         </div>
                         <div class="comparison-legend">
                             <span><span class="legend-color" style="background: rgba(33, 150, 243, 1);"></span> Votre Profil</span>
@@ -1125,6 +1138,18 @@
                             <span style="color: #f39c12; font-weight: 600;">? = Données insuffisantes (minimum 50% des tests requis)</span>
                         </div>
                     </div>
+                    
+                    <!-- Top Alertes URGENTES (Synthèse uniquement) -->
+                    <div class="smart-alerts-card">
+                        <h4>🚨 Alertes Prioritaires</h4>
+                        <p class="help-text">Top 3-5 alertes urgentes nécessitant une attention immédiate</p>
+                        <div id="top3UrgentAlerts"></div>
+                    </div>
+                    
+                    </div><!-- Fin Vue Synthèse -->
+                    
+                    <!-- VUE DÉTAILS -->
+                    <div id="analyseDetails" class="analyse-view" style="display: none;">
 
                     <!-- Top 3 Faiblesses -->
                     <div class="weaknesses-card">
@@ -1180,14 +1205,67 @@
                             <button class="btn btn-secondary" id="exportCSV">📊 Exporter en CSV</button>
                         </div>
                     </div>
+                    
+                    </div><!-- Fin Vue Détails -->
+                    
                 </div>
             </div>
 
             <!-- Onglet Historique -->
             <div id="history-tab" class="tab-content">
                 <div class="history-container">
-                    <h3>Historique des Tests</h3>
-                    <!-- Le contenu sera généré dynamiquement par displayHistory() -->
+                    <h3>📊 Historique & Progression</h3>
+                    
+                    <!-- Navigation entre vues -->
+                    <div class="history-nav-buttons">
+                        <button class="history-nav-btn active" onclick="switchHistoryView('evolution')">
+                            📈 Évolution
+                        </button>
+                        <button class="history-nav-btn" onclick="switchHistoryView('liste')">
+                            📋 Liste des Tests
+                        </button>
+                    </div>
+                    
+                    <!-- VUE ÉVOLUTION -->
+                    <div id="historyEvolution" class="history-view">
+                        
+                        <!-- 1. Graphique d'évolution -->
+                        <div class="evolution-card">
+                            <h4>📈 Évolution de vos Performances</h4>
+                            <div class="chart-container">
+                                <canvas id="evolutionChart" width="1600" height="600" style="max-width: 100%; max-height: 400px; width: 100%; height: auto;"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- 2. Comparaison de tests -->
+                        <div class="comparison-card">
+                            <h4>🔄 Comparaison entre 2 Tests</h4>
+                            <div class="comparison-selectors">
+                                <div class="selector-group">
+                                    <label>Test 1 (ancien)</label>
+                                    <select id="compareDate1" class="form-control"></select>
+                                </div>
+                                <div class="selector-group">
+                                    <label>Test 2 (récent)</label>
+                                    <select id="compareDate2" class="form-control"></select>
+                                </div>
+                                <button class="btn btn-primary" onclick="compareTests()">Comparer</button>
+                            </div>
+                            <div id="comparisonResults"></div>
+                        </div>
+                        
+                        <!-- 3. Stats de progression -->
+                        <div class="progression-stats-card">
+                            <h4>📊 Statistiques de Progression</h4>
+                            <div id="progressionStats"></div>
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- VUE LISTE (existante) -->
+                    <div id="historyListe" class="history-view" style="display: none;">
+                        <!-- Le contenu sera généré dynamiquement par displayHistory() -->
+                    </div>
                 </div>
             </div>
 
