@@ -5755,6 +5755,9 @@ function displayGolfCorrelations(golfData) {
                         <strong>✅ Physique proche de l'optimal</strong><br>
                         <small>Votre développement physique est excellent pour votre niveau. Focus sur la technique et la consistance pour progresser.</small>
                     </div>
+                `}
+            </div>
+        `;
     }
     
     // ========== DISTANCE DRIVER ==========
@@ -6668,13 +6671,3 @@ function setupAnalyseProEventListeners() {
         exportBtn.onclick = exportToCSV;
     }
 }
-
-// Modifier la fonction switchTab pour gérer l'onglet Analyse Pro
-const originalSwitchTab = window.switchTab;
-window.switchTab = function(tabName) {
-    originalSwitchTab(tabName);
-    
-    if (tabName === 'analyse') {
-        setTimeout(() => updateAnalysePro(), 100);
-    }
-};
