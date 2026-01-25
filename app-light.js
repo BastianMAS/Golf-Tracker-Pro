@@ -1077,8 +1077,10 @@ function switchTab(tabName) {
         // Charger la vue Évolution par défaut
         switchHistoryView('evolution');
     } else if (tabName === 'analyse') {
-        // Charger la vue Synthèse par défaut
-        switchAnalyseView('synthese');
+        // Charger toutes les données Analyse Pro
+        updateAnalysePro();
+        // Puis charger la vue Synthèse par défaut
+        setTimeout(() => switchAnalyseView('synthese'), 100);
     }
 }
 
@@ -4042,7 +4044,17 @@ function switchHistoryView(view) {
     document.querySelectorAll('.history-nav-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    event.target.classList.add('active');
+    
+    // Si appelé via événement, utiliser event.target, sinon trouver le bon bouton
+    if (typeof event !== 'undefined' && event.target) {
+        event.target.classList.add('active');
+    } else {
+        // Appel programmatique - trouver le bon bouton
+        const targetBtn = view === 'evolution' 
+            ? document.querySelector('.history-nav-btn:first-child')
+            : document.querySelector('.history-nav-btn:last-child');
+        if (targetBtn) targetBtn.classList.add('active');
+    }
     
     // Afficher/masquer les vues
     if (view === 'evolution') {
@@ -5936,7 +5948,17 @@ function switchAnalyseView(view) {
     document.querySelectorAll('.analyse-nav-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    event.target.classList.add('active');
+    
+    // Si appelé via événement, utiliser event.target, sinon trouver le bon bouton
+    if (typeof event !== 'undefined' && event.target) {
+        event.target.classList.add('active');
+    } else {
+        // Appel programmatique - trouver le bon bouton
+        const targetBtn = view === 'synthese' 
+            ? document.querySelector('.analyse-nav-btn:first-child')
+            : document.querySelector('.analyse-nav-btn:last-child');
+        if (targetBtn) targetBtn.classList.add('active');
+    }
     
     // Afficher/masquer les vues
     if (view === 'synthese') {
