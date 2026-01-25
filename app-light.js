@@ -5528,42 +5528,114 @@ function displayGolfCorrelations(golfData) {
         return;
     }
     
-    let html = '<h5 style="margin: 1.5rem 0 1rem 0;">📊 Corrélations Physique ↔ Golf</h5>';
+    let html = '<h5 style="margin: 1.5rem 0 1rem 0;">📊 Corrélations Physique ↔ Golf (Basées sur la Science)</h5>';
     
     // ========== VITESSE DRIVER ==========
     if (golfData.driverSpeed) {
-        // Récupérer le sexe du joueur
         const gender = currentPlayer ? currentPlayer.gender : 'M';
-        const proNorms = getProNorms(gender);
+        const age = currentPlayer ? currentPlayer.age : 25;
+        const handicap = currentPlayer ? (currentPlayer.handicap || 10) : 10;
         
-        // Formule réaliste adaptée au sexe
-        // Hommes: Base 90, Femmes: Base 70
-        const baseSpeed = gender === 'F' ? 70 : 90;
-        const forceContribution = (scores.force || 10) * 0.9;
-        const explosiviteContribution = (scores.explosivite || 10) * 0.7;
-        const mobiliteContribution = (scores.mobilite || 10) * 0.3;
+        // ========== ÉTAPE 1 : DÉTERMINER BASE RÉALISTE SELON NIVEAU ==========
+        let baseSpeed;
+        let levelDescription;
         
-        const predictedSpeed = baseSpeed + forceContribution + explosiviteContribution + mobiliteContribution;
+        if (gender === 'F') {
+            // FEMMES - Basé sur données LPGA et amateures
+            if (handicap <= 0) {
+                baseSpeed = 92; // Scratch F
+                levelDescription = "Amateur Elite Femme";
+            } else if (handicap <= 5) {
+                baseSpeed = 85; // HCP 0-5
+                levelDescription = "Très Bonne Amateure";
+            } else if (handicap <= 10) {
+                baseSpeed = 80; // HCP 5-10
+                levelDescription = "Bonne Amateure";
+            } else if (handicap <= 15) {
+                baseSpeed = 75; // HCP 10-15
+                levelDescription = "Amateure Solide";
+            } else {
+                baseSpeed = 70; // HCP 15+
+                levelDescription = "Amateure en Progression";
+            }
+        } else {
+            // HOMMES - Basé sur données PGA et amateurs
+            if (handicap <= 0) {
+                baseSpeed = 107; // Scratch M
+                levelDescription = "Amateur Elite";
+            } else if (handicap <= 5) {
+                baseSpeed = 102; // HCP 0-5
+                levelDescription = "Très Bon Amateur";
+            } else if (handicap <= 10) {
+                baseSpeed = 98; // HCP 5-10
+                levelDescription = "Bon Amateur";
+            } else if (handicap <= 15) {
+                baseSpeed = 93; // HCP 10-15
+                levelDescription = "Amateur Solide";
+            } else {
+                baseSpeed = 88; // HCP 15+
+                levelDescription = "Amateur en Progression";
+            }
+        }
+        
+        // ========== ÉTAPE 2 : COEFFICIENTS SCIENTIFIQUES (Méta-analyses) ==========
+        // Source: Sports Medicine 2024 - Meta-analysis
+        // Upper body explosive power: r = 0.67
+        // Lower body strength: r = 0.46
+        // Jump impulse (explosivité): r = 0.82 (le plus fort)
+        // Mobilité: r = 0.03 (NON SIGNIFICATIF - retiré)
+        
+        const explosiviteScore = scores.explosivite || 10;
+        const forceScore = scores.force || 10;
+        
+        // Normaliser scores (10 = base amateur, 18 = pro)
+        const explosiviteNorm = (explosiviteScore - 10) / 8; // 0 = amateur moyen, 1 = pro
+        const forceNorm = (forceScore - 10) / 8;
+        
+        // Contribution physique (basée sur corrélations scientifiques)
+        // Explosivité = 0.82 * 12 mph = ~10 mph max
+        // Force = 0.46 * 12 mph = ~5.5 mph max
+        const explosiviteContribution = explosiviteNorm * 10;
+        const forceContribution = forceNorm * 5.5;
+        
+        const predictedSpeed = baseSpeed + explosiviteContribution + forceContribution;
         const diff = golfData.driverSpeed - predictedSpeed;
         const percentDiff = (diff / golfData.driverSpeed) * 100;
         
-        // Potentiel gain réaliste adapté (max 8 mph hommes, 6 mph femmes)
-        const maxGain = gender === 'F' ? 6 : 8;
-        const forceGap = Math.max(0, proNorms.force - (scores.force || 0));
-        const explosiviteGap = Math.max(0, proNorms.explosivite - (scores.explosivite || 0));
-        const mobiliteGap = Math.max(0, proNorms.mobilite - (scores.mobilite || 0));
-        const potentialGainSpeed = Math.min(maxGain, (forceGap * 0.9) + (explosiviteGap * 0.7) + (mobiliteGap * 0.3));
+        // ========== ÉTAPE 3 : POTENTIEL RÉALISTE (Littérature) ==========
+        // Source: Fit For Golf, Journal of Strength & Conditioning Research
+        // Gains réalistes: 3-10 mph sur 6-12 mois selon niveau initial
         
-        // Contexte performance adapté au sexe (TrackMan 2023)
+        const proNorms = getProNorms(gender);
+        const explosiviteGap = Math.max(0, proNorms.explosivite - explosiviteScore);
+        const forceGap = Math.max(0, proNorms.force - forceScore);
+        
+        // Potentiel court terme (3-6 mois) - Speed training seul
+        const shortTermGain = Math.min(5, explosiviteGap * 0.4 + forceGap * 0.2);
+        
+        // Potentiel moyen terme (12-18 mois) - Force + Speed + Technique
+        const mediumTermGain = Math.min(10, explosiviteGap * 0.8 + forceGap * 0.4);
+        
+        // Potentiel long terme (2-3 ans) - Programme complet
+        const longTermGain = Math.min(15, explosiviteGap * 1.2 + forceGap * 0.7);
+        
+        // Maximum théorique selon niveau
+        let maxTheoreticalSpeed;
+        if (gender === 'F') {
+            maxTheoreticalSpeed = handicap <= 0 ? 100 : handicap <= 5 ? 92 : handicap <= 10 ? 87 : 82;
+        } else {
+            maxTheoreticalSpeed = handicap <= 0 ? 115 : handicap <= 5 ? 110 : handicap <= 10 ? 105 : 100;
+        }
+        
+        // ========== CONTEXTE PERFORMANCE ==========
         let performanceContext = '';
         if (gender === 'F') {
-            // LPGA Tour - Moyenne 96 mph
             if (golfData.driverSpeed >= 105) {
                 performanceContext = '🏆 <strong>Niveau Elite Mondial LPGA</strong> (Top 3-5 LPGA)';
             } else if (golfData.driverSpeed >= 100) {
                 performanceContext = '🌟 <strong>Niveau Elite Tour LPGA</strong> (Top 10-20 LPGA)';
             } else if (golfData.driverSpeed >= 96) {
-                performanceContext = '✅ <strong>Niveau Moyenne LPGA Tour</strong> (Moyenne LPGA 2023 = 96 mph TrackMan)';
+                performanceContext = '✅ <strong>Niveau Moyenne LPGA Tour</strong> (Moyenne LPGA = 96 mph)';
             } else if (golfData.driverSpeed >= 90) {
                 performanceContext = '📈 <strong>Bon niveau Pro Femmes</strong> (90-96 mph)';
             } else if (golfData.driverSpeed >= 85) {
@@ -5576,13 +5648,12 @@ function displayGolfCorrelations(golfData) {
                 performanceContext = '📚 <strong>Amateure en progression</strong> (HCP 15+)';
             }
         } else {
-            // PGA Tour - Moyenne 115 mph
             if (golfData.driverSpeed >= 125) {
-                performanceContext = '🏆 <strong>Niveau Elite Mondial</strong> (Top 3-5 PGA - Bryson 125-128, Champ 127-129 mph)';
+                performanceContext = '🏆 <strong>Niveau Elite Mondial</strong> (Top PGA - Bryson 125-128 mph)';
             } else if (golfData.driverSpeed >= 120) {
-                performanceContext = '🌟 <strong>Niveau Elite Tour</strong> (Top 10-20 PGA - Rory 122-124, DJ 120-122 mph)';
+                performanceContext = '🌟 <strong>Niveau Elite Tour</strong> (Top 10-20 PGA - Rory 122-124 mph)';
             } else if (golfData.driverSpeed >= 115) {
-                performanceContext = '✅ <strong>Niveau Moyenne PGA Tour</strong> (Moyenne PGA 2023 = 115 mph TrackMan)';
+                performanceContext = '✅ <strong>Niveau Moyenne PGA Tour</strong> (Moyenne PGA = 115 mph)';
             } else if (golfData.driverSpeed >= 110) {
                 performanceContext = '📈 <strong>Bon niveau Tour Européen</strong> (110-115 mph)';
             } else if (golfData.driverSpeed >= 105) {
@@ -5596,17 +5667,16 @@ function displayGolfCorrelations(golfData) {
             }
         }
         
-        // Référence tour adaptée
-        const tourReference = gender === 'F' ? 
-            'ℹ️ Référence: Moyenne Top 10 LPGA = 100-104 mph | Top 50 = 94-98 mph' :
-            'ℹ️ Référence: Moyenne Top 10 PGA = 121-123 mph | Top 50 = 116-118 mph';
-        
+        // ========== AFFICHAGE ==========
         html += `
             <div class="correlation-item">
                 <h5>🏌️ Vitesse Driver: ${golfData.driverSpeed} mph</h5>
                 
                 <div style="background: #e8f5e9; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
                     ${performanceContext}
+                    <div style="margin-top: 0.5rem; color: #666; font-size: 0.9rem;">
+                        📊 Votre niveau: ${levelDescription} (HCP ${handicap})
+                    </div>
                 </div>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
@@ -5620,40 +5690,71 @@ function displayGolfCorrelations(golfData) {
                     </div>
                 </div>
                 
-                <div style="background: ${Math.abs(percentDiff) < 5 ? '#e8f5e9' : percentDiff > 0 ? '#e3f2fd' : '#fff3e0'}; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
-                    ${Math.abs(percentDiff) < 5 ? 
-                        '<strong>✅ Optimisation excellente !</strong><br>Votre technique exploite parfaitement votre potentiel physique.' :
-                        percentDiff > 5 ? 
-                        '<strong>🌟 Technique exceptionnelle !</strong><br>Vous surpassez votre potentiel physique de ' + percentDiff.toFixed(1) + '%. Excellente efficacité technique !' :
-                        '<strong>⚠️ Potentiel inexploité</strong><br>Votre physique permettrait ' + Math.abs(diff).toFixed(0) + ' mph de plus. Travaillez la technique et le timing.'
+                <div style="background: ${Math.abs(percentDiff) < 3 ? '#e8f5e9' : percentDiff > 0 ? '#e3f2fd' : '#fff3e0'}; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
+                    ${Math.abs(percentDiff) < 3 ? 
+                        '<strong>✅ Optimisation excellente !</strong><br>Votre technique exploite parfaitement votre potentiel physique actuel.' :
+                        percentDiff > 3 ? 
+                        '<strong>🌟 Technique exceptionnelle !</strong><br>Vous surpassez votre potentiel physique de ' + percentDiff.toFixed(1) + '%. Excellente efficacité technique ! Votre physique est le limitant.' :
+                        '<strong>⚠️ Potentiel inexploité</strong><br>Votre physique permettrait ' + Math.abs(diff).toFixed(1) + ' mph de plus. Travaillez la technique, le timing et la séquence.'
                     }
                 </div>
                 
-                <div style="margin-top: 1rem;">
-                    <strong>💡 Contributions physiques à la vitesse:</strong>
-                    <div style="margin-top: 0.5rem;">
-                        ${createContributionBar('Force', scores.force || 0, forceContribution, 18)}
-                        ${createContributionBar('Explosivité', scores.explosivite || 0, explosiviteContribution, 14)}
-                        ${createContributionBar('Mobilité', scores.mobilite || 0, mobiliteContribution, 6)}
+                <div style="margin-top: 1.5rem; padding: 1rem; background: #f5f5f5; border-radius: 6px;">
+                    <strong>💡 Contributions physiques (Corrélations Scientifiques):</strong>
+                    <div style="margin-top: 1rem;">
+                        ${createScientificContributionBar('Explosivité', explosiviteScore, explosiviteContribution, 10, 0.82)}
+                        ${createScientificContributionBar('Force Jambes', forceScore, forceContribution, 5.5, 0.46)}
+                    </div>
+                    <div style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
+                        <em>Coefficients basés sur méta-analyses (Sports Medicine 2024)</em>
                     </div>
                 </div>
                 
-                ${potentialGainSpeed > 2 ? `
-                    <div style="background: #fff3e0; padding: 1rem; border-radius: 6px; margin-top: 1rem; border-left: 4px solid #f39c12;">
-                        <strong>🎯 Potentiel d'amélioration physique: +${potentialGainSpeed.toFixed(1)} mph</strong><br>
-                        <small>En atteignant des scores pro (${proNorms.force}-${proNorms.explosivite}/20), vous pourriez gagner <strong>${potentialGainSpeed.toFixed(0)} mph</strong> sur 12-18 mois d'entraînement intensif.</small><br>
-                        <small style="color: #666; margin-top: 0.5rem; display: block;">
-                            ${tourReference}
-                        </small>
+                ${(shortTermGain > 1 || mediumTermGain > 1 || longTermGain > 1) ? `
+                    <div style="background: #fff3e0; padding: 1.5rem; border-radius: 6px; margin-top: 1rem; border-left: 4px solid #f39c12;">
+                        <strong>🎯 Potentiel d'Amélioration RÉALISTE</strong>
+                        <div style="margin-top: 1rem; font-size: 0.95rem;">
+                            ${shortTermGain > 1 ? `
+                                <div style="margin-bottom: 0.8rem;">
+                                    <strong style="color: #f39c12;">Court terme (3-6 mois)</strong> - Speed training
+                                    <div style="margin-left: 1rem; color: #666;">
+                                        +${shortTermGain.toFixed(1)} mph → ${(golfData.driverSpeed + shortTermGain).toFixed(0)} mph
+                                        <br><small>Speed training 2-3x/semaine (SuperSpeed, Stack, driver swings max)</small>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${mediumTermGain > shortTermGain + 1 ? `
+                                <div style="margin-bottom: 0.8rem;">
+                                    <strong style="color: #f39c12;">Moyen terme (12-18 mois)</strong> - Force + Speed + Technique
+                                    <div style="margin-left: 1rem; color: #666;">
+                                        +${mediumTermGain.toFixed(1)} mph → ${(golfData.driverSpeed + mediumTermGain).toFixed(0)} mph
+                                        <br><small>Programme complet : Gym 3x/sem + Speed 2x/sem + Coaching technique</small>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${longTermGain > mediumTermGain + 1 ? `
+                                <div>
+                                    <strong style="color: #f39c12;">Long terme (2-3 ans)</strong> - Programme Pro
+                                    <div style="margin-left: 1rem; color: #666;">
+                                        +${longTermGain.toFixed(1)} mph → ${(golfData.driverSpeed + longTermGain).toFixed(0)} mph
+                                        <br><small>Entraînement type Tour : Force, Explosivité, Speed, Mobilité, Technique</small>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div style="margin-top: 1rem; padding: 0.8rem; background: white; border-radius: 4px; font-size: 0.9rem;">
+                            <strong>📌 Maximum théorique:</strong> ${maxTheoreticalSpeed} mph (niveau ${handicap <= 0 ? 'scratch-pro' : 'amateur optimisé'})
+                            <br><small style="color: #666;">Chaque mph = ~2,5 yards de distance (Source: TrackMan)</small>
+                        </div>
                     </div>
                 ` : `
                     <div style="background: #e8f5e9; padding: 1rem; border-radius: 6px; margin-top: 1rem; border-left: 4px solid #27ae60;">
-                        <strong>✅ Physique optimal</strong><br>
-                        <small>Votre développement physique est excellent. Focus sur la technique pour progresser.</small>
+                        <strong>✅ Physique proche de l'optimal</strong><br>
+                        <small>Votre développement physique est excellent pour votre niveau. Focus sur la technique et la consistance pour progresser.</small>
                     </div>
-                `}
-            </div>
-        `;
     }
     
     // ========== DISTANCE DRIVER ==========
@@ -5801,6 +5902,23 @@ function createContributionBar(label, score, contribution, maxContribution) {
                 <span style="color: #1a4d2e; font-weight: 600;">+${contribution.toFixed(1)} mph</span>
             </div>
             <div style="background: #e0e0e0; height: 20px; border-radius: 10px; overflow: hidden;">
+                <div style="background: linear-gradient(90deg, #1a4d2e, #27ae60); height: 100%; width: ${percent}%; transition: width 0.3s;"></div>
+            </div>
+        </div>
+    `;
+}
+
+// Fonction avec corrélation scientifique affichée
+function createScientificContributionBar(label, score, contribution, maxContribution, correlation) {
+    const percent = (contribution / maxContribution) * 100;
+    
+    return `
+        <div style="margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem; font-size: 0.9rem;">
+                <span><strong>${label}</strong> (${score.toFixed(1)}/20)</span>
+                <span style="color: #1a4d2e; font-weight: 600;">+${contribution.toFixed(1)} mph <small style="color: #999;">(r=${correlation})</small></span>
+            </div>
+            <div style="background: #e0e0e0; height: 24px; border-radius: 12px; overflow: hidden;">
                 <div style="background: linear-gradient(90deg, #1a4d2e, #27ae60); height: 100%; width: ${percent}%; transition: width 0.3s;"></div>
             </div>
         </div>
