@@ -1997,8 +1997,9 @@ function generateCompleteBilan() {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
+            font-size: 10px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
+            line-height: 1.4;
             color: #333;
             background: #f5f5f5;
         }
@@ -2007,8 +2008,8 @@ function generateCompleteBilan() {
             background: white;
             max-width: 210mm;
             min-height: 297mm;
-            margin: 20px auto;
-            padding: 20mm;
+            margin: 10px auto;
+            padding: 12mm;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         
@@ -2016,20 +2017,20 @@ function generateCompleteBilan() {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 3px solid #1a4d2e;
+            margin-bottom: 15px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #1a4d2e;
         }
         
         .header-left h1 {
             color: #1a4d2e;
-            font-size: 28px;
+            font-size: 20px;
             margin-bottom: 5px;
         }
         
         .header-left p {
             color: #666;
-            font-size: 14px;
+            font-size: 10px;
         }
         
         .header-right {
@@ -2039,9 +2040,9 @@ function generateCompleteBilan() {
         .profile-info {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-            padding: 20px;
+            gap: 6px;
+            margin-bottom: 15px;
+            padding: 8px;
             background: #f8f9fa;
             border-radius: 8px;
         }
@@ -2060,20 +2061,20 @@ function generateCompleteBilan() {
         
         .radar-container {
             max-width: 500px;
-            margin: 30px auto;
+            margin: 15px auto;
         }
         
         .summary {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 6px;
             margin-top: 30px;
         }
         
         .summary-box {
-            padding: 20px;
+            padding: 8px;
             border-radius: 8px;
-            border-left: 4px solid;
+            border-left: 3px solid;
         }
         
         .summary-box.strong {
@@ -2088,7 +2089,7 @@ function generateCompleteBilan() {
         
         .summary-box h3 {
             margin-bottom: 10px;
-            font-size: 18px;
+            font-size: 13px;
         }
         
         .summary-box ul {
@@ -2098,50 +2099,50 @@ function generateCompleteBilan() {
         
         .summary-box li {
             padding: 5px 0;
-            font-size: 14px;
+            font-size: 10px;
         }
         
         .moyenne-generale {
             text-align: center;
-            margin: 30px 0;
-            padding: 20px;
+            margin: 15px 0;
+            padding: 8px;
             background: linear-gradient(135deg, #1a4d2e 0%, #27ae60 100%);
             color: white;
             border-radius: 10px;
         }
         
         .moyenne-generale h2 {
-            font-size: 24px;
+            font-size: 16px;
             margin-bottom: 10px;
         }
         
         .moyenne-generale .score {
-            font-size: 48px;
+            font-size: 36px;
             font-weight: 700;
         }
         
         .section {
-            margin-bottom: 30px;
+            margin-bottom: 15px;
         }
         
         .section h2 {
             color: #1a4d2e;
-            font-size: 20px;
+            font-size: 15px;
             margin-bottom: 15px;
-            padding-bottom: 10px;
+            padding-bottom: 6px;
             border-bottom: 2px solid #e0e0e0;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
         
         th {
             background: #1a4d2e;
             color: white;
-            padding: 12px;
+            padding: 8px;
             text-align: left;
             font-weight: 600;
         }
@@ -2170,9 +2171,9 @@ function generateCompleteBilan() {
         .badge-faible { background: #e74c3c; }
         
         .lsi-box {
-            padding: 10px;
+            padding: 6px;
             margin-bottom: 10px;
-            border-left: 4px solid;
+            border-left: 3px solid;
             border-radius: 4px;
         }
         
@@ -2192,7 +2193,7 @@ function generateCompleteBilan() {
             position: sticky;
             bottom: 20px;
             background: white;
-            padding: 15px;
+            padding: 6px;
             border-radius: 8px;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
         }
@@ -2202,7 +2203,7 @@ function generateCompleteBilan() {
             margin: 0 10px;
             border: none;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 11px;
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s;
@@ -2227,27 +2228,27 @@ function generateCompleteBilan() {
         }
         
         .alert {
-            padding: 15px;
+            padding: 6px;
             border-radius: 6px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
         
         .alert-success {
             background: #e8f5e9;
-            border-left: 4px solid #27ae60;
+            border-left: 3px solid #27ae60;
             color: #2e7d32;
         }
         
         .alert-warning {
             background: #fff3e0;
-            border-left: 4px solid #f39c12;
+            border-left: 3px solid #f39c12;
             color: #e65100;
         }
         
         .page-number {
             text-align: center;
             color: #999;
-            font-size: 14px;
+            font-size: 10px;
             margin-top: 20px;
         }
     </style>
@@ -3203,6 +3204,7 @@ function generateBilanPage1() {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
+            font-size: 10px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #333;
@@ -3587,6 +3589,7 @@ function generateBilanPage2() {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
+            font-size: 10px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #333;
