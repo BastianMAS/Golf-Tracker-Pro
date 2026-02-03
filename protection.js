@@ -7,9 +7,11 @@
     
     // ========== CONFIGURATION ==========
     const ACCESS_CODE = 'TESTBASTIAN26';
+    const ADMIN_CODE = 'Babas007admin';  // Code admin - jamais d'expiration
     const EXPIRATION_DATE = new Date('2026-02-09T23:59:59'); // 09/02/2026
     const EXPIRATION_MESSAGE = 'Période de test terminée';
     const STORAGE_KEY = 'golfTrackerAccessGranted';
+    const ADMIN_STORAGE_KEY = 'golfTrackerAdminMode';
     
     // ========== MODE ADMIN (BYPASS PROTECTION) ==========
     function isAdminMode() {
@@ -26,9 +28,16 @@
     
     // ========== VÉRIFICATION ACCÈS ==========
     function checkAccess() {
-        // MODE ADMIN : Bypass complet
+        // MODE ADMIN : Bypass via URL (garde pour compatibilité)
         if (isAdminMode()) {
-            console.log('🔓 Mode Administrateur activé - Accès illimité');
+            console.log('🔓 Mode Administrateur activé via URL');
+            sessionStorage.setItem(ADMIN_STORAGE_KEY, 'true');
+            return true;
+        }
+        
+        // Vérifier si mode admin déjà activé
+        if (sessionStorage.getItem(ADMIN_STORAGE_KEY) === 'true') {
+            console.log('🔓 Mode Administrateur - Accès illimité');
             return true;
         }
         
@@ -102,7 +111,6 @@
                     font-size: 16px;
                     text-align: center;
                     margin-bottom: 15px;
-                    text-transform: uppercase;
                 "
             >
             <div id="errorMessage" style="color: #e74c3c; margin-bottom: 15px; font-size: 14px; min-height: 20px;"></div>
@@ -142,23 +150,34 @@
         
         // Fonction de validation
         const validateCode = () => {
-            const enteredCode = input.value.trim().toUpperCase();
+            const enteredCode = input.value.trim();
             
-            if (enteredCode === ACCESS_CODE) {
-                // Code correct
+            // Vérifier code admin (AVEC respect de la casse)
+            if (enteredCode === ADMIN_CODE) {
+                // Mode admin activé
+                sessionStorage.setItem(ADMIN_STORAGE_KEY, 'true');
+                overlay.remove();
+                console.log('🔓 Mode Administrateur activé - Accès illimité sans expiration');
+                return;
+            }
+            
+            // Vérifier code testeur (SANS casse)
+            if (enteredCode.toUpperCase() === ACCESS_CODE) {
+                // Code testeur correct
                 sessionStorage.setItem(STORAGE_KEY, 'true');
                 overlay.remove();
                 console.log('✅ Accès accordé - Version test valide jusqu\'au', EXPIRATION_DATE.toLocaleDateString('fr-FR'));
-            } else {
-                // Code incorrect
-                errorMsg.textContent = '❌ Code incorrect';
-                input.value = '';
-                input.style.borderColor = '#e74c3c';
-                setTimeout(() => {
-                    errorMsg.textContent = '';
-                    input.style.borderColor = '#e0e0e0';
-                }, 2000);
+                return;
             }
+            
+            // Code incorrect
+            errorMsg.textContent = '❌ Code incorrect';
+            input.value = '';
+            input.style.borderColor = '#e74c3c';
+            setTimeout(() => {
+                errorMsg.textContent = '';
+                input.style.borderColor = '#e0e0e0';
+            }, 2000);
         };
         
         // Événements
