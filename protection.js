@@ -11,6 +11,13 @@
     const EXPIRATION_MESSAGE = 'Période de test terminée';
     const STORAGE_KEY = 'golfTrackerAccessGranted';
     
+    // ========== MODE ADMIN (BYPASS PROTECTION) ==========
+    function isAdminMode() {
+        // Vérifier si URL contient ?admin=Babas007admin
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('admin') === 'Babas007admin';
+    }
+    
     // ========== VÉRIFICATION EXPIRATION ==========
     function isExpired() {
         const now = new Date();
@@ -19,6 +26,12 @@
     
     // ========== VÉRIFICATION ACCÈS ==========
     function checkAccess() {
+        // MODE ADMIN : Bypass complet
+        if (isAdminMode()) {
+            console.log('🔓 Mode Administrateur activé - Accès illimité');
+            return true;
+        }
+        
         // Vérifier si déjà authentifié dans cette session
         const accessGranted = sessionStorage.getItem(STORAGE_KEY);
         
@@ -225,15 +238,10 @@
     // Attendre que le DOM soit prêt
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
-            if (!checkAccess()) {
-                // Bloquer le contenu si accès refusé
-                document.body.innerHTML = '';
-            }
+            checkAccess();
         });
     } else {
-        if (!checkAccess()) {
-            document.body.innerHTML = '';
-        }
+        checkAccess();
     }
     
     // Message console
