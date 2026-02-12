@@ -8,7 +8,7 @@
     // ========== CONFIGURATION ==========
     const ACCESS_CODE = 'TESTBASTIAN26';
     const ADMIN_CODE = 'Babas007admin';  // Code admin - jamais d'expiration
-    const EXPIRATION_DATE = new Date('2026-02-09T23:59:59'); // 09/02/2026
+    const EXPIRATION_DATE = new Date('2026-12-31T23:59:59'); // 31/12/2026
     const EXPIRATION_MESSAGE = 'Période de test terminée';
     const STORAGE_KEY = 'golfTrackerAccessGranted';
     const ADMIN_STORAGE_KEY = 'golfTrackerAdminMode';
