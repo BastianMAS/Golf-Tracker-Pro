@@ -4938,6 +4938,9 @@ function updateAnalysePro() {
     // Générer les alertes
     generateSmartAlerts();
     
+    // Analyser l'impact physique sur le swing
+    analyseImpactPhysiqueSwing();
+    
     // Setup event listeners
     setupAnalyseProEventListeners();
 }
@@ -6175,6 +6178,376 @@ function getAllSmartAlerts() {
 
 // Exposer globalement
 window.switchAnalyseView = switchAnalyseView;
+
+// ==================== IMPACT PHYSIQUE SUR LE SWING ====================
+
+function analyseImpactPhysiqueSwing() {
+    const container = document.getElementById('impactPhysiqueSwing');
+    if (!container) return;
+    
+    const scores = calculateQualityScores();
+    const currentTests = JSON.parse(localStorage.getItem('currentTests') || '{}');
+    
+    let impacts = [];
+    
+    // ========== 1. ASYMÉTRIES & COMPENSATION ==========
+    const asymmetries = detectAsymmetries();
+    
+    asymmetries.forEach(asym => {
+        if (asym.lsi < 90) {
+            let impact = {
+                priority: 1,
+                category: 'Asymétrie',
+                title: `Déséquilibre ${asym.name}`,
+                description: `${asym.weakerSide === 'G' ? 'Gauche' : 'Droite'} plus faible (${asym.lsi.toFixed(0)}% du côté fort)`,
+                consequences: [],
+                action: `Renforcement unilatéral côté ${asym.weakerSide === 'G' ? 'gauche' : 'droit'}`
+            };
+            
+            // Conséquences selon le type d'asymétrie
+            if (asym.name.includes('CMJ') || asym.name.includes('Wall Sit')) {
+                impact.consequences.push('⚠️ Tendance à surcompenser côté fort → Risque slice/hook');
+                impact.consequences.push('📉 Transfert poids incomplet → Perte 5-8% vitesse');
+            }
+            
+            if (asym.name.includes('Hip Rotation')) {
+                impact.consequences.push('⚠️ Compensation par rotation thoracique excessive');
+                impact.consequences.push('🔴 Risque douleurs lombaires à l\'impact');
+                impact.consequences.push('📉 Perte puissance estimée : 8-12%');
+            }
+            
+            if (asym.name.includes('Thoracique')) {
+                impact.consequences.push('⚠️ Backswing limité d\'un côté');
+                impact.consequences.push('⚠️ Plan de swing altéré');
+            }
+            
+            if (asym.name.includes('Dorsiflexion') || asym.name.includes('ankle')) {
+                impact.consequences.push('⚠️ Transfert poids incomplet');
+                impact.consequences.push('📉 Perte distance estimée : -5 à -8 mètres');
+            }
+            
+            if (asym.name.includes('Side Plank')) {
+                impact.consequences.push('⚠️ Instabilité latérale durant le swing');
+                impact.consequences.push('🎯 Impact sur précision (side bend excessif)');
+            }
+            
+            impacts.push(impact);
+        }
+    });
+    
+    // ========== 2. RATIOS MUSCULAIRES ==========
+    
+    // Push/Pull Ratio
+    const pushTests = ['bench'];
+    const pullTests = ['pullup'];
+    
+    let pushScore = 0, pullScore = 0, pushCount = 0, pullCount = 0;
+    
+    pushTests.forEach(test => {
+        if (currentTests.force && currentTests.force[test] != null) {
+            pushScore += calculateScore20(test, currentTests.force[test]);
+            pushCount++;
+        }
+    });
+    
+    pullTests.forEach(test => {
+        if (currentTests.force && currentTests.force[test] != null) {
+            pullScore += calculateScore20(test, currentTests.force[test]);
+            pullCount++;
+        }
+    });
+    
+    if (pushCount > 0 && pullCount > 0) {
+        const avgPush = pushScore / pushCount;
+        const avgPull = pullScore / pullCount;
+        const pushPullRatio = avgPull / avgPush;
+        
+        if (pushPullRatio < 0.7) {
+            impacts.push({
+                priority: 1,
+                category: 'Déséquilibre Musculaire',
+                title: 'Ratio Push/Pull Déséquilibré',
+                description: `Ratio actuel: ${(pushPullRatio * 100).toFixed(0)}% (optimal: 80-100%)`,
+                consequences: [
+                    '⚠️ Déséquilibre antéro-postérieur',
+                    '📉 Perte vitesse swing estimée : -3 à -5 mph',
+                    '🔴 Risque blessure épaule/coiffe rotateurs',
+                    '⚠️ Posture altérée (épaules enroulées)'
+                ],
+                action: 'Renforcer chaîne postérieure : tractions, rowing, face pulls'
+            });
+        }
+    }
+    
+    // H/Q Ratio (Ischio/Quadriceps)
+    // Approximation via tests dispo
+    if (scores.force && scores.force < 14) {
+        impacts.push({
+            priority: 1,
+            category: 'Ratio Musculaire',
+            title: 'Risque Ratio H/Q Faible',
+            description: 'Score force jambes <14/20 suggère potentiel déséquilibre',
+            consequences: [
+                '🔴 URGENT : Risque blessure LCA/ménisque',
+                '🔴 Risque douleurs lombaires',
+                '⚠️ Stabilité genou compromise',
+                '📉 Freinage inefficace durant downswing'
+            ],
+            action: 'Évaluation H/Q isocinétique recommandée + renforcement ischio (Nordic curls, RDL)'
+        });
+    }
+    
+    // ========== 3. TRANSMISSION FORCE (Core faible + Force élevée) ==========
+    if (scores.force && scores.core && scores.force > 15 && scores.core < 12) {
+        impacts.push({
+            priority: 2,
+            category: 'Transmission',
+            title: 'Transmission Inefficace Force → Vitesse',
+            description: `Force jambes élevée (${scores.force.toFixed(1)}/20) mais Core faible (${scores.core.toFixed(1)}/20)`,
+            consequences: [
+                '⚠️ Puissance jambes non transmise au haut du corps',
+                '📉 Perte estimée : 15-20% de la puissance disponible',
+                '⚠️ Compensation par bras → Risque blessure',
+                '🎯 Consistance de frappe diminuée'
+            ],
+            action: 'Priorité absolue : renforcement Core (Pallof press, anti-rotation, planks dynamiques)'
+        });
+    }
+    
+    // ========== 4. LIMITATIONS TPI → SWING FAULTS ==========
+    const tpiTests = currentTests.tpi || {};
+    
+    // Pelvic Tilt
+    if (tpiTests.pelvictilt === 0) {
+        impacts.push({
+            priority: 2,
+            category: 'TPI → Swing Fault',
+            title: 'Pelvic Tilt Fail',
+            description: 'Limitation mobilité bassin (TPI)',
+            consequences: [
+                '⚠️ Loss of Posture probable (66% corrélation TPI)',
+                '⚠️ Early Extension compensatoire',
+                '🎯 Contact inconsistant',
+                '🔴 Risque lombalgie chronique'
+            ],
+            action: 'Mobilité hanche (90/90, pigeon pose) + renforcement fessiers'
+        });
+    }
+    
+    // Pelvic Rotation
+    if (tpiTests.pelvicrotation === 0) {
+        impacts.push({
+            priority: 2,
+            category: 'TPI → Swing Fault',
+            title: 'Pelvic Rotation Fail',
+            description: 'Rotation bassin limitée (TPI)',
+            consequences: [
+                '⚠️ Early Extension probable (71% corrélation TPI)',
+                '⚠️ Loss of Posture',
+                '📉 Perte distance significative (10-15%)',
+                '🔴 Compression lombaire excessive'
+            ],
+            action: 'Travail rotation hanche (Cossack squats, 90/90 switches, hip CARs)'
+        });
+    }
+    
+    // Torso Rotation
+    if (tpiTests.torsorotation === 0) {
+        impacts.push({
+            priority: 2,
+            category: 'TPI → Swing Fault',
+            title: 'Torso Rotation Fail',
+            description: 'Rotation thoracique limitée (TPI)',
+            consequences: [
+                '⚠️ Flat Shoulder Plane probable (58% corrélation TPI)',
+                '⚠️ Sway compensatoire',
+                '📉 Backswing raccourci → Perte 8-12% distance',
+                '🔴 Risque cervicales/trapèzes'
+            ],
+            action: 'Mobilité thoracique (Open book, thread the needle, foam roller T-spine)'
+        });
+    }
+    
+    // ========== 5. MATRICE RISQUE BLESSURE ==========
+    
+    // Core faible + Mobilité limitée
+    if (scores.core && scores.mobilite && scores.core < 12 && scores.mobilite < 12) {
+        impacts.push({
+            priority: 1,
+            category: 'Risque Blessure',
+            title: 'Risque Lombalgie ÉLEVÉ',
+            description: `Core: ${scores.core.toFixed(1)}/20 + Mobilité: ${scores.mobilite.toFixed(1)}/20`,
+            consequences: [
+                '🔴 URGENT : Combinaison à haut risque',
+                '🔴 Compensation lombaire durant le swing',
+                '🔴 Risque hernie discale à moyen terme',
+                '⚠️ Fatigue lombaire après 9 trous'
+            ],
+            action: 'Programme préventif : Core + Mobilité hanche/thoracique (3-4x/sem)'
+        });
+    }
+    
+    // Force asymétrique + H/Q faible
+    const hasLegAsymmetry = asymmetries.some(a => 
+        (a.name.includes('CMJ') || a.name.includes('Wall Sit')) && a.lsi < 85
+    );
+    
+    if (hasLegAsymmetry && scores.force < 14) {
+        impacts.push({
+            priority: 1,
+            category: 'Risque Blessure',
+            title: 'Risque Genou MOYEN-ÉLEVÉ',
+            description: 'Asymétrie jambes + Force globale faible',
+            consequences: [
+                '🔴 Risque entorse/ménisque',
+                '⚠️ Instabilité durant rotation',
+                '⚠️ Surcharge côté fort',
+                '🔴 Potentiel tendinite rotulienne'
+            ],
+            action: 'Renforcement bilatéral + unilatéral progressif + proprioception'
+        });
+    }
+    
+    // Rotation thoracique limitée
+    if (scores.mobilite && scores.mobilite < 11) {
+        const hasRotationLimit = Object.keys(currentTests.mobilite || {}).some(key => 
+            key.includes('thoracic') && currentTests.mobilite[key] !== null
+        );
+        
+        if (hasRotationLimit) {
+            impacts.push({
+                priority: 2,
+                category: 'Risque Blessure',
+                title: 'Risque Cervicales/Trapèzes MOYEN',
+                description: 'Mobilité thoracique limitée',
+                consequences: [
+                    '⚠️ Compensation par cervicales',
+                    '⚠️ Tensions trapèzes chroniques',
+                    '⚠️ Maux de tête post-golf possibles',
+                    '📉 Backswing limité'
+                ],
+                action: 'Routine quotidienne mobilité thoracique (10 min/jour)'
+            });
+        }
+    }
+    
+    // ========== AFFICHAGE ==========
+    if (impacts.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 3rem; background: #e8f5e9; border-radius: 8px;">
+                <div style="font-size: 48px; margin-bottom: 15px;">✅</div>
+                <h3 style="color: #27ae60; margin-bottom: 10px;">Excellent Profil Physique</h3>
+                <p style="color: #666;">Aucun impact physique majeur détecté sur votre swing. Continuez votre programme actuel !</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Trier par priorité
+    impacts.sort((a, b) => a.priority - b.priority);
+    
+    let html = '<h4 style="margin-bottom: 20px;">🎯 Impact de Votre Physique sur le Swing</h4>';
+    
+    impacts.forEach(impact => {
+        const priorityColor = impact.priority === 1 ? '#e74c3c' : '#f39c12';
+        const priorityLabel = impact.priority === 1 ? '🔴 URGENT' : '🟠 IMPORTANT';
+        
+        html += `
+            <div style="
+                border-left: 4px solid ${priorityColor};
+                background: white;
+                padding: 20px;
+                margin-bottom: 20px;
+                border-radius: 6px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            ">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                    <h5 style="color: #1a4d2e; margin: 0; font-size: 16px;">${impact.title}</h5>
+                    <span style="
+                        background: ${priorityColor}15;
+                        color: ${priorityColor};
+                        padding: 4px 12px;
+                        border-radius: 12px;
+                        font-size: 11px;
+                        font-weight: 600;
+                    ">${priorityLabel}</span>
+                </div>
+                
+                <div style="
+                    background: #f8f9fa;
+                    padding: 10px 15px;
+                    border-radius: 4px;
+                    margin-bottom: 12px;
+                    font-size: 13px;
+                    color: #666;
+                ">
+                    <strong>${impact.category}:</strong> ${impact.description}
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: #333; font-size: 14px;">Conséquences :</strong>
+                    <ul style="margin: 8px 0 0 0; padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                        ${impact.consequences.map(c => `<li>${c}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div style="
+                    background: #e3f2fd;
+                    padding: 12px 15px;
+                    border-radius: 4px;
+                    border-left: 3px solid #2196f3;
+                ">
+                    <strong style="color: #1976d2; font-size: 13px;">💡 Action recommandée:</strong>
+                    <p style="margin: 5px 0 0 0; color: #333; font-size: 13px;">${impact.action}</p>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Fonction helper pour détecter asymétries
+function detectAsymmetries() {
+    const currentTests = JSON.parse(localStorage.getItem('currentTests') || '{}');
+    const asymmetries = [];
+    
+    const bilateralTests = [
+        {key: 'wallsit', quality: 'endurance', name: 'Wall Sit'},
+        {key: 'cmjunilateral', quality: 'explosivite', name: 'CMJ Unilatéral'},
+        {key: 'sideplank', quality: 'core', name: 'Side Plank'},
+        {key: 'thoracic', quality: 'mobilite', name: 'Rotation Thoracique'},
+        {key: 'hipint', quality: 'mobilite', name: 'Hip Rotation Int'},
+        {key: 'hipext', quality: 'mobilite', name: 'Hip Rotation Ext'},
+        {key: 'ankle', quality: 'mobilite', name: 'Dorsiflexion'},
+        {key: 'balanceopen', quality: 'equilibre', name: 'Équilibre Y. Ouverts'},
+        {key: 'balanceclosed', quality: 'equilibre', name: 'Équilibre Y. Fermés'}
+    ];
+    
+    bilateralTests.forEach(test => {
+        const qualityData = currentTests[test.quality];
+        if (qualityData && qualityData[test.key]) {
+            const value = qualityData[test.key];
+            if (typeof value === 'object' && value.left != null && value.right != null) {
+                const weaker = Math.min(value.left, value.right);
+                const stronger = Math.max(value.left, value.right);
+                if (stronger > 0) {
+                    const lsi = (weaker / stronger) * 100;
+                    const weakerSide = value.left < value.right ? 'G' : 'D';
+                    asymmetries.push({
+                        name: test.name,
+                        lsi: lsi,
+                        weakerSide: weakerSide,
+                        left: value.left,
+                        right: value.right
+                    });
+                }
+            }
+        }
+    });
+    
+    return asymmetries;
+}
 
 
 function generateSmartAlerts() {

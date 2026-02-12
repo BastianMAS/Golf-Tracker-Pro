@@ -2796,6 +2796,27 @@ img {
     animation: fadeIn 0.3s;
 }
 
+/* Impact Physique Card */
+.impact-physique-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.impact-physique-card h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    font-size: 1.3rem;
+}
+
+.impact-physique-card .help-text {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .analyse-nav-buttons {
@@ -2805,5 +2826,9 @@ img {
     .analyse-nav-btn {
         padding: 0.75rem 1rem;
         font-size: 0.9rem;
+    }
+    
+    .impact-physique-card {
+        padding: 1.5rem;
     }
 }
