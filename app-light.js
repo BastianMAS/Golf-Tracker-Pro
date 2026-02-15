@@ -5852,40 +5852,71 @@ function displayGolfCorrelations(golfData) {
                     </div>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1rem 0;">
-                    <div style="background: white; padding: 1rem; border-radius: 6px; border: 1px solid #e0e0e0;">
-                        <strong style="font-size: 0.85rem; color: #666;">VMax Théorique (30 ans)</strong>
-                        <div style="font-size: 1.3rem; color: #1a4d2e; font-weight: 700; margin: 0.5rem 0;">
-                            ${(baseSpeed / ageFactor).toFixed(0)} mph
+                <!-- ANALYSE VMAX SIMPLE ET CLAIRE -->
+                <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 2px solid #1a4d2e; margin: 1rem 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div>
+                            <strong style="color: #666; font-size: 0.9rem;">VOTRE VMAX (range)</strong>
+                            <div style="font-size: 2.5rem; color: #1a4d2e; font-weight: 700; margin: 0.3rem 0;">
+                                ${golfData.driverSpeed} mph
+                            </div>
                         </div>
-                        <small style="color: #999; font-size: 0.75rem;">Base + physique optimal</small>
-                    </div>
-                    <div style="background: white; padding: 1rem; border-radius: 6px; border: 2px solid #1a4d2e;">
-                        <strong style="font-size: 0.85rem; color: #1a4d2e;">VMax Actuelle (${age} ans)</strong>
-                        <div style="font-size: 1.8rem; color: #1a4d2e; font-weight: 700; margin: 0.5rem 0;">
-                            ${vmaxActuelle.toFixed(1)} mph
+                        <div style="text-align: right;">
+                            <strong style="color: #666; font-size: 0.9rem;">Vitesse jeu estimée</strong>
+                            <div style="font-size: 1.5rem; color: #666; font-weight: 700; margin: 0.3rem 0;">
+                                ${(golfData.driverSpeed - ecartCompetition).toFixed(0)} mph
+                            </div>
+                            <small style="color: #999;">(-${ecartCompetition} mph)</small>
                         </div>
-                        <small style="color: #666; font-size: 0.75rem;">
-                            ${limitationImpact > 0 ? `Avec limitation (-${limitationImpact} mph)` : 'Range all-out'}
-                        </small>
-                    </div>
-                    <div style="background: #f5f5f5; padding: 1rem; border-radius: 6px; border: 1px solid #e0e0e0;">
-                        <strong style="font-size: 0.85rem; color: #666;">Vitesse Compétition</strong>
-                        <div style="font-size: 1.3rem; color: #666; font-weight: 700; margin: 0.5rem 0;">
-                            ${vitesseCompetition.toFixed(0)} mph
-                        </div>
-                        <small style="color: #999; font-size: 0.75rem;">-${ecartCompetition} mph (contrôle)</small>
                     </div>
                 </div>
                 
-                <div style="background: ${Math.abs(diff) < 3 ? '#e8f5e9' : diff < 0 ? '#fff3e0' : '#e3f2fd'}; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
-                    <strong>📏 Votre VMax mesurée : ${golfData.driverSpeed} mph</strong>
-                    ${Math.abs(diff) < 3 ? 
-                        '<div style="margin-top: 0.5rem;">✅ <strong>Cohérence parfaite !</strong> Votre VMax mesurée correspond à votre potentiel physique.</div>' :
-                        diff < 0 ? 
-                        '<div style="margin-top: 0.5rem;">⚠️ <strong>Potentiel inexploité</strong><br>Votre physique permettrait ' + Math.abs(diff).toFixed(1) + ' mph de plus. Pistes : technique, timing, séquence kinématique.</div>' :
-                        '<div style="margin-top: 0.5rem;">🌟 <strong>Technique exceptionnelle !</strong><br>Vous surpassez votre potentiel physique de ' + diff.toFixed(1) + ' mph. Excellente efficacité !</div>'
-                    }
+                <!-- NORMES ET POSITIONNEMENT -->
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 6px; margin: 1rem 0;">
+                    <strong style="font-size: 1.1rem;">📊 Positionnement vs Normes</strong>
+                    <div style="margin-top: 1rem;">
+                        ${performanceContext}
+                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+                            <strong>Normes ${gender === 'M' ? 'Homme' : 'Femme'} ${age} ans, HCP ${handicap} :</strong>
+                            <div style="margin-top: 0.5rem; color: #666;">
+                                VMax range : <strong>${(baseSpeed * 0.92).toFixed(0)} - ${(baseSpeed * 1.08).toFixed(0)} mph</strong> (±8% autour moyenne)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- MARGE DE PROGRESSION RÉALISTE -->
+                <div style="background: #fff3e0; padding: 1.5rem; border-radius: 6px; margin: 1rem 0; border-left: 4px solid #f39c12;">
+                    <strong style="font-size: 1.1rem;">🎯 Marge de Progression Réaliste</strong>
+                    <div style="margin-top: 1rem; color: #333;">
+                        <div style="margin-bottom: 0.8rem;">
+                            <strong>Court terme (3-6 mois)</strong> - Speed training
+                            <div style="margin-left: 1rem; color: #666; font-size: 0.95rem;">
+                                +3 à +5 mph → ${(golfData.driverSpeed + 4).toFixed(0)} mph VMax
+                                <br><small>SuperSpeed/Stack 2-3x/semaine</small>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 0.8rem;">
+                            <strong>Moyen terme (12-18 mois)</strong> - Force + Speed
+                            <div style="margin-left: 1rem; color: #666; font-size: 0.95rem;">
+                                +6 à +10 mph → ${(golfData.driverSpeed + 8).toFixed(0)} mph VMax
+                                <br><small>Programme complet : Gym 3x/sem + Speed 2x/sem</small>
+                            </div>
+                        </div>
+                        ${(baseSpeed * ageFactor * 1.15) - golfData.driverSpeed > 10 ? `
+                        <div>
+                            <strong>Long terme (2-3 ans)</strong> - Programme élite
+                            <div style="margin-left: 1rem; color: #666; font-size: 0.95rem;">
+                                +12 à +15 mph → ${(golfData.driverSpeed + 13).toFixed(0)} mph VMax
+                                <br><small>Entraînement type Tour : Force, Explosivité, Speed, Technique</small>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div style="margin-top: 1rem; padding: 1rem; background: white; border-radius: 4px; font-size: 0.9rem;">
+                        <strong>📌 Maximum réaliste à ${age} ans :</strong> ${(baseSpeed * ageFactor * 1.15).toFixed(0)} mph
+                        <br><small style="color: #666;">Basé sur profil physique optimal pour votre âge</small>
+                    </div>
                 </div>
                 
                 <div style="margin-top: 1.5rem; padding: 1rem; background: #f5f5f5; border-radius: 6px;">
