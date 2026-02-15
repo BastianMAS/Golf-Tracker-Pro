@@ -1152,6 +1152,18 @@ function saveProfile() {
     const photoPreview = document.getElementById('profilePhotoPreview');
     const photo = photoPreview.style.display !== 'none' ? photoPreview.src : null;
     
+    // Limitations physiques
+    const limitations = {
+        blessure: document.getElementById('limitBlessure')?.checked || false,
+        douleur: document.getElementById('limitDouleur')?.checked || false,
+        mobilite: document.getElementById('limitMobilite')?.checked || false,
+        postOp: document.getElementById('limitPostOp')?.checked || false,
+        fatigue: document.getElementById('limitFatigue')?.checked || false,
+        autre: document.getElementById('limitAutre')?.checked || false,
+        details: document.getElementById('limitDetails')?.value || '',
+        impact: parseFloat(document.getElementById('limitImpact')?.value || 0)
+    };
+    
     if (!name || !weight || weight <= 0 || !height || height <= 0) {
         alert('Veuillez remplir tous les champs obligatoires (*) avec des valeurs valides.');
         return;
@@ -1159,7 +1171,7 @@ function saveProfile() {
     
     currentPlayer = { 
         name, gender, age, weight, height, sittingHeight, wingspan,
-        level, handicap, circuit, color, photo
+        level, handicap, circuit, color, photo, limitations
     };
     
     if (sittingHeight) {
@@ -1240,6 +1252,19 @@ function loadPlayerData() {
         if (currentPlayer.level === 'playing-pro') {
             document.getElementById('handicapGroup').style.display = 'none';
             document.getElementById('circuitGroup').style.display = 'block';
+        }
+        
+        // Charger limitations physiques
+        if (currentPlayer.limitations) {
+            const lim = currentPlayer.limitations;
+            if (document.getElementById('limitBlessure')) document.getElementById('limitBlessure').checked = lim.blessure || false;
+            if (document.getElementById('limitDouleur')) document.getElementById('limitDouleur').checked = lim.douleur || false;
+            if (document.getElementById('limitMobilite')) document.getElementById('limitMobilite').checked = lim.mobilite || false;
+            if (document.getElementById('limitPostOp')) document.getElementById('limitPostOp').checked = lim.postOp || false;
+            if (document.getElementById('limitFatigue')) document.getElementById('limitFatigue').checked = lim.fatigue || false;
+            if (document.getElementById('limitAutre')) document.getElementById('limitAutre').checked = lim.autre || false;
+            if (document.getElementById('limitDetails')) document.getElementById('limitDetails').value = lim.details || '';
+            if (document.getElementById('limitImpact')) document.getElementById('limitImpact').value = lim.impact || 0;
         }
         
         updatePlayerDisplay();
@@ -5559,68 +5584,167 @@ function displayGolfCorrelations(golfData) {
         let levelDescription;
         
         if (gender === 'F') {
-            // FEMMES - Basé sur données LPGA et amateures
+            // FEMMES - Basé sur données LPGA et amateures (VMax range, 30 ans, physique moyen)
+            // Sources: Trackman 2024, LPGA Tour data
             if (handicap <= 0) {
-                baseSpeed = 92; // Scratch F
+                baseSpeed = 105; // Scratch F - VMax
                 levelDescription = "Amateur Elite Femme";
             } else if (handicap <= 5) {
-                baseSpeed = 85; // HCP 0-5
+                baseSpeed = 95; // HCP 0-5 - VMax
                 levelDescription = "Très Bonne Amateure";
             } else if (handicap <= 10) {
-                baseSpeed = 80; // HCP 5-10
+                baseSpeed = 88; // HCP 5-10 - VMax
                 levelDescription = "Bonne Amateure";
             } else if (handicap <= 15) {
-                baseSpeed = 75; // HCP 10-15
+                baseSpeed = 82; // HCP 10-15 - VMax
                 levelDescription = "Amateure Solide";
             } else {
-                baseSpeed = 70; // HCP 15+
+                baseSpeed = 76; // HCP 15+ - VMax
                 levelDescription = "Amateure en Progression";
             }
         } else {
-            // HOMMES - Basé sur données PGA et amateurs
+            // HOMMES - Basé sur données PGA Tour et amateurs (VMax range, 30 ans, physique moyen)
+            // Sources: Trackman 2024, Par4Success, TPI
+            // Note: VMax = vitesse maximale range (driver+balle), pas vitesse compétition
             if (handicap <= 0) {
-                baseSpeed = 107; // Scratch M
+                baseSpeed = 113; // Scratch M - VMax amateur elite
                 levelDescription = "Amateur Elite";
             } else if (handicap <= 5) {
-                baseSpeed = 102; // HCP 0-5
+                baseSpeed = 108; // HCP 0-5 - VMax
                 levelDescription = "Très Bon Amateur";
             } else if (handicap <= 10) {
-                baseSpeed = 98; // HCP 5-10
+                baseSpeed = 103; // HCP 5-10 - VMax
                 levelDescription = "Bon Amateur";
             } else if (handicap <= 15) {
-                baseSpeed = 93; // HCP 10-15
+                baseSpeed = 98; // HCP 10-15 - VMax
                 levelDescription = "Amateur Solide";
             } else {
-                baseSpeed = 88; // HCP 15+
+                baseSpeed = 93; // HCP 15+ - VMax
                 levelDescription = "Amateur en Progression";
             }
         }
         
-        // ========== ÉTAPE 2 : COEFFICIENTS SCIENTIFIQUES (Méta-analyses) ==========
-        // Source: Sports Medicine 2024 - Meta-analysis
-        // Upper body explosive power: r = 0.67
-        // Lower body strength: r = 0.46
-        // Jump impulse (explosivité): r = 0.82 (le plus fort)
-        // Mobilité: r = 0.03 (NON SIGNIFICATIF - retiré)
+        // ========== AJUSTEMENT ÂGE (Facteur adaptatif selon niveau physique) ==========
+        // Source: Données réelles pros 40-60 ans (Harrington 53@126mph, Mickelson 54@115mph, Vijay 61@112mph)
+        // DÉCLIN VARIE ÉNORMÉMENT SELON ENTRAÎNEMENT :
+        // - Population générale : -0.8 à -1% par an après 30 ans
+        // - Athlète entraîné : -0.3% par an
+        // - Athlète élite : -0.2% par an (comme les pros qui s'entretiennent)
         
         const explosiviteScore = scores.explosivite || 10;
         const forceScore = scores.force || 10;
         
-        // Normaliser scores (10 = base amateur, 18 = pro)
-        const explosiviteNorm = (explosiviteScore - 10) / 8; // 0 = amateur moyen, 1 = pro
-        const forceNorm = (forceScore - 10) / 8;
+        // Détection niveau athlétique
+        const isEliteAthlete = (explosiviteScore >= 16 && forceScore >= 16); // Quasi-pro
+        const isTrainedAthlete = (explosiviteScore >= 14 && forceScore >= 14); // Très entraîné
+        // Sinon = population générale
         
-        // Contribution physique (basée sur corrélations scientifiques)
-        // Explosivité = 0.82 * 12 mph = ~10 mph max
-        // Force = 0.46 * 12 mph = ~5.5 mph max
-        const explosiviteContribution = explosiviteNorm * 10;
-        const forceContribution = forceNorm * 5.5;
+        let ageFactor = 1.0;
+        if (age < 25) {
+            // Jeunes pas encore au pic
+            ageFactor = 0.95 + (age - 18) * 0.007; // Progression 18→25 ans
+        } else if (age <= 30) {
+            ageFactor = 1.0; // PEAK
+        } else if (age <= 40) {
+            // 30-40 ans : Déclin minimal si entraîné
+            let declineRate;
+            if (isEliteAthlete) {
+                declineRate = 0.002; // -0.2% par an
+            } else if (isTrainedAthlete) {
+                declineRate = 0.003; // -0.3% par an
+            } else {
+                declineRate = 0.008; // -0.8% par an
+            }
+            ageFactor = 1.0 - ((age - 30) * declineRate);
+        } else if (age <= 50) {
+            // 40-50 ans
+            let declineRate, factor40;
+            if (isEliteAthlete) {
+                factor40 = 0.98; // À 40 ans : -2% seulement
+                declineRate = 0.002; // Continue -0.2% par an
+            } else if (isTrainedAthlete) {
+                factor40 = 0.97; // À 40 ans : -3%
+                declineRate = 0.003; // Continue -0.3% par an
+            } else {
+                factor40 = 0.92; // À 40 ans : -8%
+                declineRate = 0.01; // -1% par an
+            }
+            ageFactor = factor40 - ((age - 40) * declineRate);
+        } else if (age <= 60) {
+            // 50-60 ans : Déclin accélère légèrement
+            let declineRate, factor50;
+            if (isEliteAthlete) {
+                factor50 = 0.96; // À 50 ans : -4%
+                declineRate = 0.003; // -0.3% par an
+            } else if (isTrainedAthlete) {
+                factor50 = 0.94; // À 50 ans : -6%
+                declineRate = 0.004; // -0.4% par an
+            } else {
+                factor50 = 0.82; // À 50 ans : -18%
+                declineRate = 0.012; // -1.2% par an
+            }
+            ageFactor = factor50 - ((age - 50) * declineRate);
+        } else {
+            // 60+ ans
+            let declineRate, factor60;
+            if (isEliteAthlete) {
+                factor60 = 0.93; // À 60 ans : -7% (voir Vijay Singh 61@112mph)
+                declineRate = 0.004; // -0.4% par an
+            } else if (isTrainedAthlete) {
+                factor60 = 0.90; // À 60 ans : -10%
+                declineRate = 0.005; // -0.5% par an
+            } else {
+                factor60 = 0.70; // À 60 ans : -30%
+                declineRate = 0.008; // -0.8% par an
+            }
+            ageFactor = factor60 - ((age - 60) * declineRate);
+        }
         
-        const predictedSpeed = baseSpeed + explosiviteContribution + forceContribution;
+        // Appliquer facteur d'âge à la base
+        baseSpeed = baseSpeed * ageFactor;
+        
+        // ========== ÉTAPE 2 : COEFFICIENTS SCIENTIFIQUES (Méta-analyses) ==========
+        // Source: Sports Medicine 2024, JSCR 2024
+        // Explosivité (CMJ, Med Ball): r = 0.78-0.82 (corrélation la plus forte)
+        // Force jambes: r = 0.42-0.51
+        
+        // Contributions physiques calibrées sur données réelles
+        // Explosivité : (score - 10) × 1.4 mph par point
+        // Force : (score - 10) × 0.8 mph par point
+        const explosiviteContribution = (explosiviteScore - 10) * 1.4;
+        const forceContribution = (forceScore - 10) * 0.8;
+        
+        // VMax théorique (sans limitations)
+        const vmaxTheorique = baseSpeed + explosiviteContribution + forceContribution;
+        
+        // ========== ÉTAPE 3 : LIMITATIONS PHYSIQUES ==========
+        const limitationImpact = currentPlayer?.limitations?.impact || 0;
+        
+        // VMax actuelle (avec limitations)
+        const vmaxActuelle = vmaxTheorique - limitationImpact;
+        
+        // ========== ÉTAPE 4 : VITESSE COMPÉTITION ==========
+        // Écart VMax → Compétition selon niveau (Source: FitForGolf, Trackman)
+        let ecartCompetition;
+        if (handicap <= 0) {
+            ecartCompetition = 7; // Scratch: -7 mph
+        } else if (handicap <= 5) {
+            ecartCompetition = 8; // HCP 0-5: -8 mph
+        } else if (handicap <= 10) {
+            ecartCompetition = 10; // HCP 5-10: -10 mph
+        } else if (handicap <= 15) {
+            ecartCompetition = 12; // HCP 10-15: -12 mph
+        } else {
+            ecartCompetition = 14; // HCP 15+: -14 mph
+        }
+        
+        const vitesseCompetition = vmaxActuelle - ecartCompetition;
+        
+        const predictedSpeed = vmaxActuelle; // Pour compatibilité avec code existant
         const diff = golfData.driverSpeed - predictedSpeed;
         const percentDiff = (diff / golfData.driverSpeed) * 100;
         
-        // ========== ÉTAPE 3 : POTENTIEL RÉALISTE (Littérature) ==========
+        // ========== ÉTAPE 5 : POTENTIEL RÉALISTE (Littérature) ==========
         // Source: Fit For Golf, Journal of Strength & Conditioning Research
         // Gains réalistes: 3-10 mph sur 6-12 mois selon niveau initial
         
@@ -5637,13 +5761,16 @@ function displayGolfCorrelations(golfData) {
         // Potentiel long terme (2-3 ans) - Programme complet
         const longTermGain = Math.min(15, explosiviteGap * 1.2 + forceGap * 0.7);
         
-        // Maximum théorique selon niveau
+        // Maximum théorique selon niveau ET ÂGE (VMax)
         let maxTheoreticalSpeed;
         if (gender === 'F') {
-            maxTheoreticalSpeed = handicap <= 0 ? 100 : handicap <= 5 ? 92 : handicap <= 10 ? 87 : 82;
+            maxTheoreticalSpeed = handicap <= 0 ? 108 : handicap <= 5 ? 98 : handicap <= 10 ? 92 : 86;
         } else {
-            maxTheoreticalSpeed = handicap <= 0 ? 115 : handicap <= 5 ? 110 : handicap <= 10 ? 105 : 100;
+            maxTheoreticalSpeed = handicap <= 0 ? 125 : handicap <= 5 ? 118 : handicap <= 10 ? 112 : 106;
         }
+        
+        // Appliquer facteur d'âge au maximum théorique
+        maxTheoreticalSpeed = maxTheoreticalSpeed * ageFactor;
         
         // ========== CONTEXTE PERFORMANCE ==========
         let performanceContext = '';
@@ -5697,23 +5824,57 @@ function displayGolfCorrelations(golfData) {
                     </div>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
-                    <div style="background: white; padding: 1rem; border-radius: 6px; border: 1px solid #e0e0e0;">
-                        <strong>Vitesse Actuelle</strong>
-                        <div style="font-size: 2rem; color: #1a4d2e; font-weight: 700;">${golfData.driverSpeed} mph</div>
-                    </div>
-                    <div style="background: white; padding: 1rem; border-radius: 6px; border: 1px solid #e0e0e0;">
-                        <strong>Vitesse Prédite (physique)</strong>
-                        <div style="font-size: 2rem; color: ${diff > 0 ? '#27ae60' : '#f39c12'}; font-weight: 700;">${predictedSpeed.toFixed(1)} mph</div>
+                <!-- EXPLICATION VMAX vs JEU -->
+                <div style="background: #e3f2fd; padding: 1rem; border-radius: 6px; margin-bottom: 1rem; border-left: 4px solid #2196f3;">
+                    <strong>📊 Vitesse Maximale (VMax) vs Vitesse en Jeu</strong>
+                    <div style="margin-top: 0.5rem; font-size: 0.9rem; color: #333;">
+                        Les prédictions ci-dessous concernent votre <strong>VMax</strong> (vitesse maximale all-out au practice), 
+                        pas votre vitesse moyenne en compétition.
+                        <br><br>
+                        <strong>Écart typique VMax ↔ Vitesse Jeu :</strong>
+                        <ul style="margin: 0.5rem 0 0 1.2rem; line-height: 1.6;">
+                            <li><strong>Pros PGA/LPGA :</strong> -5 à -7 mph (contrôle + précision)</li>
+                            <li><strong>Amateurs :</strong> -8 à -12 mph (peur mishits + contrôle)</li>
+                        </ul>
+                        <small style="color: #666; font-style: italic;">
+                            Source : FitForGolf (coach PGA Tour), Trackman University 2024
+                        </small>
                     </div>
                 </div>
                 
-                <div style="background: ${Math.abs(percentDiff) < 3 ? '#e8f5e9' : percentDiff > 0 ? '#e3f2fd' : '#fff3e0'}; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
-                    ${Math.abs(percentDiff) < 3 ? 
-                        '<strong>✅ Optimisation excellente !</strong><br>Votre technique exploite parfaitement votre potentiel physique actuel.' :
-                        percentDiff > 3 ? 
-                        '<strong>🌟 Technique exceptionnelle !</strong><br>Vous surpassez votre potentiel physique de ' + percentDiff.toFixed(1) + '%. Excellente efficacité technique ! Votre physique est le limitant.' :
-                        '<strong>⚠️ Potentiel inexploité</strong><br>Votre physique permettrait ' + Math.abs(diff).toFixed(1) + ' mph de plus. Travaillez la technique, le timing et la séquence.'
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1rem 0;">
+                    <div style="background: white; padding: 1rem; border-radius: 6px; border: 1px solid #e0e0e0;">
+                        <strong style="font-size: 0.85rem; color: #666;">VMax Théorique (30 ans)</strong>
+                        <div style="font-size: 1.3rem; color: #1a4d2e; font-weight: 700; margin: 0.5rem 0;">
+                            ${(baseSpeed / ageFactor).toFixed(0)} mph
+                        </div>
+                        <small style="color: #999; font-size: 0.75rem;">Base + physique optimal</small>
+                    </div>
+                    <div style="background: white; padding: 1rem; border-radius: 6px; border: 2px solid #1a4d2e;">
+                        <strong style="font-size: 0.85rem; color: #1a4d2e;">VMax Actuelle (${age} ans)</strong>
+                        <div style="font-size: 1.8rem; color: #1a4d2e; font-weight: 700; margin: 0.5rem 0;">
+                            ${vmaxActuelle.toFixed(1)} mph
+                        </div>
+                        <small style="color: #666; font-size: 0.75rem;">
+                            ${limitationImpact > 0 ? `Avec limitation (-${limitationImpact} mph)` : 'Range all-out'}
+                        </small>
+                    </div>
+                    <div style="background: #f5f5f5; padding: 1rem; border-radius: 6px; border: 1px solid #e0e0e0;">
+                        <strong style="font-size: 0.85rem; color: #666;">Vitesse Compétition</strong>
+                        <div style="font-size: 1.3rem; color: #666; font-weight: 700; margin: 0.5rem 0;">
+                            ${vitesseCompetition.toFixed(0)} mph
+                        </div>
+                        <small style="color: #999; font-size: 0.75rem;">-${ecartCompetition} mph (contrôle)</small>
+                    </div>
+                </div>
+                
+                <div style="background: ${Math.abs(diff) < 3 ? '#e8f5e9' : diff < 0 ? '#fff3e0' : '#e3f2fd'}; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
+                    <strong>📏 Votre VMax mesurée : ${golfData.driverSpeed} mph</strong>
+                    ${Math.abs(diff) < 3 ? 
+                        '<div style="margin-top: 0.5rem;">✅ <strong>Cohérence parfaite !</strong> Votre VMax mesurée correspond à votre potentiel physique.</div>' :
+                        diff < 0 ? 
+                        '<div style="margin-top: 0.5rem;">⚠️ <strong>Potentiel inexploité</strong><br>Votre physique permettrait ' + Math.abs(diff).toFixed(1) + ' mph de plus. Pistes : technique, timing, séquence kinématique.</div>' :
+                        '<div style="margin-top: 0.5rem;">🌟 <strong>Technique exceptionnelle !</strong><br>Vous surpassez votre potentiel physique de ' + diff.toFixed(1) + ' mph. Excellente efficacité !</div>'
                     }
                 </div>
                 
@@ -6315,10 +6476,16 @@ function analyseImpactPhysiqueSwing() {
     }
     
     // ========== 4. LIMITATIONS TPI → SWING FAULTS ==========
-    const tpiTests = currentTests.tpi || {};
+    // Charger les tests TPI depuis l'historique
+    const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    const tpiTestHistory = history
+        .filter(h => h.quality === 'tpi')
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    const tpiData = tpiTestHistory.length > 0 ? tpiTestHistory[0].tests : {};
     
     // Pelvic Tilt
-    if (tpiTests.pelvictilt === 0) {
+    if (tpiData.pelvictilt === 0) {
         impacts.push({
             priority: 2,
             category: 'TPI → Swing Fault',
@@ -6335,7 +6502,7 @@ function analyseImpactPhysiqueSwing() {
     }
     
     // Pelvic Rotation
-    if (tpiTests.pelvicrotation === 0) {
+    if (tpiData.pelvicrotation === 0) {
         impacts.push({
             priority: 2,
             category: 'TPI → Swing Fault',
@@ -6352,7 +6519,7 @@ function analyseImpactPhysiqueSwing() {
     }
     
     // Torso Rotation
-    if (tpiTests.torsorotation === 0) {
+    if (tpiData.torsorotation === 0) {
         impacts.push({
             priority: 2,
             category: 'TPI → Swing Fault',
