@@ -160,7 +160,8 @@
             <!-- Navigation du Tracker -->
             <div class="tracker-nav">
                 <button class="tracker-tab active" data-tab="profile">Profil</button>
-                <button class="tracker-tab" data-tab="tests">Saisie Tests</button>
+                <button class="tracker-tab" data-tab="tests">Tests Physiques</button>
+                <button class="tracker-tab" data-tab="testsgolf">⛳ Tests Golf</button>
                 <button class="tracker-tab" data-tab="dashboard">Dashboard</button>
                 <button class="tracker-tab" data-tab="analyse">Analyse Pro</button>
                 <button class="tracker-tab" data-tab="history">Historique</button>
@@ -1001,6 +1002,75 @@
                 </div>
             </div>
 
+            <!-- Onglet Tests Golf -->
+            <div id="testsgolf-tab" class="tab-content">
+                <div class="tests-container">
+                    <h3>⛳ Tests Spécifiques Golf</h3>
+                    <p class="help-text">Mesures de performance spécifiques au golf (vitesse swing, distance, smash factor)</p>
+                    
+                    <div class="test-category" style="margin-top: 2rem;">
+                        <h4 style="color: var(--primary-color); margin-bottom: 1.5rem;">📊 Performance Driver</h4>
+                        
+                        <div class="form-grid" style="max-width: 800px;">
+                            <div class="form-group">
+                                <label for="golf-vmax-driver">⚡ VMax Driver (mph) *</label>
+                                <input type="number" id="golf-vmax-driver" step="0.1" placeholder="120.0" required>
+                                <small style="display: block; margin-top: 0.3rem; color: #666;">
+                                    Vitesse maximale all-out mesurée au Trackman (range, driver+balle)
+                                </small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="golf-ballspeed">🎯 Ball Speed VMax (mph)</label>
+                                <input type="number" id="golf-ballspeed" step="0.1" placeholder="180.0">
+                                <small style="display: block; margin-top: 0.3rem; color: #666;">
+                                    Vitesse de balle maximale (optionnel)
+                                </small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>📊 Smash Factor</label>
+                                <div id="golf-smash-display" style="
+                                    padding: 1rem;
+                                    background: #f5f5f5;
+                                    border-radius: 6px;
+                                    font-size: 1.5rem;
+                                    font-weight: 700;
+                                    color: var(--primary-color);
+                                    text-align: center;
+                                ">
+                                    --
+                                </div>
+                                <small style="display: block; margin-top: 0.3rem; color: #666;">
+                                    Calculé automatiquement (Ball Speed ÷ Club Speed)
+                                </small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="golf-distance">📏 Distance Driver (m)</label>
+                                <input type="number" id="golf-distance" step="0.1" placeholder="280">
+                                <small style="display: block; margin-top: 0.3rem; color: #666;">
+                                    Distance carry maximale (optionnel)
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 2rem; padding: 1rem; background: #e3f2fd; border-radius: 6px; border-left: 4px solid #2196f3;">
+                            <strong>💡 Comment mesurer ?</strong>
+                            <ul style="margin: 0.5rem 0 0 1.2rem; line-height: 1.8;">
+                                <li>VMax = 3-5 swings all-out au Trackman, prendre le meilleur</li>
+                                <li>Ball speed = Relevé automatique Trackman</li>
+                                <li>Distance = Carry distance (pas total avec roulement)</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="form-actions" style="margin-top: 2rem;">
+                            <button class="btn btn-primary" id="saveGolfTests">💾 Enregistrer Tests Golf</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Onglet Dashboard -->
             <div id="dashboard-tab" class="tab-content">
                 <div class="dashboard-container">
@@ -1222,35 +1292,10 @@
                     <!-- Performance Golf -->
                     <div class="golf-performance-card">
                         <h4>🏌️ Performance Golf & Corrélations</h4>
-                        <p class="help-text">Saisissez vos données golf pour établir des corrélations avec vos tests physiques</p>
+                        <p class="help-text">Corrélations automatiques entre vos tests physiques et vos performances golf</p>
                         
-                        <div class="golf-data-form">
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="driverSpeed">⚡ VMax Driver (mph)</label>
-                                    <input type="number" id="driverSpeed" step="0.1" placeholder="120.0">
-                                    <small style="display: block; margin-top: 0.3rem; color: #666; font-size: 0.85rem;">
-                                        Vitesse maximale all-out mesurée au Trackman (range, driver+balle)
-                                    </small>
-                                </div>
-                                <div class="form-group">
-                                    <label for="driverDistance">Distance Driver (mètres)</label>
-                                    <input type="number" id="driverDistance" step="1" placeholder="250">
-                                </div>
-                                <div class="form-group">
-                                    <label for="fairwayAccuracy">Précision Fairways (%)</label>
-                                    <input type="number" id="fairwayAccuracy" step="0.1" placeholder="65.0">
-                                </div>
-                                <div class="form-group">
-                                    <label for="greenAccuracy">Précision Greens (%)</label>
-                                    <input type="number" id="greenAccuracy" step="0.1" placeholder="55.0">
-                                </div>
-                            </div>
-                            <button class="btn btn-primary" id="saveGolfData">💾 Enregistrer données golf</button>
-                        </div>
-
                         <div id="golfCorrelations" class="golf-correlations">
-                            <!-- Corrélations générées dynamiquement -->
+                            <!-- Corrélations générées dynamiquement depuis Tests Golf -->
                         </div>
                     </div>
 

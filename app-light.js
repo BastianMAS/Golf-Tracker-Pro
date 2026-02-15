@@ -5571,7 +5571,39 @@ function displayGolfCorrelations(golfData) {
         return;
     }
     
+    // Charger automatiquement les dernières données golf si non fournies
+    if (!golfData || !golfData.driverSpeed) {
+        const currentGolfTest = JSON.parse(localStorage.getItem('currentGolfTest') || 'null');
+        if (currentGolfTest && currentGolfTest.vmaxDriver) {
+            golfData = {
+                driverSpeed: currentGolfTest.vmaxDriver,
+                ballSpeed: currentGolfTest.ballSpeed,
+                smashFactor: currentGolfTest.smashFactor,
+                distance: currentGolfTest.distance
+            };
+        } else {
+            container.innerHTML = `
+                <div style="background: #fff3e0; padding: 1.5rem; border-radius: 6px; border-left: 4px solid #f39c12;">
+                    <strong>⛳ Aucune donnée golf enregistrée</strong>
+                    <p style="margin: 0.5rem 0 0 0;">
+                        Allez dans l'onglet <strong>"⛳ Tests Golf"</strong> pour enregistrer votre VMax driver.
+                    </p>
+                </div>
+            `;
+            return;
+        }
+    }
+    
     let html = '<h5 style="margin: 1.5rem 0 1rem 0;">📊 Corrélations Physique ↔ Golf (Basées sur la Science)</h5>';
+    
+    // Afficher date dernière mesure
+    const currentGolfTest = JSON.parse(localStorage.getItem('currentGolfTest') || 'null');
+    if (currentGolfTest && currentGolfTest.date) {
+        const testDate = new Date(currentGolfTest.date);
+        html += `<p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">
+            <em>Dernière mesure : ${testDate.toLocaleDateString('fr-FR')}</em>
+        </p>`;
+    }
     
     // ========== VITESSE DRIVER ==========
     if (golfData.driverSpeed) {
@@ -7267,10 +7299,8 @@ ${currentPlayer.name},${currentPlayer.gender},${currentPlayer.age},${currentPlay
 }
 
 function setupAnalyseProEventListeners() {
-    const saveBtn = document.getElementById('saveGolfData');
-    if (saveBtn) {
-        saveBtn.onclick = saveGolfPerformanceData;
-    }
+    // Charger automatiquement les corrélations golf
+    displayGolfCorrelations();
     
     const exportBtn = document.getElementById('exportCSV');
     if (exportBtn) {
@@ -7292,3 +7322,76 @@ if ('serviceWorker' in navigator) {
             });
     });
 }
+
+// ========================================
+// TESTS GOLF - Gestion et calculs
+// ========================================
+
+function calculateSmashFactor() {
+    const vmaxDriver = parseFloat(document.getElementById('golf-vmax-driver')?.value);
+    const ballSpeed = parseFloat(document.getElementById('golf-ballspeed')?.value);
+    const display = document.getElementById('golf-smash-display');
+    
+    if (display && vmaxDriver && ballSpeed && vmaxDriver > 0) {
+        const smash = ballSpeed / vmaxDriver;
+        display.textContent = smash.toFixed(2);
+        display.style.color = smash >= 1.48 ? '#27ae60' : smash >= 1.45 ? '#f39c12' : '#e74c3c';
+    } else if (display) {
+        display.textContent = '--';
+        display.style.color = 'var(--primary-color)';
+    }
+}
+
+function saveGolfTests() {
+    const vmaxDriver = parseFloat(document.getElementById('golf-vmax-driver')?.value);
+    const ballSpeed = parseFloat(document.getElementById('golf-ballspeed')?.value) || null;
+    const distance = parseFloat(document.getElementById('golf-distance')?.value) || null;
+    
+    if (!vmaxDriver || vmaxDriver <= 0) {
+        alert('⚠️ Veuillez entrer au moins la VMax Driver');
+        return;
+    }
+    
+    const smashFactor = ballSpeed && vmaxDriver ? (ballSpeed / vmaxDriver) : null;
+    
+    const golfTest = {
+        date: new Date().toISOString(),
+        vmaxDriver: vmaxDriver,
+        ballSpeed: ballSpeed,
+        smashFactor: smashFactor ? parseFloat(smashFactor.toFixed(2)) : null,
+        distance: distance
+    };
+    
+    // Récupérer historique
+    let golfHistory = JSON.parse(localStorage.getItem('golfTestsHistory') || '[]');
+    golfHistory.push(golfTest);
+    
+    // Sauvegarder
+    localStorage.setItem('golfTestsHistory', JSON.stringify(golfHistory));
+    localStorage.setItem('currentGolfTest', JSON.stringify(golfTest));
+    
+    // Sauvegarde automatique
+    autoBackup();
+    
+    alert('✅ Tests Golf enregistrés !');
+    
+    // Vider formulaire
+    document.getElementById('golf-vmax-driver').value = '';
+    document.getElementById('golf-ballspeed').value = '';
+    document.getElementById('golf-distance').value = '';
+    document.getElementById('golf-smash-display').textContent = '--';
+}
+
+// Event listeners Tests Golf
+document.addEventListener('DOMContentLoaded', function() {
+    // Calcul smash factor en temps réel
+    const vmaxInput = document.getElementById('golf-vmax-driver');
+    const ballSpeedInput = document.getElementById('golf-ballspeed');
+    
+    if (vmaxInput) vmaxInput.addEventListener('input', calculateSmashFactor);
+    if (ballSpeedInput) ballSpeedInput.addEventListener('input', calculateSmashFactor);
+    
+    // Bouton sauvegarde
+    const saveBtn = document.getElementById('saveGolfTests');
+    if (saveBtn) saveBtn.addEventListener('click', saveGolfTests);
+});
