@@ -5576,8 +5576,18 @@ function displayGolfCorrelations(golfData) {
     // ========== VITESSE DRIVER ==========
     if (golfData.driverSpeed) {
         const gender = currentPlayer ? currentPlayer.gender : 'M';
-        const age = currentPlayer ? currentPlayer.age : 25;
+        const ageRange = currentPlayer ? currentPlayer.age : '25-40';
         const handicap = currentPlayer ? (currentPlayer.handicap || 10) : 10;
+        
+        // Convertir tranche d'âge en âge numérique (milieu de la tranche)
+        let age = 25;
+        if (ageRange === '<12') age = 10;
+        else if (ageRange === '12-14') age = 13;
+        else if (ageRange === '14-16') age = 15;
+        else if (ageRange === '17-25') age = 21;
+        else if (ageRange === '25-40') age = 32;
+        else if (ageRange === '40-50') age = 45;
+        else if (ageRange === '50+') age = 55;
         
         // ========== ÉTAPE 1 : DÉTERMINER BASE RÉALISTE SELON NIVEAU ==========
         let baseSpeed;
