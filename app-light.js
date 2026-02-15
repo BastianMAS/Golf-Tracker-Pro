@@ -6417,7 +6417,12 @@ window.switchAnalyseView = switchAnalyseView;
 
 function analyseImpactPhysiqueSwing() {
     const container = document.getElementById('impactPhysiqueSwing');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ Container impactPhysiqueSwing introuvable');
+        return;
+    }
+    
+    console.log('🔍 Analyse Impact Physique Swing...');
     
     const scores = calculateQualityScores();
     const currentTests = JSON.parse(localStorage.getItem('currentTests') || '{}');
@@ -6426,6 +6431,7 @@ function analyseImpactPhysiqueSwing() {
     
     // ========== 1. ASYMÉTRIES & COMPENSATION ==========
     const asymmetries = detectAsymmetries();
+    console.log('Asymétries détectées:', asymmetries.length);
     
     asymmetries.forEach(asym => {
         if (asym.lsi < 90) {
@@ -6556,9 +6562,19 @@ function analyseImpactPhysiqueSwing() {
         .sort((a, b) => new Date(b.date) - new Date(a.date));
     
     const tpiData = tpiTestHistory.length > 0 ? tpiTestHistory[0].tests : {};
+    console.log('🔍 TPI Data brut:', tpiData);
+    console.log('🔍 Nombre tests TPI:', Object.keys(tpiData).length);
+    
+    // NORMALISER FORMAT TPI (pelvic-tilt → pelvictilt)
+    const tpiNormalized = {};
+    Object.keys(tpiData).forEach(key => {
+        const normalizedKey = key.replace(/-/g, '');
+        tpiNormalized[normalizedKey] = tpiData[key];
+    });
+    console.log('🔍 TPI Normalisé:', tpiNormalized);
     
     // Pelvic Tilt
-    if (tpiData.pelvictilt === 0) {
+    if (tpiNormalized.pelvictilt === 0 || tpiNormalized.pelvictilt === 'fail') {
         impacts.push({
             priority: 2,
             category: 'TPI → Swing Fault',
@@ -6575,7 +6591,7 @@ function analyseImpactPhysiqueSwing() {
     }
     
     // Pelvic Rotation
-    if (tpiData.pelvicrotation === 0) {
+    if (tpiNormalized.pelvicrotation === 0 || tpiNormalized.pelvicrotation === 'fail') {
         impacts.push({
             priority: 2,
             category: 'TPI → Swing Fault',
@@ -6592,7 +6608,7 @@ function analyseImpactPhysiqueSwing() {
     }
     
     // Torso Rotation
-    if (tpiData.torsorotation === 0) {
+    if (tpiNormalized.torsorotation === 0 || tpiNormalized.torsorotation === 'fail') {
         impacts.push({
             priority: 2,
             category: 'TPI → Swing Fault',
