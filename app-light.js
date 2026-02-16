@@ -634,10 +634,12 @@ function exportData() {
         version: '1.0',
         exportDate: new Date().toISOString(),
         currentPlayer: JSON.parse(localStorage.getItem('currentPlayer') || 'null'),
-        testsHistory: JSON.parse(localStorage.getItem('testsHistory') || '[]')
+        testsHistory: JSON.parse(localStorage.getItem('testsHistory') || '[]'),
+        golfTestsHistory: JSON.parse(localStorage.getItem('golfTestsHistory') || '[]'),
+        currentGolfTest: JSON.parse(localStorage.getItem('currentGolfTest') || 'null')
     };
     
-    if (!data.currentPlayer && data.testsHistory.length === 0) {
+    if (!data.currentPlayer && data.testsHistory.length === 0 && data.golfTestsHistory.length === 0) {
         alert('⚠️ Aucune donnée à exporter. Créez d\'abord un profil et enregistrez des tests.');
         return;
     }
@@ -653,7 +655,7 @@ function exportData() {
     downloadLink.download = filename;
     downloadLink.click();
     
-    alert(`✅ Données exportées avec succès !\n\nFichier: ${filename}\n\nProfil: ${data.currentPlayer ? data.currentPlayer.name : 'Aucun'}\nTests: ${data.testsHistory.length}`);
+    alert(`✅ Données exportées avec succès !\n\nFichier: ${filename}\n\nProfil: ${data.currentPlayer ? data.currentPlayer.name : 'Aucun'}\nTests physiques: ${data.testsHistory.length}\nTests golf: ${data.golfTestsHistory.length}`);
 }
 
 function importData(event) {
@@ -691,7 +693,18 @@ function importData(event) {
                 localStorage.setItem('testsHistory', JSON.stringify(data.testsHistory));
             }
             
-            alert(`✅ Données importées avec succès !\n\n${playerInfo}\n${testsInfo}\n\nLa page va se recharger...`);
+            // Importer données golf
+            if (data.golfTestsHistory) {
+                localStorage.setItem('golfTestsHistory', JSON.stringify(data.golfTestsHistory));
+            }
+            
+            if (data.currentGolfTest) {
+                localStorage.setItem('currentGolfTest', JSON.stringify(data.currentGolfTest));
+            }
+            
+            const golfInfo = data.golfTestsHistory ? `Tests golf: ${data.golfTestsHistory.length}` : '';
+            
+            alert(`✅ Données importées avec succès !\n\n${playerInfo}\n${testsInfo}\n${golfInfo}\n\nLa page va se recharger...`);
             
             // Recharger la page
             setTimeout(() => {
@@ -1685,9 +1698,11 @@ function autoBackup() {
     if (backupCount >= 5) {
         // Créer un backup silencieux
         const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+        const golfHistory = JSON.parse(localStorage.getItem('golfTestsHistory') || '[]');
         const data = {
             player: currentPlayer,
             testsHistory: history,
+            golfTestsHistory: golfHistory,
             exportDate: new Date().toISOString(),
             version: '2.0',
             autoBackup: true
@@ -1707,10 +1722,12 @@ function autoBackup() {
 // ==================== EXPORT / IMPORT ====================
 function exportData() {
     const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    const golfHistory = JSON.parse(localStorage.getItem('golfTestsHistory') || '[]');
     
     const data = {
         player: currentPlayer,
         testsHistory: history,
+        golfTestsHistory: golfHistory,
         exportDate: new Date().toISOString(),
         version: '2.0'
     };
@@ -1722,7 +1739,7 @@ function exportData() {
     link.download = fileName;
     link.click();
     
-    alert(`✅ Données exportées !\n\n📁 Fichier: ${fileName}\n👤 Profil: ${currentPlayer?.name || 'N/A'}\n📊 Tests: ${history.length}`);
+    alert(`✅ Données exportées !\n\n📁 Fichier: ${fileName}\n👤 Profil: ${currentPlayer?.name || 'N/A'}\n📊 Tests physiques: ${history.length}\n⛳ Tests golf: ${golfHistory.length}`);
 }
 
 function importData(event) {
@@ -1745,6 +1762,10 @@ function importData(event) {
             if (data.testsHistory) {
                 localStorage.setItem('testsHistory', JSON.stringify(data.testsHistory));
             }
+            // Importer l'historique des tests golf
+            if (data.golfTestsHistory) {
+                localStorage.setItem('golfTestsHistory', JSON.stringify(data.golfTestsHistory));
+            }
             // Support de l'ancien format (allTests)
             else if (data.tests) {
                 // Convertir ancien format vers nouveau
@@ -1759,8 +1780,9 @@ function importData(event) {
             }
             
             const importedTests = data.testsHistory?.length || data.tests?.length || 0;
+            const importedGolfTests = data.golfTestsHistory?.length || 0;
             
-            alert(`✅ Données importées avec succès !\n\n👤 Profil: ${data.player?.name || 'N/A'}\n📊 Tests: ${importedTests}\n📅 Date export: ${data.exportDate ? new Date(data.exportDate).toLocaleDateString('fr-FR') : 'N/A'}\n\n🔄 La page va se recharger automatiquement...`);
+            alert(`✅ Données importées avec succès !\n\n👤 Profil: ${data.player?.name || 'N/A'}\n📊 Tests physiques: ${importedTests}\n⛳ Tests golf: ${importedGolfTests}\n📅 Date export: ${data.exportDate ? new Date(data.exportDate).toLocaleDateString('fr-FR') : 'N/A'}\n\n🔄 La page va se recharger automatiquement...`);
             
             // Recharger la page pour tout rafraîchir proprement
             setTimeout(() => {
