@@ -7244,8 +7244,8 @@ function generateSmartAlerts() {
         
         // URGENT (toujours affichées)
         if (urgentAlerts.length > 0) {
-            html += `<div style="margin-bottom: 2rem;">
-                <h5 style="color: #dc2626; font-size: 1.2rem; margin-bottom: 1rem; border-bottom: 3px solid #dc2626; padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            html += `<div style="margin-bottom: 1rem;">
+                <h5 style="color: #dc2626; font-size: 0.9rem; margin-bottom: 0.5rem; border-bottom: 2px solid #dc2626; padding-bottom: 0.3rem; display: flex; align-items: center; gap: 0.3rem;">
                     🔴 URGENT (${urgentAlerts.length})
                 </h5>
                 ${urgentAlerts.map(renderAlert).join('')}
@@ -7254,8 +7254,8 @@ function generateSmartAlerts() {
         
         // IMPORTANT (toujours affichées)
         if (importantAlerts.length > 0) {
-            html += `<div style="margin-bottom: 2rem;">
-                <h5 style="color: #f59e0b; font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 2px solid #f59e0b; padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            html += `<div style="margin-bottom: 1rem;">
+                <h5 style="color: #f59e0b; font-size: 0.85rem; margin-bottom: 0.5rem; border-bottom: 2px solid #f59e0b; padding-bottom: 0.3rem; display: flex; align-items: center; gap: 0.3rem;">
                     🟠 IMPORTANT (${importantAlerts.length})
                 </h5>
                 ${importantAlerts.map(renderAlert).join('')}
@@ -7264,10 +7264,10 @@ function generateSmartAlerts() {
         
         // À SURVEILLER (repliées par défaut)
         if (watchAlerts.length > 0) {
-            html += `<div style="margin-bottom: 2rem;">
-                <h5 style="color: #84cc16; font-size: 1rem; margin-bottom: 1rem; border-bottom: 2px solid #84cc16; padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;" onclick="document.getElementById('watchAlerts').style.display = document.getElementById('watchAlerts').style.display === 'none' ? 'block' : 'none'">
+            html += `<div style="margin-bottom: 1rem;">
+                <h5 style="color: #84cc16; font-size: 0.8rem; margin-bottom: 0.5rem; border-bottom: 2px solid #84cc16; padding-bottom: 0.3rem; display: flex; align-items: center; gap: 0.3rem; cursor: pointer;" onclick="document.getElementById('watchAlerts').style.display = document.getElementById('watchAlerts').style.display === 'none' ? 'block' : 'none'">
                     🟡 À SURVEILLER (${watchAlerts.length})
-                    <span style="font-size: 0.9rem; color: #666;">(cliquer pour afficher/masquer)</span>
+                    <span style="font-size: 0.75rem; color: #666;">(cliquer pour afficher/masquer)</span>
                 </h5>
                 <div id="watchAlerts" style="display: none;">
                     ${watchAlerts.map(renderAlert).join('')}
