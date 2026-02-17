@@ -1087,13 +1087,12 @@ function switchTab(tabName) {
     if (tabName === 'dashboard') {
         updateDashboard();
     } else if (tabName === 'history') {
-        // Charger la vue Évolution par défaut
         switchHistoryView('evolution');
     } else if (tabName === 'analyse') {
-        // Charger toutes les données Analyse Pro
         updateAnalysePro();
-        // Puis charger la vue Synthèse par défaut
         setTimeout(() => switchAnalyseView('synthese'), 100);
+    } else if (tabName === 'testsgolf') {
+        loadGolfTestsForm();
     }
 }
 
@@ -7413,11 +7412,74 @@ function saveGolfTests() {
     
     alert('✅ Tests Golf enregistrés !');
     
-    // Vider formulaire
-    document.getElementById('golf-vmax-driver').value = '';
-    document.getElementById('golf-ballspeed').value = '';
-    document.getElementById('golf-distance').value = '';
-    document.getElementById('golf-smash-display').textContent = '--';
+    // NE PAS vider - afficher l'historique à la place
+    displayGolfTestsHistory();
+}
+
+function loadGolfTestsForm() {
+    // Charger la dernière valeur enregistrée dans le formulaire
+    const lastTest = JSON.parse(localStorage.getItem('currentGolfTest') || 'null');
+    if (lastTest) {
+        if (document.getElementById('golf-vmax-driver')) {
+            document.getElementById('golf-vmax-driver').value = lastTest.vmaxDriver || '';
+        }
+        if (document.getElementById('golf-ballspeed')) {
+            document.getElementById('golf-ballspeed').value = lastTest.ballSpeed || '';
+        }
+        if (document.getElementById('golf-distance')) {
+            document.getElementById('golf-distance').value = lastTest.distance || '';
+        }
+        calculateSmashFactor();
+    }
+    displayGolfTestsHistory();
+}
+
+function displayGolfTestsHistory() {
+    const container = document.getElementById('golf-history-container');
+    if (!container) return;
+    
+    const history = JSON.parse(localStorage.getItem('golfTestsHistory') || '[]');
+    
+    if (history.length === 0) {
+        container.innerHTML = '<p style="color:#999; font-size:0.85rem; text-align:center; padding:1rem;">Aucune session enregistrée</p>';
+        return;
+    }
+    
+    // Trier du plus récent au plus ancien
+    const sorted = [...history].sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    let html = `<h5 style="font-size:0.9rem; color:var(--primary-color); margin-bottom:0.5rem;">📅 Sessions précédentes</h5>
+    <div style="overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse; font-size:0.8rem;">
+        <thead>
+            <tr style="background:#f5f5f5;">
+                <th style="padding:0.4rem 0.6rem; text-align:left; border-bottom:2px solid #ddd;">Date</th>
+                <th style="padding:0.4rem 0.6rem; text-align:center; border-bottom:2px solid #ddd;">⚡ VMax</th>
+                <th style="padding:0.4rem 0.6rem; text-align:center; border-bottom:2px solid #ddd;">🎯 Ball Speed</th>
+                <th style="padding:0.4rem 0.6rem; text-align:center; border-bottom:2px solid #ddd;">📊 Smash</th>
+                <th style="padding:0.4rem 0.6rem; text-align:center; border-bottom:2px solid #ddd;">📏 Distance</th>
+            </tr>
+        </thead>
+        <tbody>
+    `;
+    
+    sorted.slice(0, 10).forEach((t, i) => {
+        const date = new Date(t.date).toLocaleDateString('fr-FR');
+        const smashColor = t.smashFactor >= 1.48 ? '#27ae60' : t.smashFactor >= 1.45 ? '#f39c12' : '#e74c3c';
+        const isLatest = i === 0;
+        html += `
+            <tr style="background:${isLatest ? '#e8f5e9' : 'white'}; border-bottom:1px solid #eee;">
+                <td style="padding:0.4rem 0.6rem;">${date}${isLatest ? ' <strong style="color:#27ae60;font-size:0.75rem;">DERNIER</strong>' : ''}</td>
+                <td style="padding:0.4rem 0.6rem; text-align:center; font-weight:${isLatest ? '700' : '400'};">${t.vmaxDriver} mph</td>
+                <td style="padding:0.4rem 0.6rem; text-align:center;">${t.ballSpeed ? t.ballSpeed + ' mph' : '-'}</td>
+                <td style="padding:0.4rem 0.6rem; text-align:center; color:${smashColor}; font-weight:600;">${t.smashFactor || '-'}</td>
+                <td style="padding:0.4rem 0.6rem; text-align:center;">${t.distance ? t.distance + ' m' : '-'}</td>
+            </tr>
+        `;
+    });
+    
+    html += `</tbody></table></div>`;
+    container.innerHTML = html;
 }
 
 // Event listeners Tests Golf

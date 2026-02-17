@@ -1063,6 +1063,10 @@
                         <div class="form-actions" style="margin-top: 2rem;">
                             <button class="btn btn-primary" id="saveGolfTests">💾 Enregistrer Tests Golf</button>
                         </div>
+                        
+                        <!-- Historique sessions -->
+                        <div id="golf-history-container" style="margin-top:1.5rem;">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1163,6 +1167,9 @@
                     <!-- VUE SYNTHÈSE -->
                     <div id="analyseSynthese" class="analyse-view">
                     
+                    <!-- GRILLE 2 COLONNES -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; align-items:start;">
+                    
                     <!-- Golf Fitness Index -->
                     <div class="fitness-index-card">
                         <h4>Golf Fitness Index</h4>
@@ -1255,19 +1262,21 @@
                         <div class="comparison-legend">
                             <span><span class="legend-color" style="background: rgba(33, 150, 243, 1);"></span> Votre Profil</span>
                             <span><span class="legend-color" style="background: rgba(255, 87, 51, 0.9);"></span> Norme Pro</span>
-                            <span style="color: #f39c12; font-weight: 600;">? = Données insuffisantes (minimum 50% des tests requis)</span>
+                            <span style="color: #f39c12; font-weight: 600;">? = Données insuffisantes</span>
                         </div>
                     </div>
                     
-                    <!-- Top Alertes URGENTES (Synthèse uniquement) -->
+                    <!-- Top Alertes URGENTES -->
                     <div class="smart-alerts-card">
                         <h4>🚨 Alertes Prioritaires</h4>
                         <p class="help-text">Top 3-5 alertes urgentes nécessitant une attention immédiate</p>
                         <div id="top3UrgentAlerts"></div>
                     </div>
                     
-                    <!-- Impact Physique sur le Swing -->
-                    <div class="impact-physique-card">
+                    </div><!-- Fin grille 2 colonnes -->
+                    
+                    <!-- Impact Physique sur le Swing - PLEINE LARGEUR -->
+                    <div class="impact-physique-card" style="margin-top:0.8rem;">
                         <h4>⚡ Impact de Votre Physique sur le Swing</h4>
                         <p class="help-text">Analyse des limitations physiques et leur influence sur votre swing de golf</p>
                         <div id="impactPhysiqueSwing"></div>
@@ -1278,6 +1287,9 @@
                     <!-- VUE DÉTAILS -->
                     <div id="analyseDetails" class="analyse-view" style="display: none;">
 
+                    <!-- GRILLE 2 COLONNES -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; align-items:start;">
+
                     <!-- Top 3 Faiblesses -->
                     <div class="weaknesses-card">
                         <h4>⚠️ Top 3 des Axes Prioritaires</h4>
@@ -1285,25 +1297,24 @@
                         <div id="top3Weaknesses"></div>
                     </div>
 
-                    <!-- Performance Golf -->
-                    <div class="golf-performance-card">
-                        <h4>🏌️ Performance Golf & Corrélations</h4>
-                        <p class="help-text">Corrélations automatiques entre vos tests physiques et vos performances golf</p>
-                        
-                        <div id="golfCorrelations" class="golf-correlations">
-                            <!-- Corrélations générées dynamiquement depuis Tests Golf -->
-                        </div>
-                    </div>
-
                     <!-- Alertes Intelligentes -->
                     <div class="smart-alerts-card">
                         <h4>🚨 Alertes Intelligentes</h4>
-                        <p class="help-text">Analyse automatique des limitations physiques et impact potentiel sur le swing</p>
+                        <p class="help-text">Analyse automatique des limitations physiques</p>
                         <div id="smartAlerts"></div>
                     </div>
 
+                    </div><!-- Fin grille 2 colonnes -->
+
+                    <!-- Performance Golf - PLEINE LARGEUR -->
+                    <div class="golf-performance-card" style="margin-top:0.8rem;">
+                        <h4>🏌️ Performance Golf & Corrélations</h4>
+                        <p class="help-text">Corrélations automatiques entre vos tests physiques et vos performances golf</p>
+                        <div id="golfCorrelations" class="golf-correlations"></div>
+                    </div>
+
                     <!-- Export Multi-Joueurs -->
-                    <div class="multi-player-card">
+                    <div class="multi-player-card" style="margin-top:0.8rem;">
                         <h4>👥 Export de Données (CSV)</h4>
                         <p class="help-text">Exportez vos données pour analyse comparative</p>
                         <div class="export-actions">
