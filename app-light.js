@@ -5316,36 +5316,91 @@ function drawGFIGauge(score, color) {
     const canvas = document.getElementById('gfiGauge');
     if (!canvas) return;
     
+    // Canvas plus grand pour mieux dessiner
+    canvas.width = 400;
+    canvas.height = 260;
+    
     const ctx = canvas.getContext('2d');
     const centerX = canvas.width / 2;
-    const centerY = canvas.height - 10;
-    const radius = 90;
+    const centerY = canvas.height - 40;
+    const radius = 110;
+    const lineWidth = 22;
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Arc de fond
+    // ---- Arc de fond (gris) ----
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, Math.PI, 2 * Math.PI);
-    ctx.lineWidth = 20;
-    ctx.strokeStyle = '#e0e0e0';
-    ctx.stroke();
-    
-    // Arc de progression
-    const endAngle = Math.PI + (Math.PI * (score / 100));
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, Math.PI, endAngle);
-    ctx.lineWidth = 20;
-    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = '#e8ecef';
     ctx.lineCap = 'round';
     ctx.stroke();
     
-    // Graduations
-    ctx.font = '12px Arial';
-    ctx.fillStyle = '#666';
+    // ---- Arc coloré avec dégradé ----
+    const endAngle = Math.PI + (Math.PI * (score / 100));
+    const gradient = ctx.createLinearGradient(centerX - radius, 0, centerX + radius, 0);
+    
+    // Couleur selon score
+    if (score >= 75) {
+        gradient.addColorStop(0, '#52b788');
+        gradient.addColorStop(1, '#1a4d2e');
+    } else if (score >= 50) {
+        gradient.addColorStop(0, '#f39c12');
+        gradient.addColorStop(1, '#e67e22');
+    } else {
+        gradient.addColorStop(0, '#ff6b6b');
+        gradient.addColorStop(1, '#c0392b');
+    }
+    
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, Math.PI, endAngle);
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = gradient;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    
+    // ---- Petit cercle à la pointe de l'arc ----
+    const tipX = centerX + radius * Math.cos(endAngle);
+    const tipY = centerY + radius * Math.sin(endAngle);
+    ctx.beginPath();
+    ctx.arc(tipX, tipY, lineWidth / 2 - 1, 0, 2 * Math.PI);
+    ctx.fillStyle = color;
+    ctx.fill();
+    
+    // ---- Cercle central décoratif ----
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius - lineWidth - 8, Math.PI, 2 * Math.PI);
+    ctx.fillStyle = 'rgba(240,248,244,0.5)';
+    ctx.fill();
+    
+    // ---- Score au centre ----
     ctx.textAlign = 'center';
-    ctx.fillText('0', 20, centerY + 5);
-    ctx.fillText('50', centerX, centerY - radius - 10);
-    ctx.fillText('100', canvas.width - 20, centerY + 5);
+    ctx.textBaseline = 'middle';
+    
+    // Score gros
+    const scoreY = centerY - 28;
+    ctx.font = 'bold 58px -apple-system, BlinkMacSystemFont, Arial';
+    ctx.fillStyle = color;
+    ctx.fillText(Math.round(score), centerX, scoreY);
+    
+    // Sous-titre "/100"
+    ctx.font = '16px Arial';
+    ctx.fillStyle = '#999';
+    ctx.fillText('/ 100', centerX, scoreY + 36);
+    
+    // ---- Graduations ----
+    ctx.font = 'bold 13px Arial';
+    ctx.fillStyle = '#aaa';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('0', centerX - radius - 18, centerY + 6);
+    ctx.fillText('100', centerX + radius + 18, centerY + 6);
+    ctx.fillText('50', centerX, centerY - radius - 16);
+    
+    // ---- Masquer le .gfi-score et .gfi-level HTML (gérés dans canvas) ----
+    const gfiScoreEl = document.getElementById('gfiScore');
+    const gfiLevelEl = document.getElementById('gfiLevel');
+    if (gfiScoreEl) gfiScoreEl.style.display = 'none';
+    if (gfiLevelEl) gfiLevelEl.style.display = 'none';
 }
 
 function displayProComparison() {
