@@ -2842,3 +2842,41 @@ img {
         padding: 1.5rem;
     }
 }
+
+
+/* ONGLET BLESSURES */
+.body-zone {
+    cursor: pointer;
+    transition: fill 0.3s, stroke 0.3s;
+}
+
+.body-zone:hover {
+    fill: #ffd700 !important;
+    stroke: #ff6b35 !important;
+    stroke-width: 3 !important;
+}
+
+.body-zone.has-injury {
+    fill: #ffcccc !important;
+    stroke: #e74c3c !important;
+    stroke-width: 3 !important;
+    animation: pulse-injury 2s infinite;
+}
+
+@keyframes pulse-injury {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.injury-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+}
+
+.injury-severity-high { border-left: 4px solid #e74c3c; }
+.injury-severity-medium { border-left: 4px solid #f39c12; }
+.injury-severity-low { border-left: 4px solid #27ae60; }
+

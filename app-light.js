@@ -1093,6 +1093,8 @@ function switchTab(tabName) {
         setTimeout(() => switchAnalyseView('synthese'), 100);
     } else if (tabName === 'testsgolf') {
         loadGolfTestsForm();
+    } else if (tabName === 'blessures') {
+        loadBlessuresTab();
     }
 }
 
@@ -4987,6 +4989,9 @@ function updateAnalysePro() {
     // Analyser l'impact physique sur le swing
     analyseImpactPhysiqueSwing();
     
+    // Calculer impact golf
+    displayGolfImpactCalculator();
+    
     // Setup event listeners
     setupAnalyseProEventListeners();
 }
@@ -7550,3 +7555,416 @@ document.addEventListener('DOMContentLoaded', function() {
     const saveBtn = document.getElementById('saveGolfTests');
     if (saveBtn) saveBtn.addEventListener('click', saveGolfTests);
 });
+
+// ==================== CALCULATEUR IMPACT GOLF ====================
+function calculateGolfImpact(scores) {
+    if (!scores) return null;
+    
+    const impacts = {
+        distance: 0,        // Perte en mètres
+        accuracy: 0,        // Perte fairways %
+        shortGame: 0,       // Impact putting/chip %
+        injury: 0,          // Risque blessure %
+        strokes: 0,         // Coups supplémentaires par tour
+        details: []         // Détails par qualité
+    };
+    
+    // CORE (15% du swing, stabilité)
+    if (scores.core !== null) {
+        if (scores.core < 8) {
+            impacts.distance += 8;  // -8m drive
+            impacts.accuracy += 15; // -15% fairways
+            impacts.shortGame += 12; // -12% putting précision
+            impacts.strokes += 1.8;
+            impacts.details.push({
+                quality: 'Core',
+                score: scores.core,
+                impact: 'Early Extension + Loss of Posture',
+                consequence: '⚠️ -8m drive, -15% fairways, instabilité putting',
+                strokesLoss: 1.8
+            });
+        } else if (scores.core < 12) {
+            impacts.distance += 4;
+            impacts.accuracy += 8;
+            impacts.shortGame += 6;
+            impacts.strokes += 0.9;
+            impacts.details.push({
+                quality: 'Core',
+                score: scores.core,
+                impact: 'Instabilité légère',
+                consequence: '⚠️ -4m drive, perte consistance',
+                strokesLoss: 0.9
+            });
+        }
+    }
+    
+    // MOBILITÉ (20% du swing, amplitude)
+    if (scores.mobilite !== null) {
+        if (scores.mobilite < 10) {
+            impacts.distance += 15;
+            impacts.accuracy += 10;
+            impacts.injury += 25; // Risque compensation
+            impacts.strokes += 2.1;
+            impacts.details.push({
+                quality: 'Mobilité',
+                score: scores.mobilite,
+                impact: 'Backswing limité + Compensations',
+                consequence: '🔴 -15m drive, +25% risque blessure, perte puissance',
+                strokesLoss: 2.1
+            });
+        } else if (scores.mobilite < 14) {
+            impacts.distance += 6;
+            impacts.accuracy += 5;
+            impacts.injury += 10;
+            impacts.strokes += 1.0;
+            impacts.details.push({
+                quality: 'Mobilité',
+                score: scores.mobilite,
+                impact: 'Amplitude réduite',
+                consequence: '⚠️ -6m drive, backswing raccourci',
+                strokesLoss: 1.0
+            });
+        }
+    }
+    
+    // FORCE (25% du swing, puissance)
+    if (scores.force !== null) {
+        if (scores.force < 8) {
+            impacts.distance += 12;
+            impacts.strokes += 1.5;
+            impacts.details.push({
+                quality: 'Force',
+                score: scores.force,
+                impact: 'Manque de puissance',
+                consequence: '📉 -12m drive, fatigue rapide 18 trous',
+                strokesLoss: 1.5
+            });
+        } else if (scores.force < 12) {
+            impacts.distance += 6;
+            impacts.strokes += 0.8;
+            impacts.details.push({
+                quality: 'Force',
+                score: scores.force,
+                impact: 'Puissance limitée',
+                consequence: '📉 -6m drive',
+                strokesLoss: 0.8
+            });
+        }
+    }
+    
+    // EXPLOSIVITÉ (20% du swing, vitesse)
+    if (scores.explosivite !== null) {
+        if (scores.explosivite < 10) {
+            impacts.distance += 10;
+            impacts.strokes += 1.2;
+            impacts.details.push({
+                quality: 'Explosivité',
+                score: scores.explosivite,
+                impact: 'Vitesse de swing limitée',
+                consequence: '⚡ -10m drive, manque de "lag"',
+                strokesLoss: 1.2
+            });
+        } else if (scores.explosivite < 14) {
+            impacts.distance += 5;
+            impacts.strokes += 0.6;
+            impacts.details.push({
+                quality: 'Explosivité',
+                score: scores.explosivite,
+                impact: 'Transfert de force incomplet',
+                consequence: '⚡ -5m drive',
+                strokesLoss: 0.6
+            });
+        }
+    }
+    
+    // ÉQUILIBRE (impact putting/short game)
+    if (scores.equilibre !== null) {
+        if (scores.equilibre < 10) {
+            impacts.shortGame += 20;
+            impacts.accuracy += 8;
+            impacts.strokes += 1.3;
+            impacts.details.push({
+                quality: 'Équilibre',
+                score: scores.equilibre,
+                impact: 'Instabilité dynamique',
+                consequence: '🎯 -20% putting, -8% fairways, sway/slide',
+                strokesLoss: 1.3
+            });
+        }
+    }
+    
+    // VITESSE (coordination, timing)
+    if (scores.vitesse !== null) {
+        if (scores.vitesse < 12) {
+            impacts.accuracy += 12;
+            impacts.shortGame += 8;
+            impacts.strokes += 1.0;
+            impacts.details.push({
+                quality: 'Vitesse',
+                score: scores.vitesse,
+                impact: 'Séquence/timing perturbé',
+                consequence: '⏱️ Timing inconsistant, -12% précision',
+                strokesLoss: 1.0
+            });
+        }
+    }
+    
+    return impacts;
+}
+
+// ==================== ONGLET BLESSURES ====================
+function saveInjury() {
+    const zone = document.getElementById('injury-zone').value;
+    const type = document.getElementById('injury-type').value;
+    const intensity = parseInt(document.getElementById('injury-intensity').value);
+    const comment = document.getElementById('injury-comment').value.trim();
+    
+    if (!zone) {
+        alert('⚠️ Veuillez sélectionner une zone');
+        return;
+    }
+    
+    const injury = {
+        id: Date.now(),
+        date: new Date().toISOString(),
+        zone: zone,
+        type: type,
+        intensity: intensity,
+        comment: comment,
+        active: type === 'douleur' || type === 'raideur'
+    };
+    
+    // Récupérer historique
+    let injuries = JSON.parse(localStorage.getItem('playerInjuries') || '[]');
+    injuries.unshift(injury); // Ajouter en premier (plus récent)
+    
+    // Sauvegarder
+    localStorage.setItem('playerInjuries', JSON.stringify(injuries));
+    
+    // Réinitialiser formulaire
+    document.getElementById('injury-zone').value = '';
+    document.getElementById('injury-type').value = 'douleur';
+    document.getElementById('injury-intensity').value = '3';
+    document.getElementById('intensity-value').textContent = '3';
+    document.getElementById('injury-comment').value = '';
+    
+    // Rafraîchir affichage
+    displayInjuryHistory();
+    updateBodyMapStatus();
+    
+    alert('✅ Blessure enregistrée !');
+}
+
+function displayInjuryHistory() {
+    const container = document.getElementById('injuryHistory');
+    if (!container) return;
+    
+    const injuries = JSON.parse(localStorage.getItem('playerInjuries') || '[]');
+    
+    if (injuries.length === 0) {
+        container.innerHTML = '<p style="color: #999; text-align: center; padding: 2rem;">Aucune blessure enregistrée</p>';
+        return;
+    }
+    
+    let html = '';
+    injuries.forEach((injury, index) => {
+        const date = new Date(injury.date).toLocaleDateString('fr-FR');
+        const severity = injury.intensity <= 3 ? 'low' : injury.intensity <= 6 ? 'medium' : 'high';
+        const severityText = injury.intensity <= 3 ? 'Légère' : injury.intensity <= 6 ? 'Modérée' : 'Sévère';
+        const zoneText = getZoneDisplayName(injury.zone);
+        
+        html += `
+            <div class="injury-card injury-severity-${severity}">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                    <strong style="color: #1a4d2e;">${zoneText}</strong>
+                    <span class="injury-date">${date}</span>
+                </div>
+                <div style="margin-bottom: 0.5rem;">
+                    <span style="background: #f0f0f0; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; margin-right: 0.5rem;">
+                        ${injury.type}
+                    </span>
+                    <span class="injury-intensity ${severity}">
+                        ${injury.intensity}/10 - ${severityText}
+                    </span>
+                </div>
+                ${injury.comment ? `<div style="font-size: 0.85rem; color: #666; font-style: italic;">"${injury.comment}"</div>` : ''}
+                <div style="text-align: right; margin-top: 0.8rem;">
+                    <button onclick="removeInjury(${index})" style="background: #e74c3c; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">
+                        🗑️ Supprimer
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function removeInjury(index) {
+    if (!confirm('Supprimer cette blessure ?')) return;
+    
+    let injuries = JSON.parse(localStorage.getItem('playerInjuries') || '[]');
+    injuries.splice(index, 1);
+    localStorage.setItem('playerInjuries', JSON.stringify(injuries));
+    
+    displayInjuryHistory();
+    updateBodyMapStatus();
+}
+
+function getZoneDisplayName(zone) {
+    const zones = {
+        'head': 'Tête / Cou',
+        'torso': 'Tronc / Dos', 
+        'bassin': 'Bassin / Lombalgie',
+        'bras-gauche': 'Bras Gauche',
+        'bras-droit': 'Bras Droit',
+        'jambe-gauche': 'Jambe Gauche',
+        'jambe-droite': 'Jambe Droite',
+        'pied-gauche': 'Pied Gauche',
+        'pied-droit': 'Pied Droit'
+    };
+    return zones[zone] || zone;
+}
+
+function updateBodyMapStatus() {
+    const injuries = JSON.parse(localStorage.getItem('playerInjuries') || '[]');
+    const activeInjuries = injuries.filter(i => i.active);
+    
+    // Reset toutes les zones
+    document.querySelectorAll('.body-zone').forEach(zone => {
+        zone.classList.remove('has-injury');
+        zone.style.fill = '#f0f8ff';
+        zone.style.stroke = '#ddd';
+        zone.style.strokeWidth = '2';
+    });
+    
+    // Marquer zones avec blessures actives
+    activeInjuries.forEach(injury => {
+        const zoneEl = document.querySelector(`[data-zone="${injury.zone}"]`);
+        if (zoneEl) {
+            zoneEl.classList.add('has-injury');
+            if (injury.intensity >= 7) {
+                zoneEl.style.fill = '#ff6b6b';
+                zoneEl.style.stroke = '#c0392b';
+            } else {
+                zoneEl.style.fill = '#ffcccc';
+                zoneEl.style.stroke = '#e74c3c';
+            }
+        }
+    });
+}
+
+function initBodyMapInteractions() {
+    // Click sur zone du body map
+    document.querySelectorAll('.body-zone').forEach(zone => {
+        zone.addEventListener('click', function() {
+            const zoneName = this.dataset.zone;
+            document.getElementById('injury-zone').value = zoneName;
+        });
+    });
+    
+    // Slider intensité
+    const intensitySlider = document.getElementById('injury-intensity');
+    const intensityValue = document.getElementById('intensity-value');
+    
+    if (intensitySlider && intensityValue) {
+        intensitySlider.addEventListener('input', function() {
+            intensityValue.textContent = this.value;
+        });
+    }
+}
+
+function loadBlessuresTab() {
+    displayInjuryHistory();
+    updateBodyMapStatus();
+    initBodyMapInteractions();
+}
+
+function getActiveInjuries() {
+    const injuries = JSON.parse(localStorage.getItem('playerInjuries') || '[]');
+    return injuries.filter(i => i.active);
+}
+
+function hasInjuryInZone(zone) {
+    const activeInjuries = getActiveInjuries();
+    return activeInjuries.some(i => i.zone === zone);
+}
+
+function displayGolfImpactCalculator() {
+    const container = document.getElementById('golfImpactCalculator');
+    if (!container) return;
+    
+    const scores = calculateQualityScores();
+    const impacts = calculateGolfImpact(scores);
+    
+    if (!impacts || impacts.details.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 2rem; background: #e8f5e9; border-radius: 8px;">
+                <div style="font-size: 2.5rem; margin-bottom: 1rem;">⛳</div>
+                <h4 style="color: #27ae60; margin-bottom: 0.5rem;">Excellent Profil Golf</h4>
+                <p style="color: #666;">Aucune limitation physique majeure détectée impactant votre performance golf.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = `
+        <div style="background: linear-gradient(135deg, #1a4d2e 0%, #27ae60 100%); color: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <h4 style="color: white; margin-bottom: 1rem;">📊 Impact Estimé sur votre Golf</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                ${impacts.distance > 0 ? `
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: 700;">-${Math.round(impacts.distance)}m</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">Distance Drive</div>
+                    </div>
+                ` : ''}
+                ${impacts.strokes > 0 ? `
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: 700;">+${impacts.strokes.toFixed(1)}</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">Coups / Tour</div>
+                    </div>
+                ` : ''}
+                ${impacts.accuracy > 0 ? `
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: 700;">-${Math.round(impacts.accuracy)}%</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">Précision</div>
+                    </div>
+                ` : ''}
+                ${impacts.injury > 0 ? `
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.8rem; font-weight: 700;">+${Math.round(impacts.injury)}%</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">Risque Blessure</div>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+        
+        <h5 style="margin-bottom: 1rem;">🔍 Analyse Détaillée par Qualité</h5>
+    `;
+    
+    impacts.details.forEach(detail => {
+        const barColor = detail.score < 8 ? '#e74c3c' : detail.score < 12 ? '#f39c12' : '#27ae60';
+        html += `
+            <div style="background: white; border: 1px solid #e0e0e0; border-radius: 6px; padding: 1rem; margin-bottom: 0.8rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <strong style="color: ${barColor};">${detail.quality}</strong>
+                    <span style="font-size: 0.9rem; color: #666;">${detail.score.toFixed(1)}/20</span>
+                </div>
+                <div style="background: #f0f0f0; height: 6px; border-radius: 3px; margin-bottom: 0.8rem;">
+                    <div style="background: ${barColor}; height: 100%; width: ${(detail.score / 20 * 100)}%; border-radius: 3px;"></div>
+                </div>
+                <div style="font-size: 0.9rem; margin-bottom: 0.5rem;">
+                    <strong>Impact :</strong> ${detail.impact}
+                </div>
+                <div style="font-size: 0.85rem; color: #666; margin-bottom: 0.5rem;">
+                    ${detail.consequence}
+                </div>
+                <div style="background: #fff3e0; padding: 0.6rem; border-radius: 4px; border-left: 3px solid #f39c12;">
+                    <strong style="color: #d35400; font-size: 0.85rem;">Perte estimée : +${detail.strokesLoss} coups par tour</strong>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}

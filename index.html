@@ -162,6 +162,7 @@
                 <button class="tracker-tab active" data-tab="profile">Profil</button>
                 <button class="tracker-tab" data-tab="tests">Tests Physiques</button>
                 <button class="tracker-tab" data-tab="testsgolf">⛳ Tests Golf</button>
+                <button class="tracker-tab" data-tab="blessures">🏥 Blessures</button>
                 <button class="tracker-tab" data-tab="dashboard">Dashboard</button>
                 <button class="tracker-tab" data-tab="analyse">Analyse Pro</button>
                 <button class="tracker-tab" data-tab="history">Historique</button>
@@ -1070,6 +1071,120 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- ONGLET BLESSURES -->
+            <div id="blessures-tab" class="tab-content">
+                <div class="section-container">
+                    <div class="section-header">
+                        <h2>🏥 Anamnèse & Suivi Blessures</h2>
+                        <p>Historique des douleurs et blessures - Influence directe sur l'analyse</p>
+                    </div>
+                    
+                    <!-- Body Map Interactive -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                        
+                        <!-- Silhouette Corps -->
+                        <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: var(--shadow-md);">
+                            <h4 style="color: var(--primary-color); margin-bottom: 1rem;">📍 Zones Concernées</h4>
+                            
+                            <div id="bodyMap" style="position: relative; max-width: 300px; margin: 0 auto;">
+                                <!-- SVG Body Map -->
+                                <svg viewBox="0 0 200 400" style="width: 100%; height: auto; cursor: pointer;">
+                                    <!-- Corps -->
+                                    <ellipse cx="100" cy="60" rx="35" ry="45" fill="#f0f8ff" stroke="#ddd" stroke-width="2" class="body-zone" data-zone="head" />
+                                    <rect x="70" y="100" width="60" height="80" rx="20" fill="#f0f8ff" stroke="#ddd" stroke-width="2" class="body-zone" data-zone="torso" />
+                                    <rect x="60" y="180" width="80" height="50" rx="15" fill="#f0f8ff" stroke="#ddd" stroke-width="2" class="body-zone" data-zone="bassin" />
+                                    
+                                    <!-- Bras -->
+                                    <ellipse cx="45" cy="130" rx="15" ry="40" fill="#f0f8ff" stroke="#ddd" stroke-width="2" class="body-zone" data-zone="bras-gauche" />
+                                    <ellipse cx="155" cy="130" rx="15" ry="40" fill="#f0f8ff" stroke="#ddd" stroke-width="2" class="body-zone" data-zone="bras-droit" />
+                                    
+                                    <!-- Jambes -->
+                                    <ellipse cx="85" cy="280" rx="18" ry="50" fill="#f0f8ff" stroke="#ddd" stroke-width="2" class="body-zone" data-zone="jambe-gauche" />
+                                    <ellipse cx="115" cy="280" rx="18" ry="50" fill="#f0f8ff" stroke="#ddd" stroke-width="2" class="body-zone" data-zone="jambe-droite" />
+                                    
+                                    <!-- Pieds -->
+                                    <ellipse cx="85" cy="350" rx="12" ry="20" fill="#f0f8ff" stroke="#ddd" stroke-width="2" class="body-zone" data-zone="pied-gauche" />
+                                    <ellipse cx="115" cy="350" rx="12" ry="20" fill="#f0f8ff" stroke="#ddd" stroke-width="2" class="body-zone" data-zone="pied-droit" />
+                                    
+                                    <!-- Labels -->
+                                    <text x="100" y="45" text-anchor="middle" font-size="10" fill="#666">Tête/Cou</text>
+                                    <text x="100" y="140" text-anchor="middle" font-size="10" fill="#666">Tronc</text>
+                                    <text x="100" y="205" text-anchor="middle" font-size="10" fill="#666">Bassin</text>
+                                    <text x="45" y="175" text-anchor="middle" font-size="8" fill="#666">Bras G</text>
+                                    <text x="155" y="175" text-anchor="middle" font-size="8" fill="#666">Bras D</text>
+                                    <text x="85" y="340" text-anchor="middle" font-size="8" fill="#666">Jambe G</text>
+                                    <text x="115" y="340" text-anchor="middle" font-size="8" fill="#666">Jambe D</text>
+                                </svg>
+                            </div>
+                            
+                            <div style="margin-top: 1rem; text-align: center;">
+                                <p style="font-size: 0.85rem; color: #666;">Cliquez sur une zone pour ajouter une douleur</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Formulaire Blessure -->
+                        <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: var(--shadow-md);">
+                            <h4 style="color: var(--primary-color); margin-bottom: 1rem;">➕ Ajouter Douleur/Blessure</h4>
+                            
+                            <div style="display: grid; gap: 1rem;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Zone concernée</label>
+                                    <select id="injury-zone" style="width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 6px;">
+                                        <option value="">Sélectionner une zone</option>
+                                        <option value="head">Tête / Cou</option>
+                                        <option value="torso">Tronc / Dos</option>
+                                        <option value="bassin">Bassin / Lombalgie</option>
+                                        <option value="bras-gauche">Bras Gauche</option>
+                                        <option value="bras-droit">Bras Droit</option>
+                                        <option value="jambe-gauche">Jambe Gauche</option>
+                                        <option value="jambe-droite">Jambe Droite</option>
+                                        <option value="pied-gauche">Pied Gauche</option>
+                                        <option value="pied-droit">Pied Droit</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Type</label>
+                                    <select id="injury-type" style="width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 6px;">
+                                        <option value="douleur">Douleur actuelle</option>
+                                        <option value="raideur">Raideur / Gêne</option>
+                                        <option value="blessure">Blessure ancienne</option>
+                                        <option value="chirurgie">Chirurgie</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Intensité (0-10)</label>
+                                    <input type="range" id="injury-intensity" min="0" max="10" value="3" style="width: 100%;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #666; margin-top: 0.25rem;">
+                                        <span>0 (aucune)</span>
+                                        <span id="intensity-value">3</span>
+                                        <span>10 (invalidante)</span>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Commentaire</label>
+                                    <textarea id="injury-comment" rows="3" placeholder="Précisions sur la douleur, déclencheurs, durée..." style="width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 6px; resize: vertical;"></textarea>
+                                </div>
+                                
+                                <button onclick="saveInjury()" style="background: #e74c3c; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                                    🏥 Enregistrer Blessure
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Historique Blessures -->
+                    <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: var(--shadow-md);">
+                        <h4 style="color: var(--primary-color); margin-bottom: 1rem;">📋 Historique des Blessures</h4>
+                        <div id="injuryHistory">
+                            <p style="color: #999; text-align: center; padding: 2rem;">Aucune blessure enregistrée</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Onglet Dashboard -->
             <div id="dashboard-tab" class="tab-content">
@@ -1311,6 +1426,13 @@
                         <h4>🏌️ Performance Golf & Corrélations</h4>
                         <p class="help-text">Corrélations automatiques entre vos tests physiques et vos performances golf</p>
                         <div id="golfCorrelations" class="golf-correlations"></div>
+                    </div>
+
+                    <!-- Impact Golf Calculateur - NOUVEAU -->
+                    <div class="golf-performance-card" style="margin-top:0.8rem;">
+                        <h4>📊 Impact Physique → Performance Golf</h4>
+                        <p class="help-text">Traduction de vos limitations physiques en termes golfiques concrets</p>
+                        <div id="golfImpactCalculator"></div>
                     </div>
 
                     <!-- Export Multi-Joueurs -->
