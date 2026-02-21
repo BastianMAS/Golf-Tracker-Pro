@@ -6507,8 +6507,27 @@ function analyseImpactPhysiqueSwing() {
     
     const scores = calculateQualityScores();
     const currentTests = JSON.parse(localStorage.getItem('currentTests') || '{}');
+    const activeInjuries = getActiveInjuries(); // NOUVEAU : intégrer blessures
     
     let impacts = [];
+    
+    // ========== 0. BLESSURES ACTUELLES (PRIORITÉ MAX) ==========
+    if (activeInjuries && activeInjuries.length > 0) {
+        activeInjuries.forEach(injury => {
+            const zoneImpact = getInjurySwingImpact(injury);
+            if (zoneImpact) {
+                impacts.push({
+                    priority: injury.intensity >= 7 ? 0 : 1,  // Priorité 0 si douleur sévère
+                    type: 'injury',
+                    title: `🚨 Blessure Active - ${getZoneDisplayName(injury.zone)}`,
+                    description: `${getTypeDisplayName(injury.type)} - Intensité ${injury.intensity}/10`,
+                    swingFaults: zoneImpact.swingFaults,
+                    impact: zoneImpact.impact,
+                    recommendation: zoneImpact.recommendation
+                });
+            }
+        });
+    }
     
     // ========== 1. ASYMÉTRIES & COMPENSATION ==========
     const asymmetries = detectAsymmetries();
@@ -7888,6 +7907,62 @@ function getActiveInjuries() {
 function hasInjuryInZone(zone) {
     const activeInjuries = getActiveInjuries();
     return activeInjuries.some(i => i.zone === zone);
+}
+
+function getInjurySwingImpact(injury) {
+    const impactMap = {
+        'lombaires': {
+            swingFaults: ['Early Extension', 'Loss of Posture', 'Reverse Spine Angle'],
+            impact: 'Compensation lombaire → Perte de puissance et stabilité',
+            recommendation: 'Éviter rotations forcées, privilégier mobilité thoracique'
+        },
+        'dorsales': {
+            swingFaults: ['Loss of Posture', 'Flat Shoulder Plane'],
+            impact: 'Limitation rotation thoracique → Backswing raccourci',
+            recommendation: 'Mobilisation douce, éviter hyperextension'
+        },
+        'cervical': {
+            swingFaults: ['Head Movement', 'Loss of Posture'],
+            impact: 'Mouvement tête excessif → Perte équilibre et timing',
+            recommendation: 'Maintien neutre cervicales, regard fixe'
+        },
+        'epaule-gauche': {
+            swingFaults: ['Flying Right Elbow', 'Chicken Wing'],
+            impact: 'Limitation amplitude épaule gauche → Compensation coude',
+            recommendation: 'Swing plane plus plat, éviter over-swing'
+        },
+        'epaule-droite': {
+            swingFaults: ['Across the Line', 'Steep Angle of Attack'],
+            impact: 'Limitation épaule droite → Plan de swing perturbé',
+            recommendation: 'Backswing plus court, éviter positions extrêmes'
+        },
+        'hanche-gauche': {
+            swingFaults: ['Reverse Weight Shift', 'Slide'],
+            impact: 'Limitation rotation hanche → Transfer poids inefficace',
+            recommendation: 'Rotation active hanche droite, éviter slide'
+        },
+        'hanche-droite': {
+            swingFaults: ['Sway', 'Early Extension'],
+            impact: 'Perte stabilité → Compensation Early Extension',
+            recommendation: 'Maintien appui droit, rotation contrôlée'
+        },
+        'genou-gauche': {
+            swingFaults: ['Lateral Slide', 'Loss of Posture'],
+            impact: 'Instabilité genou → Slide latéral excessif',
+            recommendation: 'Appui stable, éviter hyperextension genou'
+        },
+        'genou-droit': {
+            swingFaults: ['Sway', 'Reverse Weight Shift'],
+            impact: 'Perte d\'ancrage → Sway backswing',
+            recommendation: 'Maintien flexion genou droit, ancrage sol'
+        }
+    };
+    
+    return impactMap[injury.zone] || {
+        swingFaults: ['Compensation généralisée'],
+        impact: 'Adaptation swing pour éviter douleur',
+        recommendation: 'Adaptation technique selon douleur'
+    };
 }
 
 function displayGolfImpactCalculator() {

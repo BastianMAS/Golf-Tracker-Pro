@@ -2844,28 +2844,40 @@ img {
 }
 
 
-/* ONGLET BLESSURES */
-.body-zone {
-    cursor: pointer;
-    transition: fill 0.3s, stroke 0.3s;
+/* ONGLET BLESSURES - Interface médicale professionnelle */
+.zone-btn {
+    transition: all 0.3s;
+    font-weight: 500;
 }
 
-.body-zone:hover {
-    fill: #ffd700 !important;
-    stroke: #ff6b35 !important;
-    stroke-width: 3 !important;
+.zone-btn:hover {
+    background: #e3f2fd !important;
+    border-color: #2196f3 !important;
+    color: #1976d2;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.body-zone.has-injury {
-    fill: #ffcccc !important;
-    stroke: #e74c3c !important;
-    stroke-width: 3 !important;
-    animation: pulse-injury 2s infinite;
+.zone-btn.selected {
+    background: #2196f3 !important;
+    color: white !important;
+    border-color: #1976d2 !important;
+    font-weight: 600;
 }
 
-@keyframes pulse-injury {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
+.zone-btn.has-injury {
+    background: #ffebee !important;
+    border-color: #e57373 !important;
+    color: #c62828;
+    position: relative;
+}
+
+.zone-btn.has-injury::after {
+    content: "⚠️";
+    position: absolute;
+    right: 4px;
+    top: 2px;
+    font-size: 0.7rem;
 }
 
 .injury-card {
@@ -2874,9 +2886,41 @@ img {
     border-radius: 8px;
     padding: 1rem;
     margin-bottom: 0.8rem;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.injury-severity-high { border-left: 4px solid #e74c3c; }
-.injury-severity-medium { border-left: 4px solid #f39c12; }
-.injury-severity-low { border-left: 4px solid #27ae60; }
+.injury-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.injury-severity-articulaire { border-left: 4px solid #9c27b0; }
+.injury-severity-musculaire { border-left: 4px solid #f44336; }
+.injury-severity-tendineux { border-left: 4px solid #ff9800; }
+.injury-severity-neurologique { border-left: 4px solid #3f51b5; }
+.injury-severity-ligamentaire { border-left: 4px solid #4caf50; }
+.injury-severity-cicatrice { border-left: 4px solid #607d8b; }
+
+.injury-severity-high { background: #ffebee; }
+.injury-severity-medium { background: #fff8e1; }
+.injury-severity-low { background: #e8f5e9; }
+
+.injury-date {
+    font-size: 0.8rem;
+    color: #999;
+    float: right;
+}
+
+.injury-intensity {
+    display: inline-block;
+    background: #f0f0f0;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.injury-intensity.low { background: #e8f5e9; color: #27ae60; }
+.injury-intensity.medium { background: #fff3e0; color: #f39c12; }
+.injury-intensity.high { background: #ffebee; color: #e74c3c; }
 
