@@ -1083,66 +1083,93 @@
                     <!-- Body Map Interactive -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
                         
-                        <!-- Interface Anatomique Professionnelle -->
+                        <!-- Interface Simplifiée Mobile-First -->
                         <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: var(--shadow-md);">
-                            <h4 style="color: var(--primary-color); margin-bottom: 1rem;">🎯 Localisation Anatomique</h4>
+                            <h4 style="color: var(--primary-color); margin-bottom: 1.5rem; text-align: center;">🏥 Nouvelle Douleur/Blessure</h4>
                             
-                            <!-- Sélection par région -->
-                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                            <div style="display: grid; gap: 1.2rem;">
+                                <!-- Zone anatomique - GROS SELECT -->
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.8rem; font-weight: 600; font-size: 1rem;">📍 Où avez-vous mal ?</label>
+                                    <select id="injury-zone" style="width: 100%; padding: 1rem; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; background: #f8f9fa;">
+                                        <option value="">👆 Sélectionner la zone douloureuse</option>
+                                        
+                                        <optgroup label="🔴 ZONES FRÉQUENTES GOLF">
+                                            <option value="lombaires">Lombaires (bas du dos)</option>
+                                            <option value="dorsales">Dorsales (haut du dos)</option>
+                                            <option value="epaule-droite">Épaule Droite</option>
+                                            <option value="epaule-gauche">Épaule Gauche</option>
+                                            <option value="coude-droit">Coude Droit (golf elbow)</option>
+                                            <option value="poignet-gauche">Poignet Gauche</option>
+                                            <option value="hanche-droite">Hanche Droite</option>
+                                            <option value="genou-gauche">Genou Gauche</option>
+                                        </optgroup>
+                                        
+                                        <optgroup label="🦾 Membre Supérieur">
+                                            <option value="cervical">Cervicales (cou)</option>
+                                            <option value="coude-gauche">Coude Gauche</option>
+                                            <option value="poignet-droit">Poignet Droit</option>
+                                        </optgroup>
+                                        
+                                        <optgroup label="🏃 Tronc">
+                                            <option value="sacrum">Sacrum</option>
+                                            <option value="cotes">Côtes</option>
+                                            <option value="abdominal">Abdominaux</option>
+                                            <option value="hanche-gauche">Hanche Gauche</option>
+                                        </optgroup>
+                                        
+                                        <optgroup label="🦵 Membre Inférieur">
+                                            <option value="ischios-gauche">Ischio-jambiers Gauche</option>
+                                            <option value="ischios-droit">Ischio-jambiers Droit</option>
+                                            <option value="quadriceps-gauche">Quadriceps Gauche</option>
+                                            <option value="quadriceps-droit">Quadriceps Droit</option>
+                                            <option value="genou-droit">Genou Droit</option>
+                                            <option value="cheville-gauche">Cheville Gauche</option>
+                                            <option value="cheville-droite">Cheville Droite</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
                                 
-                                <!-- Membre Supérieur -->
-                                <div style="border: 2px solid #e0e0e0; border-radius: 8px; padding: 1rem;">
-                                    <h5 style="color: var(--primary-color); margin-bottom: 0.8rem; text-align: center;">🦾 Membre Supérieur</h5>
-                                    <div style="display: grid; gap: 0.4rem;">
-                                        <button class="zone-btn" data-zone="cervical" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Cervicales</button>
-                                        <button class="zone-btn" data-zone="epaule-gauche" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Épaule Gauche</button>
-                                        <button class="zone-btn" data-zone="epaule-droite" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Épaule Droite</button>
-                                        <button class="zone-btn" data-zone="coude-gauche" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Coude Gauche</button>
-                                        <button class="zone-btn" data-zone="coude-droit" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Coude Droit</button>
-                                        <button class="zone-btn" data-zone="poignet-gauche" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Poignet Gauche</button>
-                                        <button class="zone-btn" data-zone="poignet-droit" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Poignet Droit</button>
+                                <!-- Nature + Intensité sur même ligne -->
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                    <div>
+                                        <label style="display: block; margin-bottom: 0.8rem; font-weight: 600; font-size: 1rem;">🔧 Type</label>
+                                        <select id="injury-type" style="width: 100%; padding: 1rem; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.9rem;">
+                                            <option value="articulaire">🦴 Articulaire</option>
+                                            <option value="musculaire">💪 Musculaire</option>
+                                            <option value="tendineux">🎗️ Tendineux</option>
+                                            <option value="neurologique">🧠 Neurologique</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <label style="display: block; margin-bottom: 0.8rem; font-weight: 600; font-size: 1rem;">📊 Douleur /10</label>
+                                        <div style="display: flex; align-items: center; gap: 1rem;">
+                                            <input type="range" id="injury-intensity" min="0" max="10" value="3" style="flex: 1; height: 8px;">
+                                            <div id="intensity-value" style="background: #2196f3; color: white; padding: 0.5rem 0.8rem; border-radius: 20px; font-weight: 700; min-width: 40px; text-align: center;">3</div>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #666; margin-top: 0.4rem;">
+                                            <span>0</span>
+                                            <span>Légère</span>
+                                            <span>Modérée</span>
+                                            <span>Sévère</span>
+                                            <span>10</span>
+                                        </div>
                                     </div>
                                 </div>
                                 
-                                <!-- Tronc -->
-                                <div style="border: 2px solid #e0e0e0; border-radius: 8px; padding: 1rem;">
-                                    <h5 style="color: var(--primary-color); margin-bottom: 0.8rem; text-align: center;">🏃 Tronc</h5>
-                                    <div style="display: grid; gap: 0.4rem;">
-                                        <button class="zone-btn" data-zone="dorsales" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Dorsales</button>
-                                        <button class="zone-btn" data-zone="lombaires" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Lombaires</button>
-                                        <button class="zone-btn" data-zone="sacrum" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Sacrum</button>
-                                        <button class="zone-btn" data-zone="cotes" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Côtes</button>
-                                        <button class="zone-btn" data-zone="abdominal" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Abdominaux</button>
-                                        <button class="zone-btn" data-zone="hanche-gauche" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Hanche Gauche</button>
-                                        <button class="zone-btn" data-zone="hanche-droite" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Hanche Droite</button>
-                                    </div>
+                                <!-- Commentaire optionnel -->
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.8rem; font-weight: 600; font-size: 1rem;">💬 Détails (optionnel)</label>
+                                    <textarea id="injury-comment" rows="3" placeholder="Précisions : déclencheurs, durée, circonstances..." style="width: 100%; padding: 1rem; border: 2px solid #e0e0e0; border-radius: 8px; resize: vertical; font-size: 0.9rem;"></textarea>
                                 </div>
                                 
-                                <!-- Membre Inférieur -->
-                                <div style="border: 2px solid #e0e0e0; border-radius: 8px; padding: 1rem;">
-                                    <h5 style="color: var(--primary-color); margin-bottom: 0.8rem; text-align: center;">🦵 Membre Inférieur</h5>
-                                    <div style="display: grid; gap: 0.4rem;">
-                                        <button class="zone-btn" data-zone="ischios-gauche" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Ischios Gauche</button>
-                                        <button class="zone-btn" data-zone="ischios-droit" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Ischios Droit</button>
-                                        <button class="zone-btn" data-zone="quadriceps-gauche" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Quadriceps Gauche</button>
-                                        <button class="zone-btn" data-zone="quadriceps-droit" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Quadriceps Droit</button>
-                                        <button class="zone-btn" data-zone="genou-gauche" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Genou Gauche</button>
-                                        <button class="zone-btn" data-zone="genou-droit" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Genou Droit</button>
-                                        <button class="zone-btn" data-zone="cheville-gauche" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Cheville Gauche</button>
-                                        <button class="zone-btn" data-zone="cheville-droite" style="background: #f8f9fa; border: 1px solid #ddd; padding: 0.4rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer;">Cheville Droite</button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Zone sélectionnée -->
-                            <div id="selectedZoneDisplay" style="background: #e3f2fd; padding: 0.8rem; border-radius: 6px; border-left: 4px solid #2196f3; margin-top: 1rem; display: none;">
-                                <strong>Zone sélectionnée :</strong> <span id="selectedZoneName">Aucune</span>
+                                <!-- Bouton large -->
+                                <button onclick="saveInjury()" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 1rem 2rem; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 0.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    🏥 Enregistrer Douleur/Blessure
+                                </button>
                             </div>
                         </div>
-                        
-                        <!-- Formulaire Blessure -->
-                        <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: var(--shadow-md);">
-                            <h4 style="color: var(--primary-color); margin-bottom: 1rem;">➕ Ajouter Douleur/Blessure</h4>
                             
                             <div style="display: grid; gap: 1rem;">
                                 <div>

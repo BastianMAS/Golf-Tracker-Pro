@@ -6657,24 +6657,145 @@ function analyseImpactPhysiqueSwing() {
     // ========== 4. LIMITATIONS TPI → SWING FAULTS ==========
     // Charger les tests TPI depuis l'historique
     const history = JSON.parse(localStorage.getItem('testsHistory') || '[]');
+    console.log('🔍 DEBUG: Historique complet:', history.length, 'entrées');
+    
     const tpiTestHistory = history
         .filter(h => h.quality === 'tpi')
         .sort((a, b) => new Date(b.date) - new Date(a.date));
     
-    const tpiData = tpiTestHistory.length > 0 ? tpiTestHistory[0].tests : {};
-    console.log('🔍 TPI Data brut:', tpiData);
-    console.log('🔍 Nombre tests TPI:', Object.keys(tpiData).length);
+    console.log('🔍 DEBUG: Tests TPI trouvés:', tpiTestHistory.length);
     
-    // NORMALISER FORMAT TPI (pelvic-tilt → pelvictilt)
-    const tpiNormalized = {};
-    Object.keys(tpiData).forEach(key => {
-        const normalizedKey = key.replace(/-/g, '');
-        tpiNormalized[normalizedKey] = tpiData[key];
-    });
-    console.log('🔍 TPI Normalisé:', tpiNormalized);
-    
-    // Pelvic Tilt
-    if (tpiNormalized.pelvictilt === 0 || tpiNormalized.pelvictilt === 'fail') {
+    if (tpiTestHistory.length === 0) {
+        console.warn('❌ DEBUG: Aucun test TPI trouvé dans l\'historique');
+        impacts.push({
+            priority: 3,
+            category: 'INFO DEBUG',
+            title: '⚠️ Aucun test TPI détecté',
+            description: 'Aucun test TPI trouvé dans l\'historique. Effectuez d\'abord des tests TPI.',
+            consequences: ['Tests TPI requis pour analyse swing faults'],
+            action: 'Effectuer tests TPI dans l\'onglet Tests Physiques'
+        });
+    } else {
+        const tpiData = tpiTestHistory[0].tests;
+        console.log('🔍 DEBUG: TPI Data brut:', tpiData);
+        console.log('🔍 DEBUG: Clés TPI disponibles:', Object.keys(tpiData));
+        console.log('🔍 DEBUG: Nombre tests TPI:', Object.keys(tpiData).length);
+        
+        // NORMALISER FORMAT TPI (pelvic-tilt → pelvictilt)
+        const tpiNormalized = {};
+        Object.keys(tpiData).forEach(key => {
+            const normalizedKey = key.replace(/-/g, '');
+            tpiNormalized[normalizedKey] = tpiData[key];
+            console.log(`🔍 DEBUG: ${key} → ${normalizedKey} = ${tpiData[key]}`);
+        });
+        console.log('🔍 DEBUG: TPI Normalisé:', tpiNormalized);
+        
+        let tpiFailsDetected = 0;
+        
+        // Pelvic Tilt
+        if (tpiNormalized.pelvictilt === 0 || tpiNormalized.pelvictilt === 'fail') {
+            console.log('✅ DEBUG: Pelvic Tilt FAIL détecté');
+            tpiFailsDetected++;
+            impacts.push({
+                priority: 2,
+                category: 'TPI → Swing Fault',
+                title: 'Pelvic Tilt Fail',
+                description: 'Limitation mobilité bassin (TPI)',
+                consequences: [
+                    '⚠️ Loss of Posture probable (66% corrélation TPI)',
+                    '⚠️ Early Extension compensatoire',
+                    '🎯 Contact inconsistant',
+                    '🔴 Risque lombalgie chronique'
+                ],
+                action: 'Mobilité hanche (90/90, pigeon pose) + renforcement fessiers'
+            });
+        }
+        
+        // Pelvic Rotation
+        if (tpiNormalized.pelvicrotation === 0 || tpiNormalized.pelvicrotation === 'fail') {
+            console.log('✅ DEBUG: Pelvic Rotation FAIL détecté');
+            tpiFailsDetected++;
+            impacts.push({
+                priority: 2,
+                category: 'TPI → Swing Fault',
+                title: 'Pelvic Rotation Fail',
+                description: 'Limitation rotation bassin (TPI)',
+                consequences: [
+                    '⚠️ Early Extension (71% corrélation TPI)',
+                    '⚠️ Slide latéral compensatoire',
+                    '🎯 Séquence kinétique perturbée'
+                ],
+                action: 'Mobilité rotation hanche + étirements psoas'
+            });
+        }
+        
+        // Torso Rotation
+        if (tpiNormalized.torsorotation === 0 || tpiNormalized.torsorotation === 'fail') {
+            console.log('✅ DEBUG: Torso Rotation FAIL détecté');
+            tpiFailsDetected++;
+            impacts.push({
+                priority: 2,
+                category: 'TPI → Swing Fault',
+                title: 'Torso Rotation Fail',
+                description: 'Limitation rotation thoracique (TPI)',
+                consequences: [
+                    '⚠️ Flat Shoulder Plane (58% corrélation TPI)',
+                    '⚠️ Over-the-top compensatoire',
+                    '🎯 Plan de swing perturbé'
+                ],
+                action: 'Mobilité thoracique (chat-cow, thoracic extensions)'
+            });
+        }
+        
+        // Overhead Squat
+        if (tpiNormalized.overheadsquat === 0 || tpiNormalized.overheadsquat === 'fail') {
+            console.log('✅ DEBUG: Overhead Squat FAIL détecté');
+            tpiFailsDetected++;
+            impacts.push({
+                priority: 2,
+                category: 'TPI → Swing Fault',
+                title: 'Overhead Squat Fail',
+                description: 'Déficit mobilité globale (TPI)',
+                consequences: [
+                    '⚠️ Sway + Early Extension',
+                    '⚠️ Posture setup incorrecte',
+                    '🎯 Amplitude limitée'
+                ],
+                action: 'Mobilité cheville + hanches + thoracique combinée'
+            });
+        }
+        
+        // Toe Touch
+        if (tpiNormalized.toetouch === 0 || tpiNormalized.toetouch === 'fail') {
+            console.log('✅ DEBUG: Toe Touch FAIL détecté');
+            tpiFailsDetected++;
+            impacts.push({
+                priority: 2,
+                category: 'TPI → Swing Fault',
+                title: 'Toe Touch Fail',
+                description: 'Limitation chaîne postérieure (TPI)',
+                consequences: [
+                    '⚠️ Early Extension + Loss of Posture',
+                    '⚠️ Limitation follow-through',
+                    '🎯 Impact prématuré'
+                ],
+                action: 'Étirements ischios + mollets + fascia plantaire'
+            });
+        }
+        
+        console.log(`🔍 DEBUG: Total TPI fails détectés: ${tpiFailsDetected}`);
+        
+        if (tpiFailsDetected === 0) {
+            impacts.push({
+                priority: 4,
+                category: 'TPI → Swing Analysis',
+                title: '✅ Profil TPI Excellent',
+                description: 'Aucune limitation TPI majeure détectée',
+                consequences: ['Physique optimal pour golf'],
+                action: 'Maintenir niveau actuel'
+            });
+        }
+    }
         impacts.push({
             priority: 2,
             category: 'TPI → Swing Fault',
