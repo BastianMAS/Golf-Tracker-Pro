@@ -7869,8 +7869,55 @@ function initBodyMapInteractions() {
     
     if (intensitySlider && intensityValue) {
         intensitySlider.addEventListener('input', function() {
-            intensityValue.textContent = this.value;
+            const value = parseInt(this.value);
+            intensityValue.textContent = value;
+            
+            // Description dynamique selon l'intensité
+            const descriptionElement = document.getElementById('intensity-description');
+            let description, color, bgColor;
+            
+            if (value <= 1) {
+                description = "💡 Aucune douleur - Vous pouvez faire toutes vos activités normalement";
+                color = '#27ae60';
+                bgColor = '#e8f5e9';
+                intensityValue.style.background = '#27ae60';
+            } else if (value <= 3) {
+                description = "💡 Douleur légère - Ne gêne pas les activités quotidiennes";
+                color = '#27ae60';
+                bgColor = '#e8f5e9';
+                intensityValue.style.background = '#27ae60';
+            } else if (value <= 5) {
+                description = "⚠️ Douleur modérée - Peut gêner certaines activités physiques";
+                color = '#f39c12';
+                bgColor = '#fff3e0';
+                intensityValue.style.background = '#f39c12';
+            } else if (value <= 7) {
+                description = "🔶 Douleur intense - Limite significativement vos mouvements";
+                color = '#e67e22';
+                bgColor = '#fdf2e9';
+                intensityValue.style.background = '#e67e22';
+            } else if (value <= 9) {
+                description = "🔴 Douleur sévère - Très difficile de faire vos activités";
+                color = '#e74c3c';
+                bgColor = '#ffebee';
+                intensityValue.style.background = '#e74c3c';
+            } else {
+                description = "🚨 Douleur invalidante - Empêche toute activité normale";
+                color = '#c0392b';
+                bgColor = '#ffcdd2';
+                intensityValue.style.background = '#c0392b';
+            }
+            
+            if (descriptionElement) {
+                descriptionElement.textContent = description;
+                descriptionElement.style.color = color;
+                descriptionElement.style.background = bgColor;
+                descriptionElement.style.borderLeftColor = color;
+            }
         });
+        
+        // Initialiser à la valeur par défaut (3)
+        intensitySlider.dispatchEvent(new Event('input'));
     }
 }
 

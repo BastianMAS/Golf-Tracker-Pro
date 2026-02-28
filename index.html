@@ -1059,12 +1059,23 @@
                                 </div>
                                 
                                 <div>
-                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Intensité (0-10)</label>
-                                    <input type="range" id="injury-intensity" min="0" max="10" value="3" style="width: 100%;">
-                                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #666; margin-top: 0.25rem;">
-                                        <span>0 (aucune)</span>
-                                        <span id="intensity-value">3</span>
-                                        <span>10 (invalidante)</span>
+                                    <label style="display: block; margin-bottom: 0.8rem; font-weight: 600; font-size: 1.1rem;">📊 Intensité Douleur /10</label>
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem;">
+                                        <input type="range" id="injury-intensity" min="0" max="10" value="3" style="flex: 1; height: 8px;">
+                                        <div id="intensity-value" style="background: #2196f3; color: white; padding: 0.7rem 1rem; border-radius: 25px; font-weight: 700; min-width: 50px; text-align: center; font-size: 1.1rem;">3</div>
+                                    </div>
+                                    <!-- Guide détaillé tous les 2 niveaux -->
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #666; margin-bottom: 1rem; line-height: 1.2;">
+                                        <span style="text-align: center;">0-1<br><strong>Aucune</strong></span>
+                                        <span style="text-align: center;">2-3<br><strong>Légère</strong></span>
+                                        <span style="text-align: center;">4-5<br><strong>Modérée</strong></span>
+                                        <span style="text-align: center;">6-7<br><strong>Intense</strong></span>
+                                        <span style="text-align: center;">8-9<br><strong>Sévère</strong></span>
+                                        <span style="text-align: center;">10<br><strong>Invalidante</strong></span>
+                                    </div>
+                                    <!-- Description dynamique qui change -->
+                                    <div id="intensity-description" style="text-align: center; padding: 0.8rem; background: #f0f8ff; border-radius: 6px; font-size: 0.9rem; color: #1976d2; font-weight: 500; border-left: 4px solid #2196f3;">
+                                        💡 Douleur légère - Ne gêne pas les activités quotidiennes
                                     </div>
                                 </div>
                                 
